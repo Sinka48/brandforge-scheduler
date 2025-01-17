@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { usePostState } from "./usePostState";
 import { createRecurringPosts } from "./useRecurringPosts";
 import { createBulkPosts } from "./useBulkScheduling";
+import { format } from "date-fns";
 
 export function usePostCreation() {
   const { newPost, setNewPost, handlePlatformToggle } = usePostState();
