@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Heart, Share2, TrendingUp } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { format } from "date-fns";
 
 interface PostAnalytics {
@@ -114,9 +114,35 @@ export function PostAnalytics({ postId, platform }: PostAnalyticsProps) {
                 <AreaChart data={chartData}>
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
+                  <Tooltip content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                {label}
+                              </span>
+                            </div>
+                            {payload.map((item) => (
+                              <div
+                                key={item.name}
+                                className="flex flex-col gap-1"
+                              >
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  {item.name}
+                                </span>
+                                <span className="font-bold">
+                                  {item.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }} />
                   <Area
                     type="monotone"
                     dataKey="views"
