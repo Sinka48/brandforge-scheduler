@@ -60,6 +60,39 @@ export type Database = {
           },
         ]
       }
+      post_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_favorite: boolean | null
+          name: string
+          platforms: string[]
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_favorite?: boolean | null
+          name: string
+          platforms?: string[]
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_favorite?: boolean | null
+          name?: string
+          platforms?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           batch_id: string | null

@@ -8,6 +8,8 @@ import { TimeSelector } from "./post-dialog/TimeSelector";
 import { PostContent } from "./post-dialog/PostContent";
 import { RecurringOptions } from "./post-dialog/RecurringOptions";
 import { BulkScheduling } from "./post-dialog/BulkScheduling";
+import { SaveTemplateDialog } from "./post-dialog/SaveTemplateDialog";
+import { TemplateSelector } from "./post-dialog/TemplateSelector";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -54,6 +56,26 @@ export function PostDialog({
             {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
           </div>
 
+          {!editMode && (
+            <div className="flex gap-2">
+              <TemplateSelector
+                onSelectTemplate={(template) => {
+                  setNewPost({
+                    ...newPost,
+                    content: template.content,
+                    platforms: template.platforms,
+                    image: template.image_url || '',
+                  });
+                }}
+              />
+              <SaveTemplateDialog
+                content={newPost.content}
+                platforms={newPost.platforms}
+                imageUrl={newPost.image}
+              />
+            </div>
+          )}
+
           {!editMode && !newPost.isRecurring && (
             <BulkScheduling
               selectedDates={newPost.bulkDates || []}
@@ -88,7 +110,6 @@ export function PostDialog({
             <RecurringOptions
               isRecurring={newPost.isRecurring || false}
               onIsRecurringChange={(isRecurring) => {
-                // Clear bulk dates if switching to recurring
                 setNewPost({ 
                   ...newPost, 
                   isRecurring,
