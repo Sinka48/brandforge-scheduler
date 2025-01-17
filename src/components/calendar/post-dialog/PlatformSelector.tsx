@@ -7,25 +7,25 @@ const platforms = [
     id: 'facebook',
     name: 'Facebook',
     icon: <Facebook className="h-4 w-4" />,
-    description: 'Share with your Facebook audience',
+    description: 'Share updates, photos, and stories with your Facebook audience',
   },
   {
     id: 'twitter',
     name: 'Twitter',
     icon: <Twitter className="h-4 w-4" />,
-    description: 'Tweet to your followers',
+    description: 'Share quick updates and engage with your Twitter followers',
   },
   {
     id: 'instagram',
     name: 'Instagram',
     icon: <Instagram className="h-4 w-4" />,
-    description: 'Share visual content on Instagram',
+    description: 'Share visual content and stories on Instagram',
   },
   {
     id: 'linkedin',
     name: 'LinkedIn',
     icon: <Linkedin className="h-4 w-4" />,
-    description: 'Connect with professionals',
+    description: 'Share professional updates with your LinkedIn network',
   },
 ];
 
@@ -38,7 +38,7 @@ export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: Platfo
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">Select Platforms</label>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {platforms.map((platform) => {
           const isSelected = selectedPlatforms.includes(platform.id);
           return (
@@ -46,15 +46,15 @@ export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: Platfo
               key={platform.id}
               variant={isSelected ? "default" : "outline"}
               onClick={() => onPlatformToggle(platform.id)}
-              className="justify-start h-auto py-3"
+              className="justify-start h-auto py-3 group"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 w-full">
                 <div className="mt-1">{platform.icon}</div>
-                <div className="text-left">
-                  <div className="font-medium flex items-center gap-2">
+                <div className="text-left flex-1">
+                  <div className="font-medium flex items-center justify-between">
                     {platform.name}
                     {isSelected && (
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant="secondary" className="ml-auto animate-fade-in">
                         Selected
                       </Badge>
                     )}

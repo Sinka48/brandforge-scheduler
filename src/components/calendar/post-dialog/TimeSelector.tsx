@@ -13,7 +13,11 @@ export function TimeSelector({ time, onTimeChange }: TimeSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   
   const quickTimes = [
-    "09:00", "12:00", "15:00", "18:00", "21:00"
+    { label: "Morning", time: "09:00" },
+    { label: "Noon", time: "12:00" },
+    { label: "Afternoon", time: "15:00" },
+    { label: "Evening", time: "18:00" },
+    { label: "Night", time: "21:00" }
   ];
 
   return (
@@ -31,7 +35,7 @@ export function TimeSelector({ time, onTimeChange }: TimeSelectorProps) {
           className="w-full"
         />
         <div className="flex flex-wrap gap-2">
-          {quickTimes.map((quickTime) => (
+          {quickTimes.map(({ label, time: quickTime }) => (
             <Button
               key={quickTime}
               variant="outline"
@@ -39,7 +43,7 @@ export function TimeSelector({ time, onTimeChange }: TimeSelectorProps) {
               onClick={() => onTimeChange(quickTime)}
               className={time === quickTime ? "bg-primary text-primary-foreground" : ""}
             >
-              {quickTime}
+              {label}
             </Button>
           ))}
         </div>

@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Clock, Edit } from "lucide-react";
+import { Clock, Edit, Trash2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Post {
   id: string;
@@ -49,7 +50,10 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
   if (filteredPosts.length === 0) {
     return (
       <div className="text-center py-8 space-y-4">
-        <p className="text-muted-foreground">No posts scheduled for this date</p>
+        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+          <AlertCircle className="h-12 w-12 opacity-50" />
+          <p>No posts scheduled for this date</p>
+        </div>
         <Button variant="outline" size="sm">
           Create your first post
         </Button>
@@ -62,7 +66,10 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
       {filteredPosts.map((post) => (
         <div
           key={post.id}
-          className="p-4 rounded-md border bg-background hover:bg-accent/5 transition-colors"
+          className={cn(
+            "p-4 rounded-md border transition-colors",
+            post.status === 'draft' ? 'bg-muted/50' : 'bg-background hover:bg-accent/5'
+          )}
         >
           <div className="flex justify-between items-start mb-3">
             <div className="flex gap-2">
@@ -75,17 +82,26 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
               <Badge variant={post.status === 'draft' ? "secondary" : "default"}>
                 {post.status}
               </Badge>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive"
-                onClick={() => handleDeletePost(post.id)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  onClick={() => handleDeletePost(post.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
-          <p className="text-sm mb-3">{post.content}</p>
+          <p className="text-sm mb-3 line-clamp-3">{post.content}</p>
           {post.image && (
             <img
               src={post.image}
@@ -95,7 +111,7 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
           )}
           <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            {post.time}
+            {post.time || format(post.date, 'HH:mm')}
           </div>
         </div>
       ))}
