@@ -22,7 +22,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 
 export default function IndexPage() {
@@ -88,31 +87,7 @@ export default function IndexPage() {
             Create, schedule, and manage your social media content with AI-powered assistance
           </p>
 
-          <div className="grid gap-8 md:grid-cols-3 mt-16">
-            {features.map((feature, index) => (
-              <Card key={index} className="text-left">
-                <CardHeader>
-                  <div className="rounded-full bg-primary/10 p-3 w-fit">
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="mt-4">{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {feature.benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-primary" />
-                        <span className="text-sm">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="flex justify-center gap-4 mt-12">
+          <div className="flex justify-center gap-4 mt-8">
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="lg" className="gap-2">
@@ -146,6 +121,30 @@ export default function IndexPage() {
                 <LoginForm />
               </DialogContent>
             </Dialog>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3 mt-16">
+            {features.map((feature, index) => (
+              <Card key={index} className="text-left">
+                <CardHeader>
+                  <div className="rounded-full bg-primary/10 p-3 w-fit">
+                    {feature.icon}
+                  </div>
+                  <CardTitle className="mt-4">{feature.title}</CardTitle>
+                  <CardDescription>{feature.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {feature.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-primary" />
+                        <span className="text-sm">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
