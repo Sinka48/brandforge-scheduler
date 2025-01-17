@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface InstagramPreviewProps {
@@ -12,6 +12,7 @@ interface InstagramPreviewProps {
 export function InstagramPreview({ content, imageUrl, hashtags }: InstagramPreviewProps) {
   const MAX_HASHTAGS = 30;
   const hasExcessiveHashtags = hashtags.length > MAX_HASHTAGS;
+  const hasInvalidHashtags = hashtags.some(tag => !tag.match(/^#[a-zA-Z0-9]+$/));
 
   return (
     <div className="space-y-2">
@@ -24,12 +25,22 @@ export function InstagramPreview({ content, imageUrl, hashtags }: InstagramPrevi
         </Alert>
       )}
 
+      {hasInvalidHashtags && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Some hashtags contain invalid characters. Use only letters and numbers.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {hashtags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {hashtags.map((tag, index) => (
             <Badge 
               key={index} 
               variant={index >= MAX_HASHTAGS ? "destructive" : "secondary"}
+              className={hasInvalidHashtags && !tag.match(/^#[a-zA-Z0-9]+$/) ? "border-destructive" : ""}
             >
               {tag}
             </Badge>

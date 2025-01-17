@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TwitterPreviewProps {
@@ -10,24 +10,34 @@ interface TwitterPreviewProps {
 }
 
 export function TwitterPreview({ content, imageUrl, remainingChars }: TwitterPreviewProps) {
-  const isThread = content.includes('(thread)') || content.length > 280;
+  const isThread = content.length > 280;
   const threadParts = isThread ? splitIntoThreads(content) : [content];
+  const hasValidHashtags = content.includes('#') ? /\B#[a-zA-Z0-9]+\b/.test(content) : true;
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center text-sm">
         <div className="flex items-center gap-2">
           <span className={remainingChars < 0 ? "text-destructive" : "text-muted-foreground"}>
-            Characters remaining: {remainingChars}
+            {remainingChars < 0 ? "Exceeds limit by" : "Characters remaining:"} {Math.abs(remainingChars)}
           </span>
           {isThread && (
             <Badge variant="secondary">Thread: {threadParts.length} tweets</Badge>
           )}
         </div>
-        {remainingChars < 0 && !isThread && (
-          <Badge variant="destructive">Exceeds limit</Badge>
+        {remainingChars >= 0 && !isThread && (
+          <CheckCircle className="h-4 w-4 text-green-500" />
         )}
       </div>
+
+      {!hasValidHashtags && content.includes('#') && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Invalid hashtag format detected. Hashtags should start with # and contain only letters and numbers.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {isThread ? (
         <div className="space-y-2">
