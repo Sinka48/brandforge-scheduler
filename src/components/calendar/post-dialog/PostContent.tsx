@@ -7,11 +7,17 @@ interface PostContentProps {
 
 export function PostContent({ content, onContentChange }: PostContentProps) {
   return (
-    <Textarea
-      placeholder="Write your post content..."
-      value={content}
-      onChange={(e) => onContentChange(e.target.value)}
-      className="min-h-[100px]"
-    />
+    <div className="space-y-2">
+      <label htmlFor="content" className="text-sm font-medium">
+        Post Content
+      </label>
+      <Textarea
+        id="content"
+        placeholder="What's on your mind?"
+        value={content}
+        onChange={(e) => onContentChange(e.target.value)}
+        className="min-h-[100px]"
+      />
+    </div>
   );
 }
