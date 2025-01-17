@@ -52,6 +52,7 @@ export function PostDialog({
             content={newPost.content}
             onContentChange={(content) => setNewPost({ ...newPost, content })}
             selectedPlatforms={newPost.platforms}
+            imageUrl={newPost.image}
           />
           
           <PlatformSelector

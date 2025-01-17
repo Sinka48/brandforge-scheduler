@@ -5,9 +5,10 @@ interface PostContentProps {
   content: string;
   onContentChange: (content: string) => void;
   selectedPlatforms: string[];
+  imageUrl?: string;
 }
 
-export function PostContent({ content, onContentChange, selectedPlatforms }: PostContentProps) {
+export function PostContent({ content, onContentChange, selectedPlatforms, imageUrl }: PostContentProps) {
   return (
     <div className="space-y-2">
       <label htmlFor="content" className="text-sm font-medium">
@@ -26,6 +27,7 @@ export function PostContent({ content, onContentChange, selectedPlatforms }: Pos
       <PlatformPreview 
         content={content}
         selectedPlatforms={selectedPlatforms}
+        imageUrl={imageUrl}
       />
     </div>
   );
