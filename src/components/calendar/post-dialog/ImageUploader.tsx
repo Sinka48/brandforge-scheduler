@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Image, Upload } from "lucide-react";
+import { Image, Upload, Library } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MediaLibrary } from "./MediaLibrary";
 
 interface ImageUploaderProps {
   imageUrl: string;
@@ -14,6 +15,7 @@ interface ImageUploaderProps {
 export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,8 +89,12 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
         >
           <Upload className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon">
-          <Image className="h-4 w-4" />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsMediaLibraryOpen(true)}
+        >
+          <Library className="h-4 w-4" />
         </Button>
       </div>
       
@@ -103,6 +109,12 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
           className="mt-2 rounded-md max-h-32 object-cover"
         />
       )}
+
+      <MediaLibrary
+        isOpen={isMediaLibraryOpen}
+        onClose={() => setIsMediaLibraryOpen(false)}
+        onSelectImage={onImageUrlChange}
+      />
     </div>
   );
 }
