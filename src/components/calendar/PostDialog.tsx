@@ -1,15 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Image, Instagram, Twitter, Facebook, Linkedin, Clock, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { format } from "date-fns";
-
-interface Platform {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-}
+import { PlatformSelector } from "./post-dialog/PlatformSelector";
+import { ImageUploader } from "./post-dialog/ImageUploader";
+import { TimeSelector } from "./post-dialog/TimeSelector";
+import { PostContent } from "./post-dialog/PostContent";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -27,13 +23,6 @@ interface PostDialogProps {
   handlePlatformToggle: (platformId: string) => void;
   selectedDate?: Date;
 }
-
-const platforms: Platform[] = [
-  { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
-  { id: 'twitter', name: 'Twitter', icon: <Twitter className="h-4 w-4" /> },
-  { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-4 w-4" /> },
-  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="h-4 w-4" /> },
-];
 
 export function PostDialog({
   isOpen,
@@ -57,64 +46,25 @@ export function PostDialog({
             {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
           </div>
 
-          <Textarea
-            placeholder="Write your post content..."
-            value={newPost.content}
-            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-            className="min-h-[100px]"
+          <PostContent
+            content={newPost.content}
+            onContentChange={(content) => setNewPost({ ...newPost, content })}
           />
           
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Platforms</label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {platforms.map((platform) => (
-                <Button
-                  key={platform.id}
-                  variant={newPost.platforms.includes(platform.id) ? "default" : "outline"}
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => handlePlatformToggle(platform.id)}
-                >
-                  {platform.icon}
-                  <span className="ml-2">{platform.name}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
+          <PlatformSelector
+            selectedPlatforms={newPost.platforms}
+            onPlatformToggle={handlePlatformToggle}
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Image URL (optional)</label>
-            <div className="flex gap-2">
-              <Input
-                type="url"
-                placeholder="Enter image URL..."
-                value={newPost.image}
-                onChange={(e) => setNewPost({ ...newPost, image: e.target.value })}
-              />
-              <Button variant="outline" size="icon">
-                <Image className="h-4 w-4" />
-              </Button>
-            </div>
-            {newPost.image && (
-              <img
-                src={newPost.image}
-                alt="Preview"
-                className="mt-2 rounded-md max-h-32 object-cover"
-              />
-            )}
-          </div>
+          <ImageUploader
+            imageUrl={newPost.image}
+            onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
+          />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Time</label>
-            <div className="flex gap-2 items-center">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <Input
-                type="time"
-                value={newPost.time}
-                onChange={(e) => setNewPost({ ...newPost, time: e.target.value })}
-              />
-            </div>
-          </div>
+          <TimeSelector
+            time={newPost.time}
+            onTimeChange={(time) => setNewPost({ ...newPost, time })}
+          />
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={handleSaveAsDraft}>
