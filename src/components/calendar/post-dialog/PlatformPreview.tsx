@@ -9,13 +9,35 @@ import { LinkedinPreview } from "./platform-previews/LinkedinPreview";
 interface PlatformLimits {
   maxLength: number;
   name: string;
+  hashtags?: boolean;
+  threads?: boolean;
 }
 
 const PLATFORM_LIMITS: Record<string, PlatformLimits> = {
-  twitter: { maxLength: 280, name: 'Twitter' },
-  facebook: { maxLength: 63206, name: 'Facebook' },
-  instagram: { maxLength: 2200, name: 'Instagram' },
-  linkedin: { maxLength: 3000, name: 'LinkedIn' },
+  twitter: { 
+    maxLength: 280, 
+    name: 'Twitter',
+    hashtags: true,
+    threads: true 
+  },
+  facebook: { 
+    maxLength: 63206, 
+    name: 'Facebook',
+    hashtags: false,
+    threads: false 
+  },
+  instagram: { 
+    maxLength: 2200, 
+    name: 'Instagram',
+    hashtags: true,
+    threads: false 
+  },
+  linkedin: { 
+    maxLength: 3000, 
+    name: 'LinkedIn',
+    hashtags: true,
+    threads: false 
+  },
 };
 
 interface PlatformPreviewProps {
@@ -30,14 +52,25 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
       const limit = PLATFORM_LIMITS[platform];
       if (!limit) return null;
       
+      const issues = [];
+      
       if (content.length > limit.maxLength) {
-        return {
+        issues.push({
           platform: limit.name,
           issue: `Content exceeds ${limit.name}'s ${limit.maxLength} character limit`
-        };
+        });
       }
-      return null;
-    }).filter(Boolean);
+
+      // Check for hashtags on platforms that support them
+      if (limit.hashtags && content.includes('#') && !content.match(/#[a-zA-Z0-9]+/g)) {
+        issues.push({
+          platform: limit.name,
+          issue: `Invalid hashtag format detected`
+        });
+      }
+
+      return issues.length > 0 ? issues : null;
+    }).flat().filter(Boolean);
   };
 
   const issues = getValidationIssues();
@@ -55,11 +88,11 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
 
   return (
     <div className="space-y-4">
-      {issues.length > 0 && issues.map((issue, index) => (
+      {issues && issues.length > 0 && issues.map((issue: any, index: number) => (
         <Alert variant="destructive" key={index}>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {issue?.issue}
+            {issue.issue}
           </AlertDescription>
         </Alert>
       ))}
@@ -82,10 +115,18 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
               <FacebookPreview content={content} imageUrl={imageUrl} />
             )}
             {platform === 'twitter' && (
-              <TwitterPreview content={content} imageUrl={imageUrl} />
+              <TwitterPreview 
+                content={content} 
+                imageUrl={imageUrl}
+                remainingChars={PLATFORM_LIMITS.twitter.maxLength - content.length}
+              />
             )}
             {platform === 'instagram' && (
-              <InstagramPreview content={content} imageUrl={imageUrl} />
+              <InstagramPreview 
+                content={content} 
+                imageUrl={imageUrl}
+                hashtags={content.match(/#[a-zA-Z0-9]+/g) || []}
+              />
             )}
             {platform === 'linkedin' && (
               <LinkedinPreview content={content} imageUrl={imageUrl} />
