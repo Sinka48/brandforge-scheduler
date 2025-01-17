@@ -7,14 +7,10 @@ import { format } from "date-fns";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { PostList } from "@/components/calendar/PostList";
 import { usePostManagement } from "@/hooks/usePostManagement";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-interface Platform {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-}
-
-const platforms: Platform[] = [
+const platforms = [
   { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
   { id: 'twitter', name: 'Twitter', icon: <Twitter className="h-4 w-4" /> },
   { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-4 w-4" /> },
@@ -26,7 +22,8 @@ export default function CalendarPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const {
     posts,
-    isLoading,
+    setPosts,
+    isLoading: isManagementLoading,
     newPost,
     setNewPost,
     handleAddPost,
@@ -34,6 +31,31 @@ export default function CalendarPage() {
     handleDeletePost,
     handlePlatformToggle,
   } = usePostManagement();
+
+  const { isLoading: isQueryLoading } = useQuery({
+    queryKey: ['posts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('scheduled_for', { ascending: true });
+
+      if (error) throw error;
+
+      const formattedPosts = data.map(post => ({
+        id: post.id,
+        content: post.content,
+        date: new Date(post.scheduled_for),
+        platforms: [post.platform],
+        image: post.image_url,
+        status: post.status as 'draft' | 'scheduled',
+        time: format(new Date(post.scheduled_for), 'HH:mm'),
+      }));
+
+      setPosts(formattedPosts);
+      return formattedPosts;
+    },
+  });
 
   const onAddPost = async () => {
     const success = await handleAddPost(selectedDate);
@@ -92,7 +114,7 @@ export default function CalendarPage() {
                 posts={posts}
                 platforms={platforms}
                 handleDeletePost={handleDeletePost}
-                isLoading={isLoading}
+                isLoading={isQueryLoading || isManagementLoading}
               />
             </div>
           </div>
