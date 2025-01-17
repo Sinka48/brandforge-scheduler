@@ -10,129 +10,35 @@ export function usePostCreation() {
   const { toast } = useToast();
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
-    if (!selectedDate && !newPost.bulkDates?.length) {
+    if (!selectedDate) {
       toast({
         title: "Error",
-        description: "Please select at least one date.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    if (!newPost.content) {
-      toast({
-        title: "Error",
-        description: "Please enter some content for your post.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (newPost.platforms.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one platform.",
+        description: "Please select a date first.",
         variant: "destructive",
       });
       return false;
     }
 
     try {
-      // Handle bulk scheduling
-      if (newPost.bulkDates && newPost.bulkDates.length > 0) {
-        // Create parent post for the batch
-        const { data: parentPost, error: parentError } = await supabase
-          .from('posts')
-          .insert({
-            content: newPost.content,
-            platform: newPost.platforms[0],
-            image_url: newPost.image || null,
-            scheduled_for: new Date(
-              newPost.bulkDates[0].getFullYear(),
-              newPost.bulkDates[0].getMonth(),
-              newPost.bulkDates[0].getDate(),
-              parseInt(newPost.time.split(':')[0]),
-              parseInt(newPost.time.split(':')[1])
-            ).toISOString(),
-            status: 'scheduled'
-          })
-          .select()
-          .single();
-
-        if (parentError) throw parentError;
-
-        await createBulkPosts(parentPost, newPost);
-
-        setNewPost({
-          content: '',
-          platforms: [],
-          image: '',
-          time: format(new Date(), 'HH:mm'),
-          status: 'scheduled',
-          isRecurring: false,
-          recurringPattern: 'daily',
-          bulkDates: [],
-        });
-        
-        toast({
-          title: "Success",
-          description: `Successfully scheduled ${newPost.bulkDates.length} posts.`,
-        });
-
-        return parentPost;
-      }
-
-      // Handle single or recurring post
-      const { data: parentPost, error: parentError } = await supabase
+      const { data, error } = await supabase
         .from('posts')
         .insert({
           content: newPost.content,
-          platform: newPost.platforms[0],
+          platforms: newPost.platforms,
           image_url: newPost.image || null,
           scheduled_for: new Date(
-            selectedDate!.getFullYear(),
-            selectedDate!.getMonth(),
-            selectedDate!.getDate(),
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
             parseInt(newPost.time.split(':')[0]),
             parseInt(newPost.time.split(':')[1])
           ).toISOString(),
-          status: 'scheduled',
-          is_recurring: newPost.isRecurring,
-          recurrence_pattern: newPost.isRecurring ? newPost.recurringPattern : null,
-          recurrence_end_date: newPost.isRecurring ? newPost.recurringEndDate?.toISOString() : null
+          status: newPost.status
         })
         .select()
         .single();
 
-      if (parentError) throw parentError;
-
-      // Create posts for additional platforms
-      for (let i = 1; i < newPost.platforms.length; i++) {
-        await supabase
-          .from('posts')
-          .insert({
-            content: newPost.content,
-            platform: newPost.platforms[i],
-            image_url: newPost.image || null,
-            scheduled_for: new Date(
-              selectedDate!.getFullYear(),
-              selectedDate!.getMonth(),
-              selectedDate!.getDate(),
-              parseInt(newPost.time.split(':')[0]),
-              parseInt(newPost.time.split(':')[1])
-            ).toISOString(),
-            status: 'scheduled',
-            is_recurring: newPost.isRecurring,
-            recurrence_pattern: newPost.isRecurring ? newPost.recurringPattern : null,
-            recurrence_end_date: newPost.isRecurring ? newPost.recurringEndDate?.toISOString() : null,
-            parent_post_id: parentPost.id
-          });
-      }
-
-      // If this is a recurring post, create the series
-      if (newPost.isRecurring && newPost.recurringEndDate) {
-        await createRecurringPosts(parentPost.id, selectedDate!, newPost, newPost.recurringEndDate);
-      }
+      if (error) throw error;
 
       setNewPost({
         content: '',
@@ -140,21 +46,16 @@ export function usePostCreation() {
         image: '',
         time: format(new Date(), 'HH:mm'),
         status: 'scheduled',
-        isRecurring: false,
-        recurringPattern: 'daily',
-        bulkDates: [],
-      });
-      
-      toast({
-        title: "Success",
-        description: newPost.isRecurring 
-          ? "Your recurring posts have been scheduled."
-          : "Your post has been scheduled.",
       });
 
-      return parentPost;
+      toast({
+        title: "Success",
+        description: "Your post has been scheduled.",
+      });
+
+      return data;
     } catch (error) {
-      console.error('Error scheduling post:', error);
+      console.error('Error adding post:', error);
       toast({
         title: "Error",
         description: "Failed to schedule post. Please try again.",
@@ -165,14 +66,21 @@ export function usePostCreation() {
   };
 
   const handleSaveAsDraft = async (selectedDate: Date | undefined) => {
-    if (!selectedDate) return false;
-    
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date first.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
       const { data, error } = await supabase
         .from('posts')
         .insert({
           content: newPost.content,
-          platform: newPost.platforms[0],
+          platforms: newPost.platforms,
           image_url: newPost.image || null,
           scheduled_for: new Date(
             selectedDate.getFullYear(),
@@ -194,12 +102,10 @@ export function usePostCreation() {
         image: '',
         time: format(new Date(), 'HH:mm'),
         status: 'scheduled',
-        isRecurring: false,
-        recurringPattern: 'daily',
       });
-      
+
       toast({
-        title: "Draft Saved",
+        title: "Success",
         description: "Your post has been saved as a draft.",
       });
 
