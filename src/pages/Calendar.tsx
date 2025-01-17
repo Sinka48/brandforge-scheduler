@@ -3,6 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { format } from "date-fns";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { PostList } from "@/components/calendar/PostList";
+import { DraftManager } from "@/components/calendar/DraftManager";
 import { usePostManagement } from "@/hooks/usePostManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,8 @@ import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { PLATFORMS } from "@/constants/platforms";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarDays, FileText } from "lucide-react";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -119,21 +122,46 @@ export default function CalendarPage() {
       <div className="space-y-6">
         <CalendarHeader onNewPost={() => setIsDialogOpen(true)} />
         
-        <div className="grid md:grid-cols-2 gap-6">
-          <CalendarView 
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-          />
+        <Tabs defaultValue="calendar" className="w-full">
+          <TabsList>
+            <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Calendar
+            </TabsTrigger>
+            <TabsTrigger value="drafts" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Drafts
+            </TabsTrigger>
+          </TabsList>
           
-          <PostList
-            selectedDate={selectedDate}
-            posts={posts}
-            platforms={platforms}
-            handleDeletePost={handleDeletePost}
-            handleEditPost={handleEditPost}
-            isLoading={isQueryLoading || isManagementLoading}
-          />
-        </div>
+          <TabsContent value="calendar" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <CalendarView 
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+              />
+              
+              <PostList
+                selectedDate={selectedDate}
+                posts={posts}
+                platforms={platforms}
+                handleDeletePost={handleDeletePost}
+                handleEditPost={handleEditPost}
+                isLoading={isQueryLoading || isManagementLoading}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="drafts" className="mt-6">
+            <DraftManager
+              posts={posts}
+              platforms={platforms}
+              handleDeletePost={handleDeletePost}
+              handleEditPost={handleEditPost}
+              isLoading={isQueryLoading || isManagementLoading}
+            />
+          </TabsContent>
+        </Tabs>
 
         <PostDialog
           isOpen={isDialogOpen}
