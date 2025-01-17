@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Image, Instagram, Twitter, Facebook, Linkedin, Clock } from "lucide-react";
+import { Image, Instagram, Twitter, Facebook, Linkedin, Clock, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 interface Platform {
@@ -25,6 +25,7 @@ interface PostDialogProps {
   handleAddPost: () => void;
   handleSaveAsDraft: () => void;
   handlePlatformToggle: (platformId: string) => void;
+  selectedDate?: Date;
 }
 
 const platforms: Platform[] = [
@@ -42,6 +43,7 @@ export function PostDialog({
   handleAddPost,
   handleSaveAsDraft,
   handlePlatformToggle,
+  selectedDate,
 }: PostDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -50,6 +52,11 @@ export function PostDialog({
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
+          </div>
+
           <Textarea
             placeholder="Write your post content..."
             value={newPost.content}
@@ -59,12 +66,13 @@ export function PostDialog({
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Platforms</label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {platforms.map((platform) => (
                 <Button
                   key={platform.id}
                   variant={newPost.platforms.includes(platform.id) ? "default" : "outline"}
                   size="sm"
+                  className="w-full justify-start"
                   onClick={() => handlePlatformToggle(platform.id)}
                 >
                   {platform.icon}
@@ -87,6 +95,13 @@ export function PostDialog({
                 <Image className="h-4 w-4" />
               </Button>
             </div>
+            {newPost.image && (
+              <img
+                src={newPost.image}
+                alt="Preview"
+                className="mt-2 rounded-md max-h-32 object-cover"
+              />
+            )}
           </div>
 
           <div className="space-y-2">

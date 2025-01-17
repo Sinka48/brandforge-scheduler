@@ -106,6 +106,7 @@ export default function CalendarPage() {
           handleAddPost={onAddPost}
           handleSaveAsDraft={onSaveAsDraft}
           handlePlatformToggle={handlePlatformToggle}
+          selectedDate={selectedDate}
         />
       </div>
     </Layout>
