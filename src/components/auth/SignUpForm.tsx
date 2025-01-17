@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface SignUpFormValues {
   name: string;
@@ -33,18 +34,37 @@ export function SignUpForm() {
   });
 
   async function onSubmit(data: SignUpFormValues) {
+    if (data.password !== data.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // TODO: Implement actual signup logic
-      console.log("Signup data:", data);
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            name: data.name,
+          },
+        },
+      });
+      
+      if (error) throw error;
+
       toast({
         title: "Success",
-        description: "Your account has been created.",
+        description: "Check your email to confirm your account.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

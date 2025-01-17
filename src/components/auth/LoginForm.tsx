@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface LoginFormValues {
   email: string;
@@ -31,8 +32,13 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
-      // TODO: Implement actual login logic
-      console.log("Login data:", data);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "You have successfully logged in.",
@@ -40,7 +46,7 @@ export function LoginForm() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

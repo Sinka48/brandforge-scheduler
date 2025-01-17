@@ -11,8 +11,34 @@ import {
 } from "@/components/ui/dialog";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
 
 export default function IndexPage() {
+  const [session, setSession] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        navigate('/calendar');
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        navigate('/calendar');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
   return (
     <Layout>
       <div className="space-y-12">
