@@ -4,19 +4,44 @@ import { supabase } from "@/lib/supabase";
 export function usePostDeletion() {
   const { toast } = useToast();
 
-  const handleDeletePost = async (postId: string) => {
+  const handleDeletePost = async (postId: string, deleteAll: boolean = false) => {
     try {
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId);
+      if (deleteAll) {
+        // First get the post to check if it's part of a recurring series
+        const { data: post } = await supabase
+          .from('posts')
+          .select('scheduled_for, parent_post_id')
+          .eq('id', postId)
+          .single();
 
-      if (error) throw error;
+        if (post) {
+          const parentId = post.parent_post_id || postId;
+          const { error } = await supabase
+            .from('posts')
+            .delete()
+            .or(`id.eq.${parentId},parent_post_id.eq.${parentId}`)
+            .gte('scheduled_for', post.scheduled_for);
 
-      toast({
-        title: "Post Deleted",
-        description: "The post has been removed from your calendar.",
-      });
+          if (error) throw error;
+
+          toast({
+            title: "Series Deleted",
+            description: "All future posts in this series have been removed.",
+          });
+        }
+      } else {
+        const { error } = await supabase
+          .from('posts')
+          .delete()
+          .eq('id', postId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Post Deleted",
+          description: "The post has been removed from your calendar.",
+        });
+      }
       
       return true;
     } catch (error) {

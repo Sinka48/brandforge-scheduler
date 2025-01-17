@@ -21,13 +21,14 @@ interface Post {
   recurringPattern?: string;
   recurringEndDate?: Date;
   batch_id?: string;
+  parent_post_id?: string;
 }
 
 interface PostListProps {
   selectedDate: Date | undefined;
   posts: Post[];
   platforms: Platform[];
-  handleDeletePost: (postId: string) => void;
+  handleDeletePost: (postId: string, deleteAll?: boolean) => void;
   handleEditPost: (post: Post) => void;
   isLoading?: boolean;
 }

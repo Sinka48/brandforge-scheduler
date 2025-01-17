@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Edit, Trash2, Copy } from "lucide-react";
+import { Clock, Edit, Trash2, Copy, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PostAnalytics } from "@/components/calendar/PostAnalytics";
@@ -25,17 +25,23 @@ interface Post {
   recurringPattern?: string;
   recurringEndDate?: Date;
   batch_id?: string;
+  parent_post_id?: string;
 }
 
 interface PostItemProps {
   post: Post;
   platforms: Platform[];
   onEdit: (post: Post) => void;
-  onDelete: (postId: string) => void;
+  onDelete: (postId: string, deleteAll?: boolean) => void;
 }
 
 export function PostItem({ post, platforms, onEdit, onDelete }: PostItemProps) {
   const [expandedAnalytics, setExpandedAnalytics] = useState(false);
+  const isRecurring = post.isRecurring || post.parent_post_id;
+
+  const handleDelete = (deleteAll: boolean = false) => {
+    onDelete(post.id, deleteAll);
+  };
 
   return (
     <div
@@ -63,9 +69,9 @@ export function PostItem({ post, platforms, onEdit, onDelete }: PostItemProps) {
                 Bulk Post
               </Badge>
             )}
-            {post.isRecurring && (
+            {isRecurring && (
               <Badge variant="secondary">
-                Recurring ({post.recurringPattern})
+                Recurring ({post.recurringPattern || 'series'})
               </Badge>
             )}
             <Badge variant={post.status === 'draft' ? "secondary" : "default"}>
@@ -81,14 +87,45 @@ export function PostItem({ post, platforms, onEdit, onDelete }: PostItemProps) {
             >
               <Edit className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
-              onClick={() => onDelete(post.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {isRecurring ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Recurring Post</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Do you want to delete just this occurrence or all future posts in this series?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(false)}>
+                      Delete This Only
+                    </AlertDialogAction>
+                    <AlertDialogAction onClick={() => handleDelete(true)} className="bg-destructive">
+                      Delete All Future
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={() => handleDelete(false)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
