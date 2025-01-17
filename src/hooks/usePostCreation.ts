@@ -1,16 +1,14 @@
-import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 import { usePostState } from "./usePostState";
 import { usePostActions } from "./usePostActions";
-import { format } from "date-fns";
 
 export function usePostCreation() {
   const { newPost, setNewPost, handlePlatformToggle } = usePostState();
-  const { createPost } = usePostActions();
-  const { toast } = useToast();
+  const { createPost, saveDraft } = usePostActions();
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
-    const result = await createPost(newPost, selectedDate);
-    if (result) {
+    const success = await createPost(newPost, selectedDate);
+    if (success) {
       setNewPost({
         content: '',
         platforms: [],
@@ -18,27 +16,22 @@ export function usePostCreation() {
         time: format(new Date(), 'HH:mm'),
         status: 'scheduled',
       });
-      return result;
     }
-    return false;
+    return success;
   };
 
   const handleSaveAsDraft = async (selectedDate: Date | undefined) => {
-    const result = await createPost(
-      { ...newPost, status: 'draft' },
-      selectedDate
-    );
-    if (result) {
+    const success = await saveDraft(newPost, selectedDate);
+    if (success) {
       setNewPost({
         content: '',
         platforms: [],
         image: '',
         time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
+        status: 'draft',
       });
-      return result;
     }
-    return false;
+    return success;
   };
 
   return {
