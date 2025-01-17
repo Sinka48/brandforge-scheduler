@@ -12,6 +12,7 @@ interface NewPost {
   isRecurring?: boolean;
   recurringPattern?: string;
   recurringEndDate?: Date;
+  bulkDates?: Date[];
 }
 
 export function usePostCreation() {
@@ -23,6 +24,7 @@ export function usePostCreation() {
     status: 'scheduled',
     isRecurring: false,
     recurringPattern: 'daily',
+    bulkDates: [],
   });
   const { toast } = useToast();
 
@@ -92,10 +94,10 @@ export function usePostCreation() {
   };
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
-    if (!selectedDate) {
+    if (!selectedDate && !newPost.bulkDates?.length) {
       toast({
         title: "Error",
-        description: "Please select a date first.",
+        description: "Please select at least one date.",
         variant: "destructive",
       });
       return false;
@@ -120,17 +122,81 @@ export function usePostCreation() {
     }
 
     try {
-      // Create parent post
+      // Handle bulk scheduling
+      if (newPost.bulkDates && newPost.bulkDates.length > 0) {
+        // Create parent post for the batch
+        const { data: parentPost, error: parentError } = await supabase
+          .from('posts')
+          .insert({
+            content: newPost.content,
+            platform: newPost.platforms[0],
+            image_url: newPost.image || null,
+            scheduled_for: new Date(
+              newPost.bulkDates[0].getFullYear(),
+              newPost.bulkDates[0].getMonth(),
+              newPost.bulkDates[0].getDate(),
+              parseInt(newPost.time.split(':')[0]),
+              parseInt(newPost.time.split(':')[1])
+            ).toISOString(),
+            status: 'scheduled'
+          })
+          .select()
+          .single();
+
+        if (parentError) throw parentError;
+
+        // Create posts for all selected dates
+        for (const date of newPost.bulkDates) {
+          for (const platform of newPost.platforms) {
+            await supabase
+              .from('posts')
+              .insert({
+                content: newPost.content,
+                platform: platform,
+                image_url: newPost.image || null,
+                scheduled_for: new Date(
+                  date.getFullYear(),
+                  date.getMonth(),
+                  date.getDate(),
+                  parseInt(newPost.time.split(':')[0]),
+                  parseInt(newPost.time.split(':')[1])
+                ).toISOString(),
+                status: 'scheduled',
+                batch_id: parentPost.id
+              });
+          }
+        }
+
+        setNewPost({
+          content: '',
+          platforms: [],
+          image: '',
+          time: format(new Date(), 'HH:mm'),
+          status: 'scheduled',
+          isRecurring: false,
+          recurringPattern: 'daily',
+          bulkDates: [],
+        });
+        
+        toast({
+          title: "Success",
+          description: `Successfully scheduled ${newPost.bulkDates.length} posts.`,
+        });
+
+        return parentPost;
+      }
+
+      // Handle single or recurring post
       const { data: parentPost, error: parentError } = await supabase
         .from('posts')
         .insert({
           content: newPost.content,
-          platform: newPost.platforms[0], // First platform for parent post
+          platform: newPost.platforms[0],
           image_url: newPost.image || null,
           scheduled_for: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate(),
+            selectedDate!.getFullYear(),
+            selectedDate!.getMonth(),
+            selectedDate!.getDate(),
             parseInt(newPost.time.split(':')[0]),
             parseInt(newPost.time.split(':')[1])
           ).toISOString(),
@@ -153,9 +219,9 @@ export function usePostCreation() {
             platform: newPost.platforms[i],
             image_url: newPost.image || null,
             scheduled_for: new Date(
-              selectedDate.getFullYear(),
-              selectedDate.getMonth(),
-              selectedDate.getDate(),
+              selectedDate!.getFullYear(),
+              selectedDate!.getMonth(),
+              selectedDate!.getDate(),
               parseInt(newPost.time.split(':')[0]),
               parseInt(newPost.time.split(':')[1])
             ).toISOString(),
@@ -169,7 +235,7 @@ export function usePostCreation() {
 
       // If this is a recurring post, create the series
       if (newPost.isRecurring && newPost.recurringEndDate) {
-        await createRecurringPosts(parentPost.id, parentPost, selectedDate);
+        await createRecurringPosts(parentPost.id, parentPost, selectedDate!);
       }
 
       setNewPost({
@@ -180,6 +246,7 @@ export function usePostCreation() {
         status: 'scheduled',
         isRecurring: false,
         recurringPattern: 'daily',
+        bulkDates: [],
       });
       
       toast({

@@ -7,6 +7,7 @@ import { ImageUploader } from "./post-dialog/ImageUploader";
 import { TimeSelector } from "./post-dialog/TimeSelector";
 import { PostContent } from "./post-dialog/PostContent";
 import { RecurringOptions } from "./post-dialog/RecurringOptions";
+import { BulkScheduling } from "./post-dialog/BulkScheduling";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface PostDialogProps {
     isRecurring?: boolean;
     recurringPattern?: string;
     recurringEndDate?: Date;
+    bulkDates?: Date[];
   };
   setNewPost: (post: any) => void;
   handleAddPost: () => void;
@@ -52,6 +54,13 @@ export function PostDialog({
             {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
           </div>
 
+          {!editMode && !newPost.isRecurring && (
+            <BulkScheduling
+              selectedDates={newPost.bulkDates || []}
+              onDatesChange={(dates) => setNewPost({ ...newPost, bulkDates: dates })}
+            />
+          )}
+
           <PostContent
             content={newPost.content}
             onContentChange={(content) => setNewPost({ ...newPost, content })}
@@ -75,14 +84,23 @@ export function PostDialog({
             selectedPlatforms={newPost.platforms}
           />
 
-          <RecurringOptions
-            isRecurring={newPost.isRecurring || false}
-            onIsRecurringChange={(isRecurring) => setNewPost({ ...newPost, isRecurring })}
-            pattern={newPost.recurringPattern || 'daily'}
-            onPatternChange={(pattern) => setNewPost({ ...newPost, recurringPattern: pattern })}
-            endDate={newPost.recurringEndDate}
-            onEndDateChange={(date) => setNewPost({ ...newPost, recurringEndDate: date })}
-          />
+          {!editMode && (
+            <RecurringOptions
+              isRecurring={newPost.isRecurring || false}
+              onIsRecurringChange={(isRecurring) => {
+                // Clear bulk dates if switching to recurring
+                setNewPost({ 
+                  ...newPost, 
+                  isRecurring,
+                  bulkDates: isRecurring ? undefined : newPost.bulkDates 
+                });
+              }}
+              pattern={newPost.recurringPattern || 'daily'}
+              onPatternChange={(pattern) => setNewPost({ ...newPost, recurringPattern: pattern })}
+              endDate={newPost.recurringEndDate}
+              onEndDateChange={(date) => setNewPost({ ...newPost, recurringEndDate: date })}
+            />
+          )}
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={handleSaveAsDraft}>

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Clock, Edit, Trash2, AlertCircle } from "lucide-react";
+import { Clock, Edit, Trash2, AlertCircle, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Post {
@@ -16,6 +16,7 @@ interface Post {
   isRecurring?: boolean;
   recurringPattern?: string;
   recurringEndDate?: Date;
+  batch_id?: string;
 }
 
 interface PostListProps {
@@ -91,6 +92,12 @@ export function PostList({
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
+                {post.batch_id && (
+                  <Badge variant="secondary">
+                    <Copy className="h-3 w-3 mr-1" />
+                    Bulk Post
+                  </Badge>
+                )}
                 {post.isRecurring && (
                   <Badge variant="secondary">
                     Recurring ({post.recurringPattern})

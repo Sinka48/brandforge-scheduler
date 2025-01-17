@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       posts: {
         Row: {
+          batch_id: string | null
           content: string
           created_at: string
           id: string
@@ -25,6 +26,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          batch_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -39,6 +41,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          batch_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -53,6 +56,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_parent_post_id_fkey"
             columns: ["parent_post_id"]
