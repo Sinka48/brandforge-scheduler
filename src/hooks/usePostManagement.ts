@@ -14,44 +14,61 @@ interface Post {
 
 export function usePostManagement() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { newPost, setNewPost, handleAddPost, handleSaveAsDraft, handlePlatformToggle } = usePostCreation();
   const { handleDeletePost: deletePost } = usePostDeletion();
 
   const handleDeletePost = async (postId: string) => {
-    const success = await deletePost(postId);
-    if (success) {
-      setPosts(posts.filter(post => post.id !== postId));
+    setIsLoading(true);
+    try {
+      const success = await deletePost(postId);
+      if (success) {
+        setPosts(posts.filter(post => post.id !== postId));
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     posts,
     setPosts,
+    isLoading,
     newPost,
     setNewPost,
     handleAddPost: async (selectedDate: Date | undefined) => {
-      const newPostData = await handleAddPost(selectedDate);
-      if (newPostData) {
-        setPosts([...posts, {
-          ...newPostData,
-          date: new Date(newPostData.scheduled_for),
-          image: newPostData.image_url,
-        }]);
-        return true;
+      setIsLoading(true);
+      try {
+        const newPostData = await handleAddPost(selectedDate);
+        if (newPostData) {
+          setPosts([...posts, {
+            ...newPostData,
+            date: new Date(newPostData.scheduled_for),
+            image: newPostData.image_url,
+          }]);
+          return true;
+        }
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-      return false;
     },
     handleSaveAsDraft: async (selectedDate: Date | undefined) => {
-      const newPostData = await handleSaveAsDraft(selectedDate);
-      if (newPostData) {
-        setPosts([...posts, {
-          ...newPostData,
-          date: new Date(newPostData.scheduled_for),
-          image: newPostData.image_url,
-        }]);
-        return true;
+      setIsLoading(true);
+      try {
+        const newPostData = await handleSaveAsDraft(selectedDate);
+        if (newPostData) {
+          setPosts([...posts, {
+            ...newPostData,
+            date: new Date(newPostData.scheduled_for),
+            image: newPostData.image_url,
+          }]);
+          return true;
+        }
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-      return false;
     },
     handleDeletePost,
     handlePlatformToggle,

@@ -26,6 +26,7 @@ export default function CalendarPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const {
     posts,
+    isLoading,
     newPost,
     setNewPost,
     handleAddPost,
@@ -91,6 +92,7 @@ export default function CalendarPage() {
                 posts={posts}
                 platforms={platforms}
                 handleDeletePost={handleDeletePost}
+                isLoading={isLoading}
               />
             </div>
           </div>
