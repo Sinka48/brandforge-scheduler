@@ -1,19 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import IndexPage from "./pages/Index";
-import BrandPage from "./pages/Brand";
-import CalendarPage from "./pages/Calendar";
-import SettingsPage from "./pages/Settings";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { Routes } from "./Routes";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<IndexPage />} />
-        <Route path="/brand" element={<BrandPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <BrowserRouter>
+          <Routes />
+          <Toaster />
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -31,6 +31,17 @@ export function usePostManagement() {
       return false;
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create posts",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     setIsLoading(true);
     try {
       const scheduledDate = new Date(selectedDate);
@@ -48,6 +59,7 @@ export function usePostManagement() {
               scheduled_for: scheduledDate.toISOString(),
               image_url: newPost.image,
               status: 'scheduled',
+              user_id: user.id
             })
             .select()
             .single();
@@ -86,6 +98,17 @@ export function usePostManagement() {
       return false;
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save drafts",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     setIsLoading(true);
     try {
       const scheduledDate = new Date(selectedDate);
@@ -103,6 +126,7 @@ export function usePostManagement() {
               scheduled_for: scheduledDate.toISOString(),
               image_url: newPost.image,
               status: 'draft',
+              user_id: user.id
             })
             .select()
             .single();
