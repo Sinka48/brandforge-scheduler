@@ -15,7 +15,15 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Session } from "@supabase/supabase-js";
-import { Calendar, MessageSquare, Sparkles, Clock } from "lucide-react";
+import { Calendar, MessageSquare, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 
 export default function IndexPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -42,32 +50,31 @@ export default function IndexPage() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const features = [
-    {
-      icon: <Calendar className="h-6 w-6 text-primary" />,
-      title: "Smart Scheduling",
-      description: "Schedule posts across multiple platforms with our intuitive calendar interface."
-    },
-    {
-      icon: <MessageSquare className="h-6 w-6 text-primary" />,
-      title: "Content Management",
-      description: "Create and manage your social media content from a single dashboard."
-    },
-    {
-      icon: <Sparkles className="h-6 w-6 text-primary" />,
-      title: "AI-Powered Insights",
-      description: "Get intelligent suggestions to optimize your social media strategy."
-    },
-    {
-      icon: <Clock className="h-6 w-6 text-primary" />,
-      title: "Time-Saving Automation",
-      description: "Automate your posting schedule and focus on creating great content."
-    }
-  ];
+  const mainJourney = {
+    title: "Schedule & Manage Posts",
+    description: "Create, schedule, and manage your social media content across multiple platforms",
+    steps: [
+      {
+        title: "Create Content",
+        description: "Write engaging posts with AI assistance",
+        icon: <MessageSquare className="h-6 w-6" />,
+      },
+      {
+        title: "Schedule Posts",
+        description: "Set optimal posting times across platforms",
+        icon: <Calendar className="h-6 w-6" />,
+      },
+      {
+        title: "Brand Consistency",
+        description: "Maintain your brand voice and style",
+        icon: <Sparkles className="h-6 w-6" />,
+      },
+    ],
+  };
 
   return (
     <Layout>
-      <div className="space-y-12 max-w-5xl mx-auto">
+      <div className="space-y-12 max-w-5xl mx-auto px-4">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -76,86 +83,65 @@ export default function IndexPage() {
         
         <div className="text-center space-y-6 py-12">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text">
-            Your AI-Powered Social Media Manager
+            Streamline Your Social Media Management
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Schedule and manage your social media content across multiple platforms with ease.
-            Let AI help you create engaging content and optimize your social media strategy.
+            Create, schedule, and manage your social media content with AI-powered assistance
           </p>
-          <div className="flex gap-4 justify-center">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="lg" className="text-lg px-8">
-                  Get Started
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Create an account</DialogTitle>
-                  <DialogDescription>
-                    Sign up to start managing your social media content.
-                  </DialogDescription>
-                </DialogHeader>
-                <SignUpForm />
-              </DialogContent>
-            </Dialog>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="lg" className="text-lg px-8">
-                  Sign In
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Welcome back</DialogTitle>
-                  <DialogDescription>
-                    Sign in to your account to continue.
-                  </DialogDescription>
-                </DialogHeader>
-                <LoginForm />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className="rounded-lg border bg-card p-6 hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="mb-4 rounded-full w-12 h-12 bg-primary/10 flex items-center justify-center">
-                {feature.icon}
+          
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="text-2xl">{mainJourney.title}</CardTitle>
+              <CardDescription>{mainJourney.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-3">
+                {mainJourney.steps.map((step, index) => (
+                  <div key={index} className="flex flex-col items-center text-center p-4 space-y-2">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      {step.icon}
+                    </div>
+                    <h3 className="font-semibold">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground">{step.description}</p>
+                  </div>
+                ))}
               </div>
-              <h3 className="font-semibold mb-2">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center py-12">
-          <h2 className="text-3xl font-bold mb-4">Ready to transform your social media presence?</h2>
-          <p className="text-muted-foreground mb-8">
-            Join thousands of creators and businesses who trust our platform.
-          </p>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="lg" className="text-lg px-8">
-                Start Free Trial
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Create an account</DialogTitle>
-                <DialogDescription>
-                  Sign up to start your free trial.
-                </DialogDescription>
-              </DialogHeader>
-              <SignUpForm />
-            </DialogContent>
-          </Dialog>
+            </CardContent>
+            <CardFooter className="flex justify-center gap-4">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="gap-2">
+                    Get Started <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Create your account</DialogTitle>
+                    <DialogDescription>
+                      Sign up to start managing your social media content.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <SignUpForm />
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg">
+                    Sign In
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Welcome back</DialogTitle>
+                    <DialogDescription>
+                      Sign in to continue managing your content.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <LoginForm />
+                </DialogContent>
+              </Dialog>
+            </CardFooter>
+          </Card>
         </div>
       </div>
     </Layout>
