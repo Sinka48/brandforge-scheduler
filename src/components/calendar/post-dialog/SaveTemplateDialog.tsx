@@ -30,6 +30,13 @@ export function SaveTemplateDialog({ content, platforms, imageUrl }: SaveTemplat
 
     setIsSaving(true);
     try {
+      // Get the current user's session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        throw new Error('User not authenticated');
+      }
+
       const { error } = await supabase
         .from('post_templates')
         .insert({
@@ -37,6 +44,7 @@ export function SaveTemplateDialog({ content, platforms, imageUrl }: SaveTemplat
           content,
           platforms,
           image_url: imageUrl,
+          user_id: session.user.id, // Add the user_id from the session
         });
 
       if (error) throw error;
