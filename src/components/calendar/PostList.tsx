@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Clock, Edit } from "lucide-react";
 
 interface Post {
   id: string;
@@ -46,8 +48,11 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
 
   if (filteredPosts.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No posts scheduled for this date
+      <div className="text-center py-8 space-y-4">
+        <p className="text-muted-foreground">No posts scheduled for this date</p>
+        <Button variant="outline" size="sm">
+          Create your first post
+        </Button>
       </div>
     );
   }
@@ -57,9 +62,9 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
       {filteredPosts.map((post) => (
         <div
           key={post.id}
-          className="p-4 rounded-md border bg-background"
+          className="p-4 rounded-md border bg-background hover:bg-accent/5 transition-colors"
         >
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start mb-3">
             <div className="flex gap-2">
               {post.platforms.map((platformId) => {
                 const platform = platforms.find(p => p.id === platformId);
@@ -67,29 +72,30 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
               })}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {post.time}
-              </span>
+              <Badge variant={post.status === 'draft' ? "secondary" : "default"}>
+                {post.status}
+              </Badge>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 className="text-destructive hover:text-destructive"
                 onClick={() => handleDeletePost(post.id)}
               >
-                Delete
+                <Edit className="h-4 w-4" />
               </Button>
             </div>
           </div>
-          <p className="text-sm">{post.content}</p>
+          <p className="text-sm mb-3">{post.content}</p>
           {post.image && (
             <img
               src={post.image}
               alt="Post preview"
-              className="mt-2 rounded-md max-h-32 object-cover"
+              className="mt-2 rounded-md max-h-32 object-cover w-full"
             />
           )}
-          <div className="mt-2 text-xs text-muted-foreground">
-            Status: {post.status}
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            {post.time}
           </div>
         </div>
       ))}
