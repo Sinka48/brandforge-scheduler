@@ -12,9 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { AuthError } from "@supabase/supabase-js";
 
 interface SignUpFormValues {
-  name: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -26,7 +26,6 @@ export function SignUpForm() {
   
   const form = useForm<SignUpFormValues>({
     defaultValues: {
-      name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -48,11 +47,6 @@ export function SignUpForm() {
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            name: data.name,
-          },
-        },
       });
       
       if (error) throw error;
@@ -62,9 +56,10 @@ export function SignUpForm() {
         description: "Check your email to confirm your account.",
       });
     } catch (error) {
+      const authError = error as AuthError;
       toast({
         title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
+        description: authError.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -75,19 +70,6 @@ export function SignUpForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="email"

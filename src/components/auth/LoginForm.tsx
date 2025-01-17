@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { AuthError } from "@supabase/supabase-js";
 
 interface LoginFormValues {
   email: string;
@@ -44,9 +45,10 @@ export function LoginForm() {
         description: "You have successfully logged in.",
       });
     } catch (error) {
+      const authError = error as AuthError;
       toast({
         title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
+        description: authError.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

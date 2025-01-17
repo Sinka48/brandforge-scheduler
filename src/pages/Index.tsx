@@ -1,6 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +13,11 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function IndexPage() {
   const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,14 +43,19 @@ export default function IndexPage() {
   return (
     <Layout>
       <div className="space-y-12">
-        {/* Hero Section */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-            Your AI-Powered Brand Management Platform
+            Your AI-Powered Social Media Manager
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Create, manage, and grow your brand with the power of AI. Generate brand identities,
-            plan social media content, and analyze performance all in one place.
+            Schedule and manage your social media content across multiple platforms with ease.
+            Create, plan, and analyze your social media presence all in one place.
           </p>
           <div className="flex gap-4 justify-center">
             <Dialog>
@@ -60,7 +66,7 @@ export default function IndexPage() {
                 <DialogHeader>
                   <DialogTitle>Create an account</DialogTitle>
                   <DialogDescription>
-                    Sign up to start managing your brand with AI.
+                    Sign up to start managing your social media content.
                   </DialogDescription>
                 </DialogHeader>
                 <SignUpForm />
@@ -85,24 +91,23 @@ export default function IndexPage() {
           </div>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="font-semibold">Brand Generator</h3>
+            <h3 className="font-semibold">Multi-Platform Support</h3>
             <p className="text-sm text-muted-foreground">
-              Create unique brand identities with AI assistance.
+              Schedule posts for Instagram, Twitter, Facebook, and LinkedIn.
             </p>
           </div>
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="font-semibold">Content Calendar</h3>
+            <h3 className="font-semibold">Smart Scheduling</h3>
             <p className="text-sm text-muted-foreground">
-              Plan and schedule your social media content.
+              Plan your content calendar with our intuitive scheduling interface.
             </p>
           </div>
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="font-semibold">Analytics</h3>
+            <h3 className="font-semibold">Analytics & Insights</h3>
             <p className="text-sm text-muted-foreground">
-              Track your brand's performance across platforms.
+              Track performance and engagement across all your social platforms.
             </p>
           </div>
         </div>
