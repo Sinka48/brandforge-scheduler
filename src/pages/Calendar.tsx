@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Image, Instagram, Twitter, Facebook, Linkedin, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { PlusCircle, Instagram, Twitter, Facebook, Linkedin, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { PostDialog } from "@/components/calendar/PostDialog";
+import { PostList } from "@/components/calendar/PostList";
+import { supabase } from "@/lib/supabase";
 
 interface Platform {
   id: string;
@@ -45,7 +45,7 @@ export default function CalendarPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleAddPost = () => {
+  const handleAddPost = async () => {
     if (!selectedDate) {
       toast({
         title: "Error",
@@ -73,30 +73,56 @@ export default function CalendarPage() {
       return;
     }
 
-    const post: Post = {
-      id: Date.now().toString(),
-      content: newPost.content,
-      date: selectedDate,
-      platforms: newPost.platforms,
-      image: newPost.image,
-      status: newPost.status,
-      time: newPost.time,
-    };
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost.content,
+          platforms: newPost.platforms,
+          image_url: newPost.image || null,
+          scheduled_for: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            parseInt(newPost.time.split(':')[0]),
+            parseInt(newPost.time.split(':')[1])
+          ).toISOString(),
+          status: 'scheduled'
+        })
+        .select()
+        .single();
 
-    setPosts([...posts, post]);
-    setNewPost({
-      content: '',
-      platforms: [],
-      image: '',
-      time: format(new Date(), 'HH:mm'),
-      status: 'scheduled',
-    });
-    setIsDialogOpen(false);
-    
-    toast({
-      title: "Success",
-      description: "Your post has been scheduled.",
-    });
+      if (error) throw error;
+
+      if (data) {
+        setPosts([...posts, {
+          ...data,
+          date: new Date(data.scheduled_for),
+          image: data.image_url,
+        }]);
+      }
+
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+      setIsDialogOpen(false);
+      
+      toast({
+        title: "Success",
+        description: "Your post has been scheduled.",
+      });
+    } catch (error) {
+      console.error('Error scheduling post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to schedule post. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePlatformToggle = (platformId: string) => {
@@ -108,41 +134,83 @@ export default function CalendarPage() {
     }));
   };
 
-  const handleDeletePost = (postId: string) => {
-    setPosts(posts.filter(post => post.id !== postId));
-    toast({
-      title: "Post Deleted",
-      description: "The post has been removed from your calendar.",
-    });
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      setPosts(posts.filter(post => post.id !== postId));
+      toast({
+        title: "Post Deleted",
+        description: "The post has been removed from your calendar.",
+      });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSaveAsDraft = () => {
+  const handleSaveAsDraft = async () => {
     if (!selectedDate) return;
     
-    const post: Post = {
-      id: Date.now().toString(),
-      content: newPost.content,
-      date: selectedDate,
-      platforms: newPost.platforms,
-      image: newPost.image,
-      status: 'draft',
-      time: newPost.time,
-    };
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost.content,
+          platforms: newPost.platforms,
+          image_url: newPost.image || null,
+          scheduled_for: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            parseInt(newPost.time.split(':')[0]),
+            parseInt(newPost.time.split(':')[1])
+          ).toISOString(),
+          status: 'draft'
+        })
+        .select()
+        .single();
 
-    setPosts([...posts, post]);
-    setNewPost({
-      content: '',
-      platforms: [],
-      image: '',
-      time: format(new Date(), 'HH:mm'),
-      status: 'scheduled',
-    });
-    setIsDialogOpen(false);
-    
-    toast({
-      title: "Draft Saved",
-      description: "Your post has been saved as a draft.",
-    });
+      if (error) throw error;
+
+      if (data) {
+        setPosts([...posts, {
+          ...data,
+          date: new Date(data.scheduled_for),
+          image: data.image_url,
+        }]);
+      }
+
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+      setIsDialogOpen(false);
+      
+      toast({
+        title: "Draft Saved",
+        description: "Your post has been saved as a draft.",
+      });
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save draft. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -155,80 +223,10 @@ export default function CalendarPage() {
               Plan and schedule your social media content.
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New Post
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Create New Post</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <Textarea
-                  placeholder="Write your post content..."
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                  className="min-h-[100px]"
-                />
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Platforms</label>
-                  <div className="flex gap-2">
-                    {platforms.map((platform) => (
-                      <Button
-                        key={platform.id}
-                        variant={newPost.platforms.includes(platform.id) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePlatformToggle(platform.id)}
-                      >
-                        {platform.icon}
-                        <span className="ml-2">{platform.name}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Image URL (optional)</label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="url"
-                      placeholder="Enter image URL..."
-                      value={newPost.image}
-                      onChange={(e) => setNewPost({ ...newPost, image: e.target.value })}
-                    />
-                    <Button variant="outline" size="icon">
-                      <Image className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Time</label>
-                  <div className="flex gap-2 items-center">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="time"
-                      value={newPost.time}
-                      onChange={(e) => setNewPost({ ...newPost, time: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={handleSaveAsDraft}>
-                    Save as Draft
-                  </Button>
-                  <Button onClick={handleAddPost}>
-                    Schedule Post
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Post
+          </Button>
         </div>
         
         <div className="grid md:grid-cols-2 gap-6">
@@ -253,56 +251,25 @@ export default function CalendarPage() {
                   "Select a date to view posts"
                 )}
               </h2>
-              <div className="space-y-4">
-                {posts
-                  .filter(
-                    (post) =>
-                      selectedDate &&
-                      post.date.toDateString() === selectedDate.toDateString()
-                  )
-                  .map((post) => (
-                    <div
-                      key={post.id}
-                      className="p-4 rounded-md border bg-background"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex gap-2">
-                          {post.platforms.map((platformId) => {
-                            const platform = platforms.find(p => p.id === platformId);
-                            return platform?.icon;
-                          })}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">
-                            {post.time}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => handleDeletePost(post.id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm">{post.content}</p>
-                      {post.image && (
-                        <img
-                          src={post.image}
-                          alt="Post preview"
-                          className="mt-2 rounded-md max-h-32 object-cover"
-                        />
-                      )}
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        Status: {post.status}
-                      </div>
-                    </div>
-                  ))}
-              </div>
+              <PostList
+                selectedDate={selectedDate}
+                posts={posts}
+                platforms={platforms}
+                handleDeletePost={handleDeletePost}
+              />
             </div>
           </div>
         </div>
+
+        <PostDialog
+          isOpen={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          newPost={newPost}
+          setNewPost={setNewPost}
+          handleAddPost={handleAddPost}
+          handleSaveAsDraft={handleSaveAsDraft}
+          handlePlatformToggle={handlePlatformToggle}
+        />
       </div>
     </Layout>
   );
