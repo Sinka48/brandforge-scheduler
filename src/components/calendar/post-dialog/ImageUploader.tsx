@@ -1,11 +1,11 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Image, Upload, Library } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { Upload, Library } from "lucide-react";
+import { useState } from "react";
 import { MediaLibrary } from "./MediaLibrary";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { ImagePreview } from "./ImagePreview";
+import { UploadProgress } from "./UploadProgress";
 
 interface ImageUploaderProps {
   imageUrl: string;
@@ -13,54 +13,13 @@ interface ImageUploaderProps {
 }
 
 export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
-  const { toast } = useToast();
+  const { uploading, uploadProgress, handleFileUpload } = useImageUpload(onImageUrlChange);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setUploading(true);
-      setUploadProgress(0);
-
-      // Create a unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { data, error } = await supabase.storage
-        .from('post-images')
-        .upload(filePath, file, {
-          upsert: false,
-        });
-
-      if (error) throw error;
-
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(filePath);
-
-      onImageUrlChange(publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-      setUploadProgress(100);
-      setTimeout(() => setUploadProgress(0), 1000);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
     }
   };
 
@@ -79,7 +38,7 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
           accept="image/*"
           className="hidden"
           id="image-upload"
-          onChange={handleFileUpload}
+          onChange={handleFileChange}
         />
         <Button
           variant="outline"
@@ -98,17 +57,8 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
         </Button>
       </div>
       
-      {uploadProgress > 0 && (
-        <Progress value={uploadProgress} className="h-2" />
-      )}
-      
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt="Preview"
-          className="mt-2 rounded-md max-h-32 object-cover"
-        />
-      )}
+      <UploadProgress progress={uploadProgress} />
+      <ImagePreview imageUrl={imageUrl} />
 
       <MediaLibrary
         isOpen={isMediaLibraryOpen}

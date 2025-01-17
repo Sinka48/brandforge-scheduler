@@ -1,15 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DialogHeader } from "./post-dialog/DialogHeader";
+import { DialogActions } from "./post-dialog/DialogActions";
+import { TemplateSection } from "./post-dialog/TemplateSection";
 import { PlatformSelector } from "./post-dialog/PlatformSelector";
 import { ImageUploader } from "./post-dialog/ImageUploader";
 import { TimeSelector } from "./post-dialog/TimeSelector";
 import { PostContent } from "./post-dialog/PostContent";
 import { RecurringOptions } from "./post-dialog/RecurringOptions";
 import { BulkScheduling } from "./post-dialog/BulkScheduling";
-import { SaveTemplateDialog } from "./post-dialog/SaveTemplateDialog";
-import { TemplateSelector } from "./post-dialog/TemplateSelector";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -47,33 +45,23 @@ export function PostDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>{editMode ? 'Edit Post' : 'Create New Post'}</DialogTitle>
-        </DialogHeader>
+        <DialogHeader editMode={editMode} selectedDate={selectedDate} />
+        
         <div className="space-y-4 py-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
-          </div>
-
           {!editMode && (
-            <div className="flex gap-2">
-              <TemplateSelector
-                onSelectTemplate={(template) => {
-                  setNewPost({
-                    ...newPost,
-                    content: template.content,
-                    platforms: template.platforms,
-                    image: template.image_url || '',
-                  });
-                }}
-              />
-              <SaveTemplateDialog
-                content={newPost.content}
-                platforms={newPost.platforms}
-                imageUrl={newPost.image}
-              />
-            </div>
+            <TemplateSection
+              onSelectTemplate={(template) => {
+                setNewPost({
+                  ...newPost,
+                  content: template.content,
+                  platforms: template.platforms,
+                  image: template.image_url || '',
+                });
+              }}
+              content={newPost.content}
+              platforms={newPost.platforms}
+              imageUrl={newPost.image}
+            />
           )}
 
           {!editMode && !newPost.isRecurring && (
@@ -123,17 +111,12 @@ export function PostDialog({
             />
           )}
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleSaveAsDraft}>
-              Save as Draft
-            </Button>
-            <Button 
-              onClick={handleAddPost}
-              disabled={newPost.content.length === 0 || newPost.platforms.length === 0}
-            >
-              {editMode ? 'Update Post' : 'Schedule Post'}
-            </Button>
-          </div>
+          <DialogActions
+            onSaveAsDraft={handleSaveAsDraft}
+            onAddPost={handleAddPost}
+            isDisabled={newPost.content.length === 0 || newPost.platforms.length === 0}
+            editMode={editMode}
+          />
         </div>
       </DialogContent>
     </Dialog>
