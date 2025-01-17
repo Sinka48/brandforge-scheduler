@@ -22,6 +22,7 @@ interface PostDialogProps {
   handleSaveAsDraft: () => void;
   handlePlatformToggle: (platformId: string) => void;
   selectedDate?: Date;
+  editMode?: boolean;
 }
 
 export function PostDialog({
@@ -33,12 +34,13 @@ export function PostDialog({
   handleSaveAsDraft,
   handlePlatformToggle,
   selectedDate,
+  editMode = false,
 }: PostDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create New Post</DialogTitle>
+          <DialogTitle>{editMode ? 'Edit Post' : 'Create New Post'}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -71,7 +73,7 @@ export function PostDialog({
               Save as Draft
             </Button>
             <Button onClick={handleAddPost}>
-              Schedule Post
+              {editMode ? 'Update Post' : 'Schedule Post'}
             </Button>
           </div>
         </div>

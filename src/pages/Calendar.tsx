@@ -20,6 +20,8 @@ const platforms = [
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<any>(null);
+  
   const {
     posts,
     setPosts,
@@ -30,6 +32,7 @@ export default function CalendarPage() {
     handleSaveAsDraft,
     handleDeletePost,
     handlePlatformToggle,
+    handleUpdatePost,
   } = usePostManagement();
 
   const { isLoading: isQueryLoading } = useQuery({
@@ -57,10 +60,28 @@ export default function CalendarPage() {
     },
   });
 
+  const handleEditPost = (post: any) => {
+    setEditingPost(post);
+    setNewPost({
+      content: post.content,
+      platforms: post.platforms,
+      image: post.image || '',
+      time: post.time,
+      status: post.status,
+    });
+    setIsDialogOpen(true);
+  };
+
   const onAddPost = async () => {
-    const success = await handleAddPost(selectedDate);
+    let success;
+    if (editingPost) {
+      success = await handleUpdatePost(editingPost.id, selectedDate);
+    } else {
+      success = await handleAddPost(selectedDate);
+    }
     if (success) {
       setIsDialogOpen(false);
+      setEditingPost(null);
     }
   };
 
@@ -68,7 +89,22 @@ export default function CalendarPage() {
     const success = await handleSaveAsDraft(selectedDate);
     if (success) {
       setIsDialogOpen(false);
+      setEditingPost(null);
     }
+  };
+
+  const onDialogClose = (open: boolean) => {
+    if (!open) {
+      setEditingPost(null);
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+    }
+    setIsDialogOpen(open);
   };
 
   return (
@@ -114,6 +150,7 @@ export default function CalendarPage() {
                 posts={posts}
                 platforms={platforms}
                 handleDeletePost={handleDeletePost}
+                handleEditPost={handleEditPost}
                 isLoading={isQueryLoading || isManagementLoading}
               />
             </div>
@@ -122,13 +159,14 @@ export default function CalendarPage() {
 
         <PostDialog
           isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
+          onOpenChange={onDialogClose}
           newPost={newPost}
           setNewPost={setNewPost}
           handleAddPost={onAddPost}
           handleSaveAsDraft={onSaveAsDraft}
           handlePlatformToggle={handlePlatformToggle}
           selectedDate={selectedDate}
+          editMode={!!editingPost}
         />
       </div>
     </Layout>

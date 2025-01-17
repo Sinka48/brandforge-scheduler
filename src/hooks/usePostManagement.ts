@@ -1,157 +1,205 @@
 import { useState } from "react";
-import { usePostCreation } from "./usePostCreation";
-import { usePostDeletion } from "./usePostDeletion";
+import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "./use-toast";
 
-interface Post {
-  id: string;
+interface NewPost {
   content: string;
-  date: Date;
   platforms: string[];
-  image?: string;
-  status: 'draft' | 'scheduled';
-  time?: string;
+  image: string;
+  time: string;
+  status: 'scheduled' | 'draft';
 }
 
 export function usePostManagement() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [newPost, setNewPost] = useState<NewPost>({
+    content: '',
+    platforms: [],
+    image: '',
+    time: format(new Date(), 'HH:mm'),
+    status: 'scheduled',
+  });
+  const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { newPost, setNewPost, handleAddPost: createPost, handleSaveAsDraft: saveDraft, handlePlatformToggle } = usePostCreation();
-  const { handleDeletePost: deletePost } = usePostDeletion();
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
     if (!selectedDate) {
       toast({
         title: "Error",
-        description: "Please select a date for the post",
+        description: "Please select a date first.",
         variant: "destructive",
       });
       return false;
     }
-
-    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user) {
+    if (!newPost.content) {
       toast({
         title: "Error",
-        description: "You must be logged in to create posts",
+        description: "Please enter some content for your post.",
         variant: "destructive",
       });
       return false;
     }
 
-    setIsLoading(true);
+    if (newPost.platforms.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one platform.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
-      const scheduledDate = new Date(selectedDate);
-      const [hours, minutes] = newPost.time.split(':').map(Number);
-      scheduledDate.setHours(hours, minutes);
-
-      // Create a post for each selected platform
-      const results = await Promise.all(
-        newPost.platforms.map(async (platform) => {
-          const { data, error } = await supabase
-            .from('posts')
-            .insert({
-              content: newPost.content,
-              platform: platform,
-              scheduled_for: scheduledDate.toISOString(),
-              image_url: newPost.image,
-              status: 'scheduled',
-              user_id: user.id
-            })
-            .select()
-            .single();
-
-          if (error) throw error;
-          return data;
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost.content,
+          platforms: newPost.platforms,
+          image_url: newPost.image || null,
+          scheduled_for: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            parseInt(newPost.time.split(':')[0]),
+            parseInt(newPost.time.split(':')[1])
+          ).toISOString(),
+          status: 'scheduled'
         })
-      );
+        .select()
+        .single();
 
+      if (error) throw error;
+
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+      
       toast({
         title: "Success",
-        description: "Post scheduled successfully",
+        description: "Your post has been scheduled.",
       });
 
-      return results[0];
+      return data;
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Error scheduling post:', error);
       toast({
         title: "Error",
-        description: "Failed to schedule post",
+        description: "Failed to schedule post. Please try again.",
         variant: "destructive",
       });
       return false;
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const handleUpdatePost = async (postId: string, selectedDate: Date | undefined) => {
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date first.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .update({
+          content: newPost.content,
+          platforms: newPost.platforms,
+          image_url: newPost.image || null,
+          scheduled_for: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            parseInt(newPost.time.split(':')[0]),
+            parseInt(newPost.time.split(':')[1])
+          ).toISOString(),
+          status: newPost.status
+        })
+        .eq('id', postId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+      
+      toast({
+        title: "Success",
+        description: "Your post has been updated.",
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update post. Please try again.",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
   const handleSaveAsDraft = async (selectedDate: Date | undefined) => {
-    if (!selectedDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date for the draft",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
+    if (!selectedDate) return false;
     
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to save drafts",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    setIsLoading(true);
     try {
-      const scheduledDate = new Date(selectedDate);
-      const [hours, minutes] = newPost.time.split(':').map(Number);
-      scheduledDate.setHours(hours, minutes);
-
-      // Create a draft for each selected platform
-      const results = await Promise.all(
-        newPost.platforms.map(async (platform) => {
-          const { data, error } = await supabase
-            .from('posts')
-            .insert({
-              content: newPost.content,
-              platform: platform,
-              scheduled_for: scheduledDate.toISOString(),
-              image_url: newPost.image,
-              status: 'draft',
-              user_id: user.id
-            })
-            .select()
-            .single();
-
-          if (error) throw error;
-          return data;
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost.content,
+          platforms: newPost.platforms,
+          image_url: newPost.image || null,
+          scheduled_for: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            parseInt(newPost.time.split(':')[0]),
+            parseInt(newPost.time.split(':')[1])
+          ).toISOString(),
+          status: 'draft'
         })
-      );
+        .select()
+        .single();
 
+      if (error) throw error;
+
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+      
       toast({
-        title: "Success",
-        description: "Draft saved successfully",
+        title: "Draft Saved",
+        description: "Your post has been saved as a draft.",
       });
 
-      return results[0];
+      return data;
     } catch (error) {
       console.error('Error saving draft:', error);
       toast({
         title: "Error",
-        description: "Failed to save draft",
+        description: "Failed to save draft. Please try again.",
         variant: "destructive",
       });
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -185,6 +233,15 @@ export function usePostManagement() {
     }
   };
 
+  const handlePlatformToggle = (platformId: string) => {
+    setNewPost(prev => ({
+      ...prev,
+      platforms: prev.platforms.includes(platformId)
+        ? prev.platforms.filter(id => id !== platformId)
+        : [...prev.platforms, platformId]
+    }));
+  };
+
   return {
     posts,
     setPosts,
@@ -192,6 +249,7 @@ export function usePostManagement() {
     newPost,
     setNewPost,
     handleAddPost,
+    handleUpdatePost,
     handleSaveAsDraft,
     handleDeletePost,
     handlePlatformToggle,

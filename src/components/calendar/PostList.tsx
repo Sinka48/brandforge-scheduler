@@ -24,10 +24,18 @@ interface PostListProps {
     icon: React.ReactNode;
   }[];
   handleDeletePost: (postId: string) => void;
+  handleEditPost: (post: Post) => void;
   isLoading?: boolean;
 }
 
-export function PostList({ selectedDate, posts, platforms, handleDeletePost, isLoading }: PostListProps) {
+export function PostList({ 
+  selectedDate, 
+  posts, 
+  platforms, 
+  handleDeletePost, 
+  handleEditPost,
+  isLoading 
+}: PostListProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -87,6 +95,7 @@ export function PostList({ selectedDate, posts, platforms, handleDeletePost, isL
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => handleEditPost(post)}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
