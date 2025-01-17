@@ -9,6 +9,9 @@ interface NewPost {
   image: string;
   time: string;
   status: 'scheduled' | 'draft';
+  isRecurring?: boolean;
+  recurringPattern?: string;
+  recurringEndDate?: Date;
 }
 
 export function usePostCreation() {
@@ -18,8 +21,75 @@ export function usePostCreation() {
     image: '',
     time: format(new Date(), 'HH:mm'),
     status: 'scheduled',
+    isRecurring: false,
+    recurringPattern: 'daily',
   });
   const { toast } = useToast();
+
+  const createRecurringPosts = async (parentPostId: string, basePost: any, selectedDate: Date) => {
+    const endDate = newPost.recurringEndDate;
+    if (!endDate) return;
+
+    const interval = newPost.recurringPattern || 'daily';
+    let currentDate = new Date(selectedDate);
+    
+    while (currentDate <= endDate) {
+      // Skip the first date as it's already created as the parent post
+      if (currentDate.getTime() === selectedDate.getTime()) {
+        // Move to next date based on interval
+        switch (interval) {
+          case 'daily':
+            currentDate.setDate(currentDate.getDate() + 1);
+            break;
+          case 'weekly':
+            currentDate.setDate(currentDate.getDate() + 7);
+            break;
+          case 'monthly':
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            break;
+        }
+        continue;
+      }
+
+      // Create child post
+      for (const platform of newPost.platforms) {
+        const scheduledTime = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+          parseInt(newPost.time.split(':')[0]),
+          parseInt(newPost.time.split(':')[1])
+        );
+
+        await supabase
+          .from('posts')
+          .insert({
+            content: newPost.content,
+            platform: platform,
+            image_url: newPost.image || null,
+            scheduled_for: scheduledTime.toISOString(),
+            status: 'scheduled',
+            is_recurring: true,
+            recurrence_pattern: interval,
+            recurrence_end_date: endDate.toISOString(),
+            parent_post_id: parentPostId
+          });
+      }
+
+      // Move to next date based on interval
+      switch (interval) {
+        case 'daily':
+          currentDate.setDate(currentDate.getDate() + 1);
+          break;
+        case 'weekly':
+          currentDate.setDate(currentDate.getDate() + 7);
+          break;
+        case 'monthly':
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          break;
+      }
+    }
+  };
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
     if (!selectedDate) {
@@ -50,11 +120,12 @@ export function usePostCreation() {
     }
 
     try {
-      const { data, error } = await supabase
+      // Create parent post
+      const { data: parentPost, error: parentError } = await supabase
         .from('posts')
         .insert({
           content: newPost.content,
-          platforms: newPost.platforms,
+          platform: newPost.platforms[0], // First platform for parent post
           image_url: newPost.image || null,
           scheduled_for: new Date(
             selectedDate.getFullYear(),
@@ -63,12 +134,43 @@ export function usePostCreation() {
             parseInt(newPost.time.split(':')[0]),
             parseInt(newPost.time.split(':')[1])
           ).toISOString(),
-          status: 'scheduled'
+          status: 'scheduled',
+          is_recurring: newPost.isRecurring,
+          recurrence_pattern: newPost.isRecurring ? newPost.recurringPattern : null,
+          recurrence_end_date: newPost.isRecurring ? newPost.recurringEndDate?.toISOString() : null
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (parentError) throw parentError;
+
+      // Create posts for additional platforms
+      for (let i = 1; i < newPost.platforms.length; i++) {
+        await supabase
+          .from('posts')
+          .insert({
+            content: newPost.content,
+            platform: newPost.platforms[i],
+            image_url: newPost.image || null,
+            scheduled_for: new Date(
+              selectedDate.getFullYear(),
+              selectedDate.getMonth(),
+              selectedDate.getDate(),
+              parseInt(newPost.time.split(':')[0]),
+              parseInt(newPost.time.split(':')[1])
+            ).toISOString(),
+            status: 'scheduled',
+            is_recurring: newPost.isRecurring,
+            recurrence_pattern: newPost.isRecurring ? newPost.recurringPattern : null,
+            recurrence_end_date: newPost.isRecurring ? newPost.recurringEndDate?.toISOString() : null,
+            parent_post_id: parentPost.id
+          });
+      }
+
+      // If this is a recurring post, create the series
+      if (newPost.isRecurring && newPost.recurringEndDate) {
+        await createRecurringPosts(parentPost.id, parentPost, selectedDate);
+      }
 
       setNewPost({
         content: '',
@@ -76,14 +178,18 @@ export function usePostCreation() {
         image: '',
         time: format(new Date(), 'HH:mm'),
         status: 'scheduled',
+        isRecurring: false,
+        recurringPattern: 'daily',
       });
       
       toast({
         title: "Success",
-        description: "Your post has been scheduled.",
+        description: newPost.isRecurring 
+          ? "Your recurring posts have been scheduled."
+          : "Your post has been scheduled.",
       });
 
-      return data;
+      return parentPost;
     } catch (error) {
       console.error('Error scheduling post:', error);
       toast({
@@ -103,7 +209,7 @@ export function usePostCreation() {
         .from('posts')
         .insert({
           content: newPost.content,
-          platforms: newPost.platforms,
+          platform: newPost.platforms[0],
           image_url: newPost.image || null,
           scheduled_for: new Date(
             selectedDate.getFullYear(),
@@ -125,6 +231,8 @@ export function usePostCreation() {
         image: '',
         time: format(new Date(), 'HH:mm'),
         status: 'scheduled',
+        isRecurring: false,
+        recurringPattern: 'daily',
       });
       
       toast({

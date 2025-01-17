@@ -13,6 +13,9 @@ interface Post {
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
+  isRecurring?: boolean;
+  recurringPattern?: string;
+  recurringEndDate?: Date;
 }
 
 interface PostListProps {
@@ -87,9 +90,16 @@ export function PostList({
               })}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={post.status === 'draft' ? "secondary" : "default"}>
-                {post.status}
-              </Badge>
+              <div className="flex items-center gap-2">
+                {post.isRecurring && (
+                  <Badge variant="secondary">
+                    Recurring ({post.recurringPattern})
+                  </Badge>
+                )}
+                <Badge variant={post.status === 'draft' ? "secondary" : "default"}>
+                  {post.status}
+                </Badge>
+              </div>
               <div className="flex gap-1">
                 <Button
                   variant="ghost"

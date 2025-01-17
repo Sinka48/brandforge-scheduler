@@ -15,7 +15,11 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          is_recurring: boolean | null
+          parent_post_id: string | null
           platform: string
+          recurrence_end_date: string | null
+          recurrence_pattern: string | null
           scheduled_for: string
           status: string
           user_id: string
@@ -25,7 +29,11 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_recurring?: boolean | null
+          parent_post_id?: string | null
           platform: string
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
           scheduled_for: string
           status?: string
           user_id: string
@@ -35,12 +43,24 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_recurring?: boolean | null
+          parent_post_id?: string | null
           platform?: string
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
           scheduled_for?: string
           status?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_parent_post_id_fkey"
+            columns: ["parent_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

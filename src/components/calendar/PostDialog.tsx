@@ -6,6 +6,7 @@ import { PlatformSelector } from "./post-dialog/PlatformSelector";
 import { ImageUploader } from "./post-dialog/ImageUploader";
 import { TimeSelector } from "./post-dialog/TimeSelector";
 import { PostContent } from "./post-dialog/PostContent";
+import { RecurringOptions } from "./post-dialog/RecurringOptions";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -16,6 +17,9 @@ interface PostDialogProps {
     image: string;
     time: string;
     status: 'scheduled' | 'draft';
+    isRecurring?: boolean;
+    recurringPattern?: string;
+    recurringEndDate?: Date;
   };
   setNewPost: (post: any) => void;
   handleAddPost: () => void;
@@ -69,6 +73,15 @@ export function PostDialog({
             time={newPost.time}
             onTimeChange={(time) => setNewPost({ ...newPost, time })}
             selectedPlatforms={newPost.platforms}
+          />
+
+          <RecurringOptions
+            isRecurring={newPost.isRecurring || false}
+            onIsRecurringChange={(isRecurring) => setNewPost({ ...newPost, isRecurring })}
+            pattern={newPost.recurringPattern || 'daily'}
+            onPatternChange={(pattern) => setNewPost({ ...newPost, recurringPattern: pattern })}
+            endDate={newPost.recurringEndDate}
+            onEndDateChange={(date) => setNewPost({ ...newPost, recurringEndDate: date })}
           />
 
           <div className="flex justify-end gap-2">
