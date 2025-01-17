@@ -67,6 +67,7 @@ export function PostDialog({
           <TimeSelector
             time={newPost.time}
             onTimeChange={(time) => setNewPost({ ...newPost, time })}
+            selectedPlatforms={newPost.platforms}
           />
 
           <div className="flex justify-end gap-2">
