@@ -9,11 +9,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
+  
+  const platforms = [
+    {
+      id: 'facebook',
+      name: 'Facebook',
+      icon: <Facebook className="h-4 w-4" />,
+    },
+    {
+      id: 'twitter',
+      name: 'Twitter',
+      icon: <Twitter className="h-4 w-4" />,
+    },
+    {
+      id: 'instagram',
+      name: 'Instagram',
+      icon: <Instagram className="h-4 w-4" />,
+    },
+    {
+      id: 'linkedin',
+      name: 'LinkedIn',
+      icon: <Linkedin className="h-4 w-4" />,
+    },
+  ];
   
   useCalendarAuth();
 
