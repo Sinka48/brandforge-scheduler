@@ -6,12 +6,19 @@ import { format } from "date-fns";
 import { Clock, Edit, Trash2, AlertCircle, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PostAnalytics } from "@/components/calendar/PostAnalytics";
+import { PlatformId } from "@/constants/platforms";
+
+interface Platform {
+  id: PlatformId;
+  name: string;
+  icon: React.ReactNode;
+}
 
 interface Post {
   id: string;
   content: string;
   date: Date;
-  platforms: string[];
+  platforms: PlatformId[];
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
@@ -24,11 +31,7 @@ interface Post {
 interface PostListProps {
   selectedDate: Date | undefined;
   posts: Post[];
-  platforms: {
-    id: string;
-    name: string;
-    icon: React.ReactNode;
-  }[];
+  platforms: Platform[];
   handleDeletePost: (postId: string) => void;
   handleEditPost: (post: Post) => void;
   isLoading?: boolean;
