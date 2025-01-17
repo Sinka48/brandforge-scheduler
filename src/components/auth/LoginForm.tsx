@@ -13,17 +13,22 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { AuthError } from "@supabase/supabase-js";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type LoginFormValues = z.infer<typeof formSchema>;
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<LoginFormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -38,7 +43,24 @@ export function LoginForm() {
         password: data.password,
       });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message === "Email not confirmed") {
+          toast({
+            title: "Email not verified",
+            description: "Please check your email and verify your account before logging in.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes("Invalid login credentials")) {
+          toast({
+            title: "Invalid credentials",
+            description: "The email or password you entered is incorrect.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success",
@@ -66,7 +88,12 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="Enter your email" {...field} />
+                <Input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  {...field} 
+                  autoComplete="email"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,7 +106,12 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="Enter your password" 
+                  {...field} 
+                  autoComplete="current-password"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
