@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Eye, Heart, Share2, TrendingUp } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { format } from "date-fns";
+import { MetricCard } from "./analytics/MetricCard";
+import { PerformanceChart } from "./analytics/PerformanceChart";
 
 interface PostAnalytics {
   views: number;
@@ -58,121 +56,29 @@ export function PostAnalytics({ postId, platform }: PostAnalyticsProps) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Likes</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalLikes.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Shares</CardTitle>
-            <Share2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalShares.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(avgEngagement || 0).toFixed(2)}%</div>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Total Views"
+          value={totalViews.toLocaleString()}
+          icon={Eye}
+        />
+        <MetricCard
+          title="Total Likes"
+          value={totalLikes.toLocaleString()}
+          icon={Heart}
+        />
+        <MetricCard
+          title="Total Shares"
+          value={totalShares.toLocaleString()}
+          icon={Share2}
+        />
+        <MetricCard
+          title="Engagement Rate"
+          value={`${(avgEngagement || 0).toFixed(2)}%`}
+          icon={TrendingUp}
+        />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Performance Over Time</CardTitle>
-          <Badge variant="secondary">{platform}</Badge>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ChartContainer
-              config={{
-                views: { theme: { light: "#0ea5e9", dark: "#0ea5e9" } },
-                likes: { theme: { light: "#ec4899", dark: "#ec4899" } },
-                shares: { theme: { light: "#22c55e", dark: "#22c55e" } },
-              }}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="rounded-lg border bg-background p-2 shadow-sm">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="flex flex-col">
-                              <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                {label}
-                              </span>
-                            </div>
-                            {payload.map((item) => (
-                              <div
-                                key={item.name}
-                                className="flex flex-col gap-1"
-                              >
-                                <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                  {item.name}
-                                </span>
-                                <span className="font-bold">
-                                  {item.value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }} />
-                  <Area
-                    type="monotone"
-                    dataKey="views"
-                    stroke="var(--color-views)"
-                    fill="var(--color-views)"
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="likes"
-                    stroke="var(--color-likes)"
-                    fill="var(--color-likes)"
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="shares"
-                    stroke="var(--color-shares)"
-                    fill="var(--color-shares)"
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </div>
-        </CardContent>
-      </Card>
+      <PerformanceChart data={chartData || []} platform={platform} />
     </div>
   );
 }
