@@ -48,7 +48,11 @@ export function PostItem({ post, platforms, onEdit, onDelete }: PostItemProps) {
         <div className="flex gap-2">
           {post.platforms.map((platformId) => {
             const platform = platforms.find(p => p.id === platformId);
-            return platform?.icon;
+            return platform?.icon && (
+              <div key={platformId}>
+                {platform.icon}
+              </div>
+            );
           })}
         </div>
         <div className="flex items-center gap-2">
@@ -112,7 +116,7 @@ export function PostItem({ post, platforms, onEdit, onDelete }: PostItemProps) {
         )}
       </div>
       {expandedAnalytics && post.platforms.map((platform) => (
-        <div key={platform} className="mt-4">
+        <div key={`${post.id}-${platform}`} className="mt-4">
           <PostAnalytics postId={post.id} platform={platform} />
         </div>
       ))}
