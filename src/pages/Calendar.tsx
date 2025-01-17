@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { PostList } from "@/components/calendar/PostList";
 import { usePostManagement } from "@/hooks/usePostManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const platforms = [
   { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
@@ -21,7 +22,28 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
+  const navigate = useNavigate();
   
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/');
+      }
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
   const {
     posts,
     setPosts,
@@ -38,9 +60,15 @@ export default function CalendarPage() {
   const { isLoading: isQueryLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('posts')
         .select('*')
+        .eq('user_id', session.user.id)
         .order('scheduled_for', { ascending: true });
 
       if (error) throw error;
