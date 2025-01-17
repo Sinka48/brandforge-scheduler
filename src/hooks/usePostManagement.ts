@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { usePostCreation } from "./usePostCreation";
 import { usePostDeletion } from "./usePostDeletion";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "./use-toast";
 
 interface Post {
