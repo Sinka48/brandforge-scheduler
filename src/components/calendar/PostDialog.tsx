@@ -51,6 +51,7 @@ export function PostDialog({
           <PostContent
             content={newPost.content}
             onContentChange={(content) => setNewPost({ ...newPost, content })}
+            selectedPlatforms={newPost.platforms}
           />
           
           <PlatformSelector
@@ -72,7 +73,10 @@ export function PostDialog({
             <Button variant="outline" onClick={handleSaveAsDraft}>
               Save as Draft
             </Button>
-            <Button onClick={handleAddPost}>
+            <Button 
+              onClick={handleAddPost}
+              disabled={newPost.content.length === 0 || newPost.platforms.length === 0}
+            >
               {editMode ? 'Update Post' : 'Schedule Post'}
             </Button>
           </div>
