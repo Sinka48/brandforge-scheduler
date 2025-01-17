@@ -13,18 +13,26 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { AuthError } from "@supabase/supabase-js";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface SignUpFormValues {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type SignUpFormValues = z.infer<typeof formSchema>;
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -33,15 +41,6 @@ export function SignUpForm() {
   });
 
   async function onSubmit(data: SignUpFormValues) {
-    if (data.password !== data.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -49,7 +48,18 @@ export function SignUpForm() {
         password: data.password,
       });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          toast({
+            title: "Account exists",
+            description: "An account with this email already exists. Please try logging in instead.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success",
@@ -77,7 +87,12 @@ export function SignUpForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="Enter your email" {...field} />
+                <Input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  {...field} 
+                  autoComplete="email"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -90,7 +105,12 @@ export function SignUpForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Create a password" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="Create a password" 
+                  {...field} 
+                  autoComplete="new-password"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -103,7 +123,12 @@ export function SignUpForm() {
             <FormItem>
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Confirm your password" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="Confirm your password" 
+                  {...field} 
+                  autoComplete="new-password"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
