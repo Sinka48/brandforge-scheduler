@@ -1,5 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { PlatformPreview } from "./PlatformPreview";
+import { Badge } from "@/components/ui/badge";
 
 interface PostContentProps {
   content: string;
@@ -9,11 +10,18 @@ interface PostContentProps {
 }
 
 export function PostContent({ content, onContentChange, selectedPlatforms, imageUrl }: PostContentProps) {
+  const isThread = content.length > 280 && selectedPlatforms.includes('twitter');
+
   return (
     <div className="space-y-2">
-      <label htmlFor="content" className="text-sm font-medium">
-        Post Content
-      </label>
+      <div className="flex items-center justify-between">
+        <label htmlFor="content" className="text-sm font-medium">
+          Post Content
+        </label>
+        {isThread && (
+          <Badge variant="secondary">Twitter Thread</Badge>
+        )}
+      </div>
       <Textarea
         id="content"
         placeholder="What's on your mind?"

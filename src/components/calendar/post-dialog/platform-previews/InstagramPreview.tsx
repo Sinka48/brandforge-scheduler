@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface InstagramPreviewProps {
   content: string;
@@ -8,17 +10,33 @@ interface InstagramPreviewProps {
 }
 
 export function InstagramPreview({ content, imageUrl, hashtags }: InstagramPreviewProps) {
+  const MAX_HASHTAGS = 30;
+  const hasExcessiveHashtags = hashtags.length > MAX_HASHTAGS;
+
   return (
     <div className="space-y-2">
+      {hasExcessiveHashtags && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Instagram allows a maximum of {MAX_HASHTAGS} hashtags. You're using {hashtags.length}.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {hashtags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {hashtags.map((tag, index) => (
-            <Badge key={index} variant="secondary">
+            <Badge 
+              key={index} 
+              variant={index >= MAX_HASHTAGS ? "destructive" : "secondary"}
+            >
               {tag}
             </Badge>
           ))}
         </div>
       )}
+
       <Card className="max-w-[500px] space-y-3">
         <div className="p-4 pb-0">
           <div className="flex items-center space-x-2">

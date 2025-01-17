@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TwitterPreviewProps {
   content: string;
@@ -8,15 +10,47 @@ interface TwitterPreviewProps {
 }
 
 export function TwitterPreview({ content, imageUrl, remainingChars }: TwitterPreviewProps) {
+  const isThread = content.includes('(thread)') || content.length > 280;
+  const threadParts = isThread ? splitIntoThreads(content) : [content];
+
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center text-sm text-muted-foreground">
-        <span>Characters remaining: {remainingChars}</span>
-        {remainingChars < 0 && (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center text-sm">
+        <div className="flex items-center gap-2">
+          <span className={remainingChars < 0 ? "text-destructive" : "text-muted-foreground"}>
+            Characters remaining: {remainingChars}
+          </span>
+          {isThread && (
+            <Badge variant="secondary">Thread: {threadParts.length} tweets</Badge>
+          )}
+        </div>
+        {remainingChars < 0 && !isThread && (
           <Badge variant="destructive">Exceeds limit</Badge>
         )}
       </div>
-      <Card className="max-w-[500px] p-4 space-y-3">
+
+      {isThread ? (
+        <div className="space-y-2">
+          {threadParts.map((part, index) => (
+            <TweetCard
+              key={index}
+              content={part}
+              imageUrl={index === 0 ? imageUrl : undefined}
+              threadInfo={`${index + 1}/${threadParts.length}`}
+            />
+          ))}
+        </div>
+      ) : (
+        <TweetCard content={content} imageUrl={imageUrl} />
+      )}
+    </div>
+  );
+}
+
+function TweetCard({ content, imageUrl, threadInfo }: { content: string, imageUrl?: string, threadInfo?: string }) {
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-full bg-slate-200" />
           <div>
@@ -24,21 +58,46 @@ export function TwitterPreview({ content, imageUrl, remainingChars }: TwitterPre
             <div className="text-xs text-muted-foreground">@username</div>
           </div>
         </div>
-        <p className="text-sm whitespace-pre-wrap">{content}</p>
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="Post preview"
-            className="rounded-lg w-full object-cover max-h-[300px]"
-          />
+        {threadInfo && (
+          <Badge variant="outline">{threadInfo}</Badge>
         )}
-        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
-          <span>Reply</span>
-          <span>Repost</span>
-          <span>Like</span>
-          <span>Share</span>
-        </div>
-      </Card>
-    </div>
+      </div>
+      <p className="text-sm whitespace-pre-wrap">{content}</p>
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt="Post preview"
+          className="rounded-lg w-full object-cover max-h-[300px]"
+        />
+      )}
+      <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
+        <span>Reply</span>
+        <span>Repost</span>
+        <span>Like</span>
+        <span>Share</span>
+      </div>
+    </Card>
   );
+}
+
+function splitIntoThreads(content: string): string[] {
+  const maxLength = 280;
+  const words = content.split(' ');
+  const threads: string[] = [];
+  let currentThread = '';
+
+  words.forEach((word) => {
+    if ((currentThread + ' ' + word).length <= maxLength) {
+      currentThread += (currentThread ? ' ' : '') + word;
+    } else {
+      threads.push(currentThread);
+      currentThread = word;
+    }
+  });
+
+  if (currentThread) {
+    threads.push(currentThread);
+  }
+
+  return threads;
 }
