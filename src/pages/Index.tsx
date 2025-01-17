@@ -1,16 +1,66 @@
 import { Layout } from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { SignUpForm } from "@/components/auth/SignUpForm";
 
 export default function IndexPage() {
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome to Brand AI. Your AI-powered brand management platform.
+      <div className="space-y-12">
+        {/* Hero Section */}
+        <div className="text-center space-y-6">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
+            Your AI-Powered Brand Management Platform
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Create, manage, and grow your brand with the power of AI. Generate brand identities,
+            plan social media content, and analyze performance all in one place.
           </p>
+          <div className="flex gap-4 justify-center">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="lg">Get Started</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Create an account</DialogTitle>
+                  <DialogDescription>
+                    Sign up to start managing your brand with AI.
+                  </DialogDescription>
+                </DialogHeader>
+                <SignUpForm />
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="lg">
+                  Sign In
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Welcome back</DialogTitle>
+                  <DialogDescription>
+                    Sign in to your account to continue.
+                  </DialogDescription>
+                </DialogHeader>
+                <LoginForm />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
+        {/* Features Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-lg border bg-card p-6">
             <h3 className="font-semibold">Brand Generator</h3>
             <p className="text-sm text-muted-foreground">
