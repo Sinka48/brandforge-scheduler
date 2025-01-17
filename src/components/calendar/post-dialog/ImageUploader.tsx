@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Image, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface ImageUploaderProps {
@@ -68,7 +68,7 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
       <div className="flex gap-2">
         <Input
           type="url"
-          placeholder="Enter image URL..."
+          placeholder="Enter image URL"
           value={imageUrl}
           onChange={(e) => onImageUrlChange(e.target.value)}
         />
