@@ -13,20 +13,12 @@ interface BulkSchedulingProps {
 export function BulkScheduling({ selectedDates, onDatesChange }: BulkSchedulingProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
-    
-    const dateExists = selectedDates.some(
-      d => d.toDateString() === date.toDateString()
-    );
-
-    if (dateExists) {
-      onDatesChange(selectedDates.filter(
-        d => d.toDateString() !== date.toDateString()
-      ));
-    } else {
-      onDatesChange([...selectedDates, date]);
+  const handleDateSelect = (dates: Date[] | undefined) => {
+    if (!dates) {
+      onDatesChange([]);
+      return;
     }
+    onDatesChange(dates);
   };
 
   const removeDate = (dateToRemove: Date) => {
@@ -54,7 +46,7 @@ export function BulkScheduling({ selectedDates, onDatesChange }: BulkSchedulingP
         <Calendar
           mode="multiple"
           selected={selectedDates}
-          onSelect={(date) => handleDateSelect(date)}
+          onSelect={handleDateSelect}
           className="rounded-md border"
         />
       )}
