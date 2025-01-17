@@ -14,9 +14,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Session } from "@supabase/supabase-js";
 
 export default function IndexPage() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
