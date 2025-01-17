@@ -2,27 +2,16 @@ import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Instagram, Twitter, Facebook, Linkedin, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { PostList } from "@/components/calendar/PostList";
-import { supabase } from "@/lib/supabase";
+import { usePostManagement } from "@/hooks/usePostManagement";
 
 interface Platform {
   id: string;
   name: string;
   icon: React.ReactNode;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  date: Date;
-  platforms: string[];
-  image?: string;
-  status: 'draft' | 'scheduled';
-  time?: string;
 }
 
 const platforms: Platform[] = [
@@ -34,182 +23,28 @@ const platforms: Platform[] = [
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [newPost, setNewPost] = useState({
-    content: '',
-    platforms: [] as string[],
-    image: '',
-    time: format(new Date(), 'HH:mm'),
-    status: 'scheduled' as const,
-  });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const {
+    posts,
+    newPost,
+    setNewPost,
+    handleAddPost,
+    handleSaveAsDraft,
+    handleDeletePost,
+    handlePlatformToggle,
+  } = usePostManagement();
 
-  const handleAddPost = async () => {
-    if (!selectedDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date first.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!newPost.content) {
-      toast({
-        title: "Error",
-        description: "Please enter some content for your post.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPost.platforms.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one platform.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('posts')
-        .insert({
-          content: newPost.content,
-          platforms: newPost.platforms,
-          image_url: newPost.image || null,
-          scheduled_for: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate(),
-            parseInt(newPost.time.split(':')[0]),
-            parseInt(newPost.time.split(':')[1])
-          ).toISOString(),
-          status: 'scheduled'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setPosts([...posts, {
-          ...data,
-          date: new Date(data.scheduled_for),
-          image: data.image_url,
-        }]);
-      }
-
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
-      });
+  const onAddPost = async () => {
+    const success = await handleAddPost(selectedDate);
+    if (success) {
       setIsDialogOpen(false);
-      
-      toast({
-        title: "Success",
-        description: "Your post has been scheduled.",
-      });
-    } catch (error) {
-      console.error('Error scheduling post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to schedule post. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
-  const handlePlatformToggle = (platformId: string) => {
-    setNewPost(prev => ({
-      ...prev,
-      platforms: prev.platforms.includes(platformId)
-        ? prev.platforms.filter(id => id !== platformId)
-        : [...prev.platforms, platformId]
-    }));
-  };
-
-  const handleDeletePost = async (postId: string) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId);
-
-      if (error) throw error;
-
-      setPosts(posts.filter(post => post.id !== postId));
-      toast({
-        title: "Post Deleted",
-        description: "The post has been removed from your calendar.",
-      });
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete post. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSaveAsDraft = async () => {
-    if (!selectedDate) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('posts')
-        .insert({
-          content: newPost.content,
-          platforms: newPost.platforms,
-          image_url: newPost.image || null,
-          scheduled_for: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate(),
-            parseInt(newPost.time.split(':')[0]),
-            parseInt(newPost.time.split(':')[1])
-          ).toISOString(),
-          status: 'draft'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setPosts([...posts, {
-          ...data,
-          date: new Date(data.scheduled_for),
-          image: data.image_url,
-        }]);
-      }
-
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
-      });
+  const onSaveAsDraft = async () => {
+    const success = await handleSaveAsDraft(selectedDate);
+    if (success) {
       setIsDialogOpen(false);
-      
-      toast({
-        title: "Draft Saved",
-        description: "Your post has been saved as a draft.",
-      });
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save draft. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -266,8 +101,8 @@ export default function CalendarPage() {
           onOpenChange={setIsDialogOpen}
           newPost={newPost}
           setNewPost={setNewPost}
-          handleAddPost={handleAddPost}
-          handleSaveAsDraft={handleSaveAsDraft}
+          handleAddPost={onAddPost}
+          handleSaveAsDraft={onSaveAsDraft}
           handlePlatformToggle={handlePlatformToggle}
         />
       </div>
