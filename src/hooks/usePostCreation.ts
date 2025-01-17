@@ -1,97 +1,12 @@
-import { useState } from "react";
-import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-
-interface NewPost {
-  content: string;
-  platforms: string[];
-  image: string;
-  time: string;
-  status: 'scheduled' | 'draft';
-  isRecurring?: boolean;
-  recurringPattern?: string;
-  recurringEndDate?: Date;
-  bulkDates?: Date[];
-}
+import { usePostState } from "./usePostState";
+import { createRecurringPosts } from "./useRecurringPosts";
+import { createBulkPosts } from "./useBulkScheduling";
 
 export function usePostCreation() {
-  const [newPost, setNewPost] = useState<NewPost>({
-    content: '',
-    platforms: [],
-    image: '',
-    time: format(new Date(), 'HH:mm'),
-    status: 'scheduled',
-    isRecurring: false,
-    recurringPattern: 'daily',
-    bulkDates: [],
-  });
+  const { newPost, setNewPost, handlePlatformToggle } = usePostState();
   const { toast } = useToast();
-
-  const createRecurringPosts = async (parentPostId: string, basePost: any, selectedDate: Date) => {
-    const endDate = newPost.recurringEndDate;
-    if (!endDate) return;
-
-    const interval = newPost.recurringPattern || 'daily';
-    let currentDate = new Date(selectedDate);
-    
-    while (currentDate <= endDate) {
-      // Skip the first date as it's already created as the parent post
-      if (currentDate.getTime() === selectedDate.getTime()) {
-        // Move to next date based on interval
-        switch (interval) {
-          case 'daily':
-            currentDate.setDate(currentDate.getDate() + 1);
-            break;
-          case 'weekly':
-            currentDate.setDate(currentDate.getDate() + 7);
-            break;
-          case 'monthly':
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            break;
-        }
-        continue;
-      }
-
-      // Create child post
-      for (const platform of newPost.platforms) {
-        const scheduledTime = new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth(),
-          currentDate.getDate(),
-          parseInt(newPost.time.split(':')[0]),
-          parseInt(newPost.time.split(':')[1])
-        );
-
-        await supabase
-          .from('posts')
-          .insert({
-            content: newPost.content,
-            platform: platform,
-            image_url: newPost.image || null,
-            scheduled_for: scheduledTime.toISOString(),
-            status: 'scheduled',
-            is_recurring: true,
-            recurrence_pattern: interval,
-            recurrence_end_date: endDate.toISOString(),
-            parent_post_id: parentPostId
-          });
-      }
-
-      // Move to next date based on interval
-      switch (interval) {
-        case 'daily':
-          currentDate.setDate(currentDate.getDate() + 1);
-          break;
-        case 'weekly':
-          currentDate.setDate(currentDate.getDate() + 7);
-          break;
-        case 'monthly':
-          currentDate.setMonth(currentDate.getMonth() + 1);
-          break;
-      }
-    }
-  };
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
     if (!selectedDate && !newPost.bulkDates?.length) {
@@ -145,27 +60,7 @@ export function usePostCreation() {
 
         if (parentError) throw parentError;
 
-        // Create posts for all selected dates
-        for (const date of newPost.bulkDates) {
-          for (const platform of newPost.platforms) {
-            await supabase
-              .from('posts')
-              .insert({
-                content: newPost.content,
-                platform: platform,
-                image_url: newPost.image || null,
-                scheduled_for: new Date(
-                  date.getFullYear(),
-                  date.getMonth(),
-                  date.getDate(),
-                  parseInt(newPost.time.split(':')[0]),
-                  parseInt(newPost.time.split(':')[1])
-                ).toISOString(),
-                status: 'scheduled',
-                batch_id: parentPost.id
-              });
-          }
-        }
+        await createBulkPosts(parentPost, newPost);
 
         setNewPost({
           content: '',
@@ -235,7 +130,7 @@ export function usePostCreation() {
 
       // If this is a recurring post, create the series
       if (newPost.isRecurring && newPost.recurringEndDate) {
-        await createRecurringPosts(parentPost.id, parentPost, selectedDate!);
+        await createRecurringPosts(parentPost.id, selectedDate!, newPost, newPost.recurringEndDate);
       }
 
       setNewPost({
@@ -317,15 +212,6 @@ export function usePostCreation() {
       });
       return false;
     }
-  };
-
-  const handlePlatformToggle = (platformId: string) => {
-    setNewPost(prev => ({
-      ...prev,
-      platforms: prev.platforms.includes(platformId)
-        ? prev.platforms.filter(id => id !== platformId)
-        : [...prev.platforms, platformId]
-    }));
   };
 
   return {
