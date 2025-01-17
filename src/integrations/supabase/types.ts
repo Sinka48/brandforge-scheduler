@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      post_analytics: {
+        Row: {
+          clicks: number | null
+          engagement_rate: number | null
+          id: string
+          likes: number | null
+          measured_at: string | null
+          platform: string
+          post_id: string | null
+          shares: number | null
+          views: number | null
+        }
+        Insert: {
+          clicks?: number | null
+          engagement_rate?: number | null
+          id?: string
+          likes?: number | null
+          measured_at?: string | null
+          platform: string
+          post_id?: string | null
+          shares?: number | null
+          views?: number | null
+        }
+        Update: {
+          clicks?: number | null
+          engagement_rate?: number | null
+          id?: string
+          likes?: number | null
+          measured_at?: string | null
+          platform?: string
+          post_id?: string | null
+          shares?: number | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_post"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_analytics_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           batch_id: string | null

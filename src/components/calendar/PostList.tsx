@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Clock, Edit, Trash2, AlertCircle, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PostAnalytics } from "@/components/calendar/PostAnalytics";
 
 interface Post {
   id: string;
@@ -40,6 +42,8 @@ export function PostList({
   handleEditPost,
   isLoading 
 }: PostListProps) {
+  const [expandedPost, setExpandedPost] = useState<string | null>(null);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -135,10 +139,26 @@ export function PostList({
               className="mt-2 rounded-md max-h-32 object-cover w-full"
             />
           )}
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            {post.time || format(post.date, 'HH:mm')}
+          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Clock className="h-3 w-3" />
+              {post.time || format(post.date, 'HH:mm')}
+            </div>
+            {post.status === 'scheduled' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
+              >
+                {expandedPost === post.id ? 'Hide Analytics' : 'Show Analytics'}
+              </Button>
+            )}
           </div>
+          {expandedPost === post.id && post.platforms.map((platform) => (
+            <div key={platform} className="mt-4">
+              <PostAnalytics postId={post.id} platform={platform} />
+            </div>
+          ))}
         </div>
       ))}
     </div>
