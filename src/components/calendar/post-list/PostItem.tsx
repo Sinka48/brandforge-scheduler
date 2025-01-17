@@ -1,22 +1,15 @@
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Edit, Trash2, Copy } from "lucide-react";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { PostAnalytics } from "@/components/calendar/PostAnalytics";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PlatformId } from "@/constants/platforms";
-import { useState } from "react";
+import { Edit, Trash2, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
 
 interface Platform {
   id: PlatformId;
@@ -32,142 +25,93 @@ interface Post {
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
-  isRecurring?: boolean;
-  recurringPattern?: string;
-  recurringEndDate?: Date;
-  batch_id?: string;
-  parent_post_id?: string;
 }
 
 interface PostItemProps {
   post: Post;
   platforms: Platform[];
   onEdit: (post: Post) => void;
-  onDelete: (postId: string, deleteAll?: boolean) => void;
+  onDelete: (postId: string) => void;
+  isSelected?: boolean;
+  onSelect?: (postId: string) => void;
 }
 
-export function PostItem({ post, platforms, onEdit, onDelete }: PostItemProps) {
-  const [expandedAnalytics, setExpandedAnalytics] = useState(false);
-  const isRecurring = post.isRecurring || post.parent_post_id;
-
-  const handleDelete = (deleteAll: boolean = false) => {
-    onDelete(post.id, deleteAll);
-  };
+export function PostItem({ 
+  post, 
+  platforms, 
+  onEdit, 
+  onDelete,
+  isSelected,
+  onSelect
+}: PostItemProps) {
+  const postPlatforms = platforms.filter(p => post.platforms.includes(p.id));
 
   return (
-    <div
-      className={cn(
-        "p-4 rounded-md border transition-colors",
-        post.status === 'draft' ? 'bg-muted/50' : 'bg-background hover:bg-accent/5'
-      )}
-    >
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex gap-2">
-          {post.platforms.map((platformId) => {
-            const platform = platforms.find(p => p.id === platformId);
-            return platform?.icon && (
-              <div key={platformId}>
-                {platform.icon}
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            {post.batch_id && (
-              <Badge variant="secondary">
-                <Copy className="h-3 w-3 mr-1" />
-                Bulk Post
-              </Badge>
-            )}
-            {isRecurring && (
-              <Badge variant="secondary">
-                Recurring ({post.recurringPattern || 'series'})
-              </Badge>
-            )}
-            <Badge variant={post.status === 'draft' ? "secondary" : "default"}>
-              {post.status}
-            </Badge>
-          </div>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              onClick={() => onEdit(post)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            {isRecurring ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Recurring Post</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Do you want to delete just this occurrence or all future posts in this series?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleDelete(false)}>
-                      Delete This Only
-                    </AlertDialogAction>
-                    <AlertDialogAction onClick={() => handleDelete(true)} className="bg-destructive">
-                      Delete All Future
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive"
-                onClick={() => handleDelete(false)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-      <p className="text-sm mb-3 line-clamp-3">{post.content}</p>
-      {post.image && (
-        <img
-          src={post.image}
-          alt="Post preview"
-          className="mt-2 rounded-md max-h-32 object-cover w-full"
-        />
-      )}
-      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Clock className="h-3 w-3" />
-          {post.time || format(post.date, 'HH:mm')}
-        </div>
-        {post.status === 'scheduled' && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpandedAnalytics(!expandedAnalytics)}
-          >
-            {expandedAnalytics ? 'Hide Analytics' : 'Show Analytics'}
-          </Button>
+    <Card className={`p-4 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
+      <div className="flex items-start gap-4">
+        {onSelect && (
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onSelect(post.id)}
+            className="mt-1"
+          />
         )}
-      </div>
-      {expandedAnalytics && post.platforms.map((platform) => (
-        <div key={`${post.id}-${platform}`} className="mt-4">
-          <PostAnalytics postId={post.id} platform={platform} />
+        
+        <div className="flex-1 space-y-2">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="font-medium break-words">{post.content}</p>
+              {post.time && (
+                <p className="text-sm text-muted-foreground">
+                  {format(post.date, 'PPP')} at {post.time}
+                </p>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-1">
+                {postPlatforms.map((platform) => (
+                  <div
+                    key={platform.id}
+                    className="h-6 w-6 rounded-full bg-background border-2 border-muted flex items-center justify-center"
+                  >
+                    {platform.icon}
+                  </div>
+                ))}
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(post)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onDelete(post.id)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {post.image && (
+            <img
+              src={post.image}
+              alt="Post preview"
+              className="rounded-md max-h-32 object-cover"
+            />
+          )}
         </div>
-      ))}
-    </div>
+      </div>
+    </Card>
   );
 }

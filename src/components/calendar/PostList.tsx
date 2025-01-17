@@ -31,6 +31,8 @@ interface PostListProps {
   handleDeletePost: (postId: string, deleteAll?: boolean) => void;
   handleEditPost: (post: Post) => void;
   isLoading?: boolean;
+  selectedPosts?: string[];
+  onSelectPost?: (postId: string) => void;
 }
 
 export function PostList({ 
@@ -39,17 +41,17 @@ export function PostList({
   platforms, 
   handleDeletePost, 
   handleEditPost,
-  isLoading 
+  isLoading,
+  selectedPosts = [],
+  onSelectPost
 }: PostListProps) {
   if (isLoading) {
     return <LoadingState />;
   }
 
-  const filteredPosts = posts.filter(
-    (post) =>
-      selectedDate &&
-      post.date.toDateString() === selectedDate.toDateString()
-  );
+  const filteredPosts = selectedDate
+    ? posts.filter(post => post.date.toDateString() === selectedDate.toDateString())
+    : posts;
 
   if (filteredPosts.length === 0) {
     return <EmptyState />;
@@ -64,6 +66,8 @@ export function PostList({
           platforms={platforms}
           onEdit={handleEditPost}
           onDelete={handleDeletePost}
+          isSelected={selectedPosts.includes(post.id)}
+          onSelect={onSelectPost}
         />
       ))}
     </div>
