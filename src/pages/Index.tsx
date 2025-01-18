@@ -18,10 +18,18 @@ export default function DashboardPage({ session }: DashboardPageProps) {
         .from('dashboard_analytics')
         .select('*')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data;
+      
+      // Return default values if no data exists
+      return data || {
+        total_posts: 0,
+        posts_this_week: 0,
+        active_campaigns: 0,
+        avg_engagement_rate: 0,
+        platforms_used: ''
+      };
     }
   });
 
@@ -43,7 +51,7 @@ export default function DashboardPage({ session }: DashboardPageProps) {
   return (
     <Layout session={session}>
       <div className="space-y-8 p-4 md:p-6">
-        <StatsCards analytics={analytics || {}} />
+        <StatsCards analytics={analytics} />
         <QuickActions />
         <ActivityChart data={activityData || []} />
       </div>
