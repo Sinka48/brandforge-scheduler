@@ -1,26 +1,37 @@
-import { Home, PenTool, Library, Calendar, Settings, Rocket, LogOut } from "lucide-react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { MobileNav } from "./MobileNav";
 import { useToast } from "@/hooks/use-toast";
-
-const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "Brand Generator", href: "/brand", icon: PenTool },
-  { name: "Saved Brands", href: "/brands", icon: Library },
-  { name: "Calendar", href: "/calendar", icon: Calendar },
-  { name: "Campaigns", href: "/campaigns", icon: Rocket },
-  { name: "Settings", href: "/settings", icon: Settings },
-];
+import { supabase } from "@/lib/supabase";
+import { User, LogOut, Settings, PenTool, Library } from "lucide-react";
 
 interface HeaderProps {
-  session: Session;
+  session: Session | null;
 }
 
 export function Header({ session }: HeaderProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -41,42 +52,147 @@ export function Header({ session }: HeaderProps) {
     }
   };
 
-  // Early return if no session
-  if (!session || !session.user) {
-    return null;
+  if (!session) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="text-xl font-bold">Brand Management</span>
+          </Link>
+          <div className="flex flex-1 items-center justify-end space-x-4">
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                Login
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
   }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <Link to="/" className="mr-6 flex items-center space-x-2">
-          <span className="text-xl font-bold">Brand Management</span>
-        </Link>
-        <nav className="flex flex-1 items-center space-x-6">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.name}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-muted-foreground">
-            {session.user.email}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </Button>
+      <div className="container flex h-14 items-center justify-between">
+        <div className="flex items-center">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="text-xl font-bold">Brand Management</span>
+          </Link>
+
+          <NavigationMenu className="hidden lg:flex">
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <Link to="/">
+                  <NavigationMenuLink
+                    className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                    )}
+                  >
+                    Dashboard
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Brand</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[200px] gap-3 p-4">
+                    <li>
+                      <Link to="/brand">
+                        <NavigationMenuLink
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <PenTool className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">
+                              Create Brand
+                            </div>
+                          </div>
+                        </NavigationMenuLink>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/brands">
+                        <NavigationMenuLink
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Library className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">
+                              My Brands
+                            </div>
+                          </div>
+                        </NavigationMenuLink>
+                      </Link>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link to="/calendar">
+                  <NavigationMenuLink
+                    className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                    )}
+                  >
+                    Calendar
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link to="/campaigns">
+                  <NavigationMenuLink
+                    className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                    )}
+                  >
+                    Campaigns
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <MobileNav />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {session.user.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer text-red-600 focus:text-red-600"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
