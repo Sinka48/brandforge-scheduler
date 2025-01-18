@@ -14,7 +14,7 @@ interface RoutesProps {
   session?: Session | null;
 }
 
-function Routes({ session }: RoutesProps) {
+export default function Routes({ session }: RoutesProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,8 +28,13 @@ function Routes({ session }: RoutesProps) {
       }
     });
 
+    // Check initial session
+    if (session) {
+      navigate('/calendar');
+    }
+
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, session]);
 
   // If not authenticated, only show index page which contains login form
   if (!session) {
@@ -53,5 +58,3 @@ function Routes({ session }: RoutesProps) {
     </RouterRoutes>
   );
 }
-
-export default Routes;
