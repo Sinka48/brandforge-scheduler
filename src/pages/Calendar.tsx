@@ -3,7 +3,7 @@ import { PostDialog } from "@/components/calendar/PostDialog";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { PLATFORMS } from "@/constants/platforms";
-import { Plus } from "lucide-react";
+import { Plus, Rocket } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
