@@ -9,6 +9,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
+import { Github, Mail } from "lucide-react";
 
 const features = [
   {
@@ -42,6 +44,7 @@ export default function IndexPage({ session }: IndexPageProps) {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,28 +74,18 @@ export default function IndexPage({ session }: IndexPageProps) {
     return () => clearInterval(typingInterval);
   }, [currentFeature, isTyping]);
 
-  const { data: analytics } = useQuery({
-    queryKey: ['dashboard-analytics', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('dashboard_analytics')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data || {
-        total_posts: 0,
-        posts_this_week: 0,
-        active_campaigns: 0,
-        avg_engagement_rate: 0,
-        platforms_used: ''
-      };
-    },
-    enabled: !!session?.user?.id
-  });
+  const handleGithubLogin = async () => {
+    setIsLoading(true);
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'github',
+      });
+    } catch (error) {
+      console.error('Error signing in with Github:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (session) {
     return (
@@ -114,34 +107,50 @@ export default function IndexPage({ session }: IndexPageProps) {
   return (
     <div className="min-h-screen bg-background flex">
       <div className="w-[40%] p-8 flex flex-col items-center justify-center">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary mb-2"></h1>
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-semibold">Welcome back</h1>
+            <p className="text-sm text-muted-foreground">Sign in to your account</p>
           </div>
           
-          <div className="p-6">
-            <div className="flex gap-4 mb-6">
+          <div className="space-y-4">
+            {showLogin ? <LoginForm /> : <SignUpForm />}
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
               <Button 
-                variant={showLogin ? "default" : "outline"}
-                onClick={() => setShowLogin(true)}
-                className="flex-1"
+                variant="outline" 
+                onClick={handleGithubLogin}
+                disabled={isLoading}
+                className="w-full"
               >
-                Login
+                <Github className="mr-2 h-4 w-4" />
+                Github
               </Button>
               <Button 
-                variant={!showLogin ? "default" : "outline"}
-                onClick={() => setShowLogin(false)}
-                className="flex-1"
+                variant="outline"
+                onClick={() => setShowLogin(!showLogin)}
+                className="w-full"
               >
-                Sign Up
+                <Mail className="mr-2 h-4 w-4" />
+                {showLogin ? "Create an account" : "Sign in with email"}
               </Button>
             </div>
-            {showLogin ? <LoginForm /> : <SignUpForm />}
           </div>
         </div>
       </div>
 
-      <div className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="w-[60%] p-8 flex flex-col items-start justify-start relative overflow-hidden">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -165,7 +174,7 @@ export default function IndexPage({ session }: IndexPageProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-left space-y-6 relative z-10"
+          className="max-w-2xl text-left space-y-6 relative z-10 pt-8"
         >
           <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
           <p className="text-xl text-white/80">
