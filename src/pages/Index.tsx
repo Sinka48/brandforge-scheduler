@@ -18,33 +18,38 @@ export default function IndexPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState("");
   const [analytics, setAnalytics] = useState<any>(null);
-  const [hasCheckedSession, setHasCheckedSession] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setHasCheckedSession(true);
-      
-      if (!session) {
-        navigate('/calendar', { replace: true });
+    // Initial session check
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        
+        if (!session && !isLoading) {
+          navigate('/calendar', { replace: true });
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkSession();
+    initializeAuth();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (!session && hasCheckedSession) {
+      if (!session && !isLoading) {
         navigate('/calendar', { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, hasCheckedSession]);
+  }, [navigate, isLoading]);
 
   useEffect(() => {
     if (session) {
@@ -93,7 +98,6 @@ export default function IndexPage() {
     }
   ];
 
-  // Sample data for the chart - in a real app, this would come from your backend
   const chartData = [
     { name: 'Mon', posts: 4 },
     { name: 'Tue', posts: 3 },
@@ -103,6 +107,10 @@ export default function IndexPage() {
     { name: 'Sat', posts: 4 },
     { name: 'Sun', posts: 3 },
   ];
+
+  if (isLoading) {
+    return <Layout>Loading...</Layout>;
+  }
 
   return (
     <Layout>
