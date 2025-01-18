@@ -9,7 +9,6 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Icons } from "@/components/ui/icons";
 
 const features = [
   {
@@ -43,7 +42,6 @@ export default function IndexPage({ session }: IndexPageProps) {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -96,23 +94,6 @@ export default function IndexPage({ session }: IndexPageProps) {
     enabled: !!session?.user?.id
   });
 
-  const handleGoogleLogin = async () => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   if (session) {
     return (
       <Layout session={session}>
@@ -135,70 +116,32 @@ export default function IndexPage({ session }: IndexPageProps) {
       <div className="w-[40%] p-8 flex flex-col items-center justify-center">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary mb-2">Welcome</h1>
-            <p className="text-muted-foreground">Sign in to continue to your account</p>
+            <h1 className="text-4xl font-bold text-primary mb-2"></h1>
           </div>
           
           <div className="p-6">
-            <div className="flex flex-col gap-4">
-              <Button
-                variant="outline"
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
-                className="w-full"
+            <div className="flex gap-4 mb-6">
+              <Button 
+                variant={showLogin ? "default" : "outline"}
+                onClick={() => setShowLogin(true)}
+                className="flex-1"
               >
-                {isLoading ? (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Icons.google className="mr-2 h-4 w-4" />
-                )}
-                Continue with Google
+                Login
               </Button>
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              {showLogin ? <LoginForm /> : <SignUpForm />}
-              
-              <div className="text-center text-sm">
-                {showLogin ? (
-                  <p className="text-muted-foreground">
-                    Don't have an account?{" "}
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto font-normal"
-                      onClick={() => setShowLogin(false)}
-                    >
-                      Sign up
-                    </Button>
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground">
-                    Already have an account?{" "}
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto font-normal"
-                      onClick={() => setShowLogin(true)}
-                    >
-                      Sign in
-                    </Button>
-                  </p>
-                )}
-              </div>
+              <Button 
+                variant={!showLogin ? "default" : "outline"}
+                onClick={() => setShowLogin(false)}
+                className="flex-1"
+              >
+                Sign Up
+              </Button>
             </div>
+            {showLogin ? <LoginForm /> : <SignUpForm />}
           </div>
         </div>
       </div>
 
-      <div className="w-[60%] p-8 flex flex-col items-start justify-start relative overflow-hidden">
+      <div className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -222,7 +165,7 @@ export default function IndexPage({ session }: IndexPageProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-left space-y-6 relative z-10 pt-8"
+          className="max-w-2xl text-left space-y-6 relative z-10"
         >
           <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
           <p className="text-xl text-white/80">
