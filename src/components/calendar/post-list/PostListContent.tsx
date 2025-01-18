@@ -2,19 +2,12 @@ import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Filter, Clock } from "lucide-react";
+import { ChevronDown, Clock } from "lucide-react";
 import { filterPostsByDate } from "../utils/dateUtils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { PlatformId } from "@/constants/platforms";
 import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface PostListContentProps {
   selectedDate: Date | undefined;
@@ -94,66 +87,37 @@ export function PostListContent({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel>Platforms</DropdownMenuLabel>
-            {platforms.map((platform) => (
-              <DropdownMenuCheckboxItem
-                key={platform.id}
-                checked={selectedPlatforms.includes(platform.id)}
-                onCheckedChange={(checked) => {
-                  setSelectedPlatforms(prev =>
-                    checked
-                      ? [...prev, platform.id]
-                      : prev.filter(p => p !== platform.id)
-                  );
-                }}
-              >
-                <div className="h-4 w-4 mr-2">
-                  {platform.icon}
-                </div>
-                {platform.name}
-              </DropdownMenuCheckboxItem>
-            ))}
-            {campaigns.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Campaigns</DropdownMenuLabel>
-                {campaigns.map((campaign) => (
-                  <DropdownMenuCheckboxItem
-                    key={campaign.id}
-                    checked={selectedCampaigns.includes(campaign.id)}
-                    onCheckedChange={(checked) => {
-                      setSelectedCampaigns(prev =>
-                        checked
-                          ? [...prev, campaign.id]
-                          : prev.filter(id => id !== campaign.id)
-                      );
-                    }}
-                  >
-                    {campaign.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
+      <div className="flex flex-col space-y-4">
         {nextPost && (
-          <div className="flex items-center gap-2 bg-muted p-2 rounded-md">
+          <div className="flex items-center justify-end gap-2 bg-muted p-2 rounded-md">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
               Next post {timeLeft}
             </span>
           </div>
         )}
+
+        <div className="flex flex-wrap gap-2">
+          {platforms.map((platform) => (
+            <Badge
+              key={platform.id}
+              variant={selectedPlatforms.includes(platform.id) ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => {
+                setSelectedPlatforms(prev =>
+                  prev.includes(platform.id)
+                    ? prev.filter(p => p !== platform.id)
+                    : [...prev, platform.id]
+                );
+              }}
+            >
+              <div className="h-4 w-4 mr-2">
+                {platform.icon}
+              </div>
+              {platform.name}
+            </Badge>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-4">
