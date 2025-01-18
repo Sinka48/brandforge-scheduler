@@ -14,6 +14,7 @@ import { PLATFORMS } from "@/constants/platforms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, FileText } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -80,15 +81,36 @@ export default function CalendarPage() {
   };
 
   const handleGenerateCampaign = async (campaignPosts: any[]) => {
-    for (const post of campaignPosts) {
-      setNewPost({
-        content: post.content,
-        platforms: [post.platform],
-        image: '',
-        time: post.time,
-        status: 'scheduled',
+    const { toast } = useToast();
+    let successCount = 0;
+    
+    try {
+      for (const post of campaignPosts) {
+        setNewPost({
+          content: post.content,
+          platforms: [post.platform],
+          image: '',
+          time: post.time,
+          status: 'scheduled',
+        });
+        
+        const success = await handleAddPost(selectedDate);
+        if (success) {
+          successCount++;
+        }
+      }
+
+      toast({
+        title: "Campaign Scheduled",
+        description: `Successfully scheduled ${successCount} out of ${campaignPosts.length} posts`,
       });
-      await handleAddPost(selectedDate);
+    } catch (error) {
+      console.error('Error scheduling campaign:', error);
+      toast({
+        title: "Error",
+        description: "There was an error scheduling some posts. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
