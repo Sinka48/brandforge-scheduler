@@ -1,12 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { PostList } from "./PostList";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { PlatformId } from "@/constants/platforms";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PLATFORMS } from "@/constants/platforms";
-import { Clock } from "lucide-react";
-import { useState, useEffect } from "react";
 
 interface Post {
   id: string;
@@ -31,8 +29,6 @@ export function CalendarView({
   onCreatePost,
   onPostClick
 }: CalendarViewProps) {
-  const [timeLeft, setTimeLeft] = useState<string>("");
-
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
@@ -75,26 +71,6 @@ export function CalendarView({
   // Sort posts by scheduled time, earliest first
   const sortedPosts = [...posts].sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Find next upcoming post and calculate time left
-  useEffect(() => {
-    const updateTimeLeft = () => {
-      const now = new Date();
-      const nextPost = sortedPosts.find(post => post.date > now);
-      
-      if (nextPost) {
-        const timeUntilPost = formatDistanceToNow(nextPost.date, { addSuffix: true });
-        setTimeLeft(timeUntilPost);
-      } else {
-        setTimeLeft("No upcoming posts");
-      }
-    };
-
-    updateTimeLeft();
-    const timer = setInterval(updateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, [sortedPosts]);
-
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
     icon: <platform.icon className="h-4 w-4" />
@@ -103,10 +79,6 @@ export function CalendarView({
   return (
     <Card className="p-4">
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Next post in: {timeLeft}</h2>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </div>
         {isLoading ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Loading posts...</p>
