@@ -30,6 +30,9 @@ export function CalendarView({
   onCreatePost,
   onPostClick
 }: CalendarViewProps) {
+  // Filter out draft posts, only show scheduled posts
+  const scheduledPosts = posts.filter(post => post.status === 'scheduled');
+
   return (
     <Card className="p-4">
       <Tabs defaultValue="month" className="w-full">
@@ -52,7 +55,7 @@ export function CalendarView({
           <MonthView 
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
-            posts={posts}
+            posts={scheduledPosts}
             onCreatePost={onCreatePost}
             onPostClick={onPostClick}
           />
@@ -62,7 +65,7 @@ export function CalendarView({
           <WeekView 
             selectedDate={selectedDate} 
             onSelectDate={onSelectDate}
-            posts={posts}
+            posts={scheduledPosts}
           />
         </TabsContent>
 
@@ -70,7 +73,7 @@ export function CalendarView({
           <DayView
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
-            posts={posts}
+            posts={scheduledPosts}
           />
         </TabsContent>
       </Tabs>

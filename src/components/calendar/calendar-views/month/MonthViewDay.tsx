@@ -24,7 +24,7 @@ export function MonthViewDay({
       className={cn(
         "relative w-full h-full p-2",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-        posts.length === 0 && "cursor-pointer"
+        posts.length === 0 && "cursor-pointer hover:bg-accent/50 transition-colors"
       )}
       role="button"
       tabIndex={0}
@@ -45,7 +45,7 @@ export function MonthViewDay({
       </div>
       
       <div className="space-y-1 mt-2">
-        {posts.slice(0, 3).map((post) => (
+        {posts.map((post) => (
           <button 
             key={post.id}
             className="w-full text-left text-xs truncate p-1 rounded bg-accent/40 hover:bg-accent transition-colors"
@@ -58,11 +58,6 @@ export function MonthViewDay({
             {post.content}
           </button>
         ))}
-        {posts.length > 3 && (
-          <div className="text-xs text-muted-foreground pl-1">
-            +{posts.length - 3} more
-          </div>
-        )}
       </div>
       
       <PlatformIndicators posts={posts} />
