@@ -1,4 +1,9 @@
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { CalendarIcon, CalendarDays, Clock } from "lucide-react";
+import MonthView from "@/components/calendar/MonthView";
+import WeekView from "@/components/calendar/WeekView";
+import DayView from "@/components/calendar/DayView";
 
 interface Post {
   id: string;
