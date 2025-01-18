@@ -6,7 +6,7 @@ import { ChevronDown, Clock } from "lucide-react";
 import { filterPostsByDate } from "../utils/dateUtils";
 import { useState, useEffect } from "react";
 import { PlatformId } from "@/constants/platforms";
-import { formatDistanceToNow, differenceInHours, differenceInMinutes } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
 interface PostListContentProps {
@@ -36,7 +36,6 @@ export function PostListContent({
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [nextPost, setNextPost] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState<string>("");
-  const [exactTimeLeft, setExactTimeLeft] = useState<string>("");
 
   // Get unique campaigns from posts
   const campaigns = Array.from(new Set(posts
@@ -75,15 +74,8 @@ export function PostListContent({
     if (!nextPost) return;
 
     const timer = setInterval(() => {
-      const now = new Date();
-      const postDate = new Date(nextPost.date);
-      const timeUntilPost = formatDistanceToNow(postDate, { addSuffix: true });
+      const timeUntilPost = formatDistanceToNow(new Date(nextPost.date), { addSuffix: true });
       setTimeLeft(timeUntilPost);
-
-      // Calculate exact hours and minutes
-      const hoursLeft = differenceInHours(postDate, now);
-      const minutesLeft = differenceInMinutes(postDate, now) % 60;
-      setExactTimeLeft(`${hoursLeft}h ${minutesLeft}m`);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -97,16 +89,11 @@ export function PostListContent({
     <div className="space-y-4">
       <div className="flex flex-col space-y-4">
         {nextPost && (
-          <div className="flex flex-col bg-muted p-3 rounded-md space-y-2">
-            <div className="flex items-center justify-end gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Next post {timeLeft}
-              </span>
-            </div>
-            <div className="text-right text-sm text-muted-foreground/80">
-              Next post in: {exactTimeLeft}
-            </div>
+          <div className="flex items-center justify-end gap-2 bg-muted p-2 rounded-md">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Next post {timeLeft}
+            </span>
           </div>
         )}
 
