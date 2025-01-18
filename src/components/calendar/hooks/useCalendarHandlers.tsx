@@ -2,12 +2,20 @@ import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
+interface Post {
+  content: string;
+  platforms: string[];
+  image: string;
+  time: string;
+  status: 'draft' | 'scheduled';
+}
+
 interface CalendarHandlersProps {
   setEditingPost: (post: any) => void;
   setNewPost: (post: any) => void;
   setIsDialogOpen: (open: boolean) => void;
-  handleAddPost: (selectedDate: Date | undefined) => Promise<any>;
-  handleUpdatePost: (postId: string, selectedDate: Date | undefined) => Promise<boolean>;
+  handleAddPost: (selectedDate: Date | undefined, post: Post) => Promise<any>;
+  handleUpdatePost: (postId: string, selectedDate: Date | undefined, post: Post) => Promise<boolean>;
   toast: any;
   selectedDate: Date | undefined;
 }
@@ -124,9 +132,9 @@ export function useCalendarHandlers({
   const onAddPost = async (editingPost: any, selectedDate: Date | undefined) => {
     let success;
     if (editingPost) {
-      success = await handleUpdatePost(editingPost.id, selectedDate);
+      success = await handleUpdatePost(editingPost.id, selectedDate, editingPost);
     } else {
-      success = await handleAddPost(selectedDate);
+      success = await handleAddPost(selectedDate, editingPost);
     }
     if (success) {
       setIsDialogOpen(false);
