@@ -9,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, FileText } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
-import { useCalendarState } from "./hooks/useCalendarState";
-import { useCalendarHandlers } from "./hooks/useCalendarHandlers";
+import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
+import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
 
 export default function CalendarPage() {
   useCalendarAuth();
