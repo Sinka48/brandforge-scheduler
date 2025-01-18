@@ -22,13 +22,17 @@ export default function IndexPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setHasCheckedSession(true);
+      
       if (!session) {
         navigate('/calendar', { replace: true });
       }
-    });
+    };
+
+    checkSession();
 
     const {
       data: { subscription },
