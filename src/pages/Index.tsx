@@ -142,7 +142,7 @@ export default function IndexPage({ session }: IndexPageProps) {
         </div>
       </div>
 
-      <div className="w-[60%] p-8 flex flex-col items-start justify-start relative overflow-hidden">
+      <div className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -166,7 +166,7 @@ export default function IndexPage({ session }: IndexPageProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-left space-y-6 relative z-10 pt-8"
+          className="max-w-2xl text-left space-y-6 relative z-10"
         >
           <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
           <p className="text-xl text-white/80">
