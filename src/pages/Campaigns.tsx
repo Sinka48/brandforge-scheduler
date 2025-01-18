@@ -3,12 +3,29 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Edit, Trash2, Plus } from "lucide-react";
+import { Play, Pause, Edit, Trash2, Plus, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { useState } from "react";
+import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlatformSelector } from "@/components/calendar/post-dialog/PlatformSelector";
 
 export default function CampaignsPage() {
   const { toast } = useToast();
+  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+  const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({
+    name: "",
+    description: "",
+    platforms: [] as string[],
+    duration: "7",
+    tone: "professional"
+  });
 
   const { data: campaigns, isLoading, refetch } = useQuery({
     queryKey: ['campaigns'],
@@ -73,6 +90,56 @@ export default function CampaignsPage() {
     }
   };
 
+  const handleCreateManualCampaign = async () => {
+    if (!newCampaign.name.trim() || !newCampaign.description.trim() || newCampaign.platforms.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .insert({
+          name: newCampaign.name,
+          description: newCampaign.description,
+          platforms: newCampaign.platforms,
+          status: 'draft',
+          settings: {
+            duration: parseInt(newCampaign.duration),
+            tone: newCampaign.tone
+          }
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Campaign created successfully",
+      });
+
+      setIsManualDialogOpen(false);
+      setNewCampaign({
+        name: "",
+        description: "",
+        platforms: [],
+        duration: "7",
+        tone: "professional"
+      });
+      refetch();
+    } catch (error) {
+      console.error('Error creating campaign:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create campaign",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       draft: "bg-gray-500",
@@ -84,14 +151,29 @@ export default function CampaignsPage() {
     return colors[status] || "bg-gray-500";
   };
 
+  const handlePlatformToggle = (platformId: string) => {
+    setNewCampaign(prev => ({
+      ...prev,
+      platforms: prev.platforms.includes(platformId)
+        ? prev.platforms.filter(p => p !== platformId)
+        : [...prev.platforms, platformId]
+    }));
+  };
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Campaigns</h1>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          New Campaign
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsManualDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Campaign
+          </Button>
+          <Button onClick={() => setIsAIDialogOpen(true)} variant="secondary">
+            <Wand2 className="h-4 w-4 mr-2" />
+            AI Campaign
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -168,6 +250,97 @@ export default function CampaignsPage() {
           ))}
         </div>
       )}
+
+      <AICampaignDialog 
+        isOpen={isAIDialogOpen}
+        onOpenChange={setIsAIDialogOpen}
+        onGenerateCampaign={() => {
+          refetch();
+          setIsAIDialogOpen(false);
+        }}
+      />
+
+      <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Campaign Name</Label>
+              <Input
+                id="name"
+                value={newCampaign.name}
+                onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter campaign name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={newCampaign.description}
+                onChange={(e) => setNewCampaign(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Enter campaign description"
+              />
+            </div>
+
+            <PlatformSelector
+              selectedPlatforms={newCampaign.platforms}
+              onPlatformToggle={handlePlatformToggle}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Campaign Duration (days)</Label>
+                <Select 
+                  value={newCampaign.duration}
+                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, duration: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="7">1 week</SelectItem>
+                    <SelectItem value="14">2 weeks</SelectItem>
+                    <SelectItem value="30">1 month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tone">Campaign Tone</Label>
+                <Select 
+                  value={newCampaign.tone}
+                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, tone: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="casual">Casual</SelectItem>
+                    <SelectItem value="friendly">Friendly</SelectItem>
+                    <SelectItem value="humorous">Humorous</SelectItem>
+                    <SelectItem value="formal">Formal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsManualDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateManualCampaign}>
+              Create Campaign
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
