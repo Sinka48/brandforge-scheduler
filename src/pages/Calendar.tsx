@@ -13,10 +13,12 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 import { PLATFORMS } from "@/constants/platforms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, FileText } from "lucide-react";
+import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
   
   useCalendarAuth();
@@ -77,6 +79,18 @@ export default function CalendarPage() {
     setIsDialogOpen(true);
   };
 
+  const handleGenerateCampaign = async (campaignPosts: any[]) => {
+    for (const post of campaignPosts) {
+      await handleAddPost({
+        content: post.content,
+        platforms: [post.platform],
+        image: '',
+        time: post.time,
+        status: 'scheduled',
+      });
+    }
+  };
+
   const onAddPost = async () => {
     let success;
     if (editingPost) {
@@ -120,7 +134,10 @@ export default function CalendarPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <CalendarHeader onNewPost={() => setIsDialogOpen(true)} />
+        <CalendarHeader 
+          onNewPost={() => setIsDialogOpen(true)}
+          onNewCampaign={() => setIsCampaignDialogOpen(true)}
+        />
         
         <Tabs defaultValue="calendar" className="w-full">
           <TabsList>
@@ -173,6 +190,12 @@ export default function CalendarPage() {
           handlePlatformToggle={handlePlatformToggle}
           selectedDate={selectedDate}
           editMode={!!editingPost}
+        />
+
+        <AICampaignDialog
+          isOpen={isCampaignDialogOpen}
+          onOpenChange={setIsCampaignDialogOpen}
+          onGenerateCampaign={handleGenerateCampaign}
         />
       </div>
     </Layout>
