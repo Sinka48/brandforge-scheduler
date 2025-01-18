@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { AuthError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -45,31 +45,11 @@ export function LoginForm() {
       
       if (error) {
         console.error("Auth error:", error);
-        
-        if (error instanceof AuthApiError) {
-          switch (error.status) {
-            case 400:
-              toast({
-                title: "Invalid credentials",
-                description: "The email or password you entered is incorrect. Please try again.",
-                variant: "destructive",
-              });
-              break;
-            case 429:
-              toast({
-                title: "Too many attempts",
-                description: "Please wait a moment before trying again.",
-                variant: "destructive",
-              });
-              break;
-            default:
-              toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-              });
-          }
-        }
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
         return;
       }
 
@@ -78,12 +58,12 @@ export function LoginForm() {
         title: "Success",
         description: "You have successfully logged in.",
       });
-      form.reset();
+      
     } catch (error) {
       console.error("Login error:", error);
       toast({
         title: "Error",
-        description: "Failed to sign in. Please try again.",
+        description: error instanceof AuthError ? error.message : "Failed to sign in. Please try again.",
         variant: "destructive",
       });
     } finally {

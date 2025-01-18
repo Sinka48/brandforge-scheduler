@@ -4,18 +4,29 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { SignUpForm } from "@/components/auth/SignUpForm";
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+const features = [
+  "Schedule your social media posts with ease",
+  "Analyze your social media performance",
+  "Create engaging content with AI assistance",
+  "Manage multiple social media accounts",
+  "Track your brand's growth and engagement",
+  "Generate beautiful visual content",
+  "Optimize your posting schedule",
+  "Collaborate with your team seamlessly"
+];
 
 interface IndexPageProps {
   session: Session | null;
 }
 
 export default function IndexPage({ session }: IndexPageProps) {
-  const [showLogin, setShowLogin] = useState(true);
+  const navigate = useNavigate();
+  const [currentFeature, setCurrentFeature] = useState(0);
+  const [bgImage, setBgImage] = useState("");
 
   const { data: analytics } = useQuery({
     queryKey: ['dashboard-analytics', session?.user?.id],
@@ -40,46 +51,64 @@ export default function IndexPage({ session }: IndexPageProps) {
     enabled: !!session?.user?.id
   });
 
+  useEffect(() => {
+    // Fetch random image from Unsplash
+    fetch('https://source.unsplash.com/1600x900/?social-media,marketing')
+      .then(response => {
+        setBgImage(response.url);
+      });
+
+    // Rotate features every 5 seconds
+    const interval = setInterval(() => {
+      setCurrentFeature(prev => (prev + 1) % features.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (session) {
+      navigate('/calendar');
+    }
+  }, [session, navigate]);
+
   // If user is not authenticated, show landing page
   if (!session) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b">
-          <div className="container flex h-14 items-center justify-between">
-            <span className="text-xl font-bold">Brand Management</span>
-            <div className="flex gap-4">
-              <Button 
-                variant={showLogin ? "default" : "outline"}
-                onClick={() => setShowLogin(true)}
-              >
-                Login
-              </Button>
-              <Button 
-                variant={!showLogin ? "default" : "outline"}
-                onClick={() => setShowLogin(false)}
-              >
-                Sign Up
-              </Button>
+      <div className="min-h-screen bg-background flex">
+        {/* Left side - Login form */}
+        <div className="w-1/2 p-8 flex items-center justify-center bg-background">
+          <div className="w-full max-w-md space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold">Welcome Back</h2>
+              <p className="text-muted-foreground">Sign in to manage your social media presence</p>
             </div>
+            <LoginForm />
           </div>
-        </header>
+        </div>
 
-        <main className="container py-10">
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div className="space-y-6">
-              <h1 className="text-4xl font-bold tracking-tight">
-                Manage Your Brand Presence
+        {/* Right side - Landing content */}
+        <div 
+          className="w-1/2 relative overflow-hidden"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${bgImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center p-8 space-y-6">
+              <h1 className="text-4xl font-bold text-white mb-4">
+                Social Media Management Made Simple
               </h1>
-              <p className="text-xl text-muted-foreground">
-                Streamline your social media management, create engaging campaigns, and grow your brand presence across all platforms.
-              </p>
+              <div className="h-20 flex items-center justify-center">
+                <p className="text-xl text-white animate-fade-in">
+                  {features[currentFeature]}
+                </p>
+              </div>
             </div>
-
-            <Card className="p-6">
-              {showLogin ? <LoginForm /> : <SignUpForm />}
-            </Card>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
