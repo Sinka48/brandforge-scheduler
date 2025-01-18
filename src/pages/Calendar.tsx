@@ -81,13 +81,14 @@ export default function CalendarPage() {
 
   const handleGenerateCampaign = async (campaignPosts: any[]) => {
     for (const post of campaignPosts) {
-      await handleAddPost({
+      setNewPost({
         content: post.content,
         platforms: [post.platform],
         image: '',
         time: post.time,
         status: 'scheduled',
       });
+      await handleAddPost(selectedDate);
     }
   };
 
