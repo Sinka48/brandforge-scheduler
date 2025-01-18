@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export default function IndexPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -81,6 +82,14 @@ export default function IndexPage() {
     }
   };
 
+  if (!isInitialized) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <LandingPage />;
+  }
+
   const stats = [
     {
       name: "Total Posts",
@@ -117,10 +126,6 @@ export default function IndexPage() {
     { name: 'Sat', posts: 4 },
     { name: 'Sun', posts: 3 },
   ];
-
-  if (!isInitialized) {
-    return <Layout>Loading...</Layout>;
-  }
 
   return (
     <Layout>
