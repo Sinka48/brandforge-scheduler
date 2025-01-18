@@ -22,6 +22,15 @@ export function usePostManagement() {
       return false;
     }
 
+    if (!newPost.platforms || newPost.platforms.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one platform.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -37,7 +46,7 @@ export function usePostManagement() {
         .from('posts')
         .insert({
           content: newPost.content,
-          platform: newPost.platforms[0], // Assuming single platform for now
+          platform: newPost.platforms[0],
           image_url: newPost.image || null,
           scheduled_for: new Date(
             selectedDate.getFullYear(),
@@ -94,6 +103,15 @@ export function usePostManagement() {
       toast({
         title: "Error",
         description: "Please select a date first.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!newPost.platforms || newPost.platforms.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one platform.",
         variant: "destructive",
       });
       return false;
