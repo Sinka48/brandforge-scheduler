@@ -18,13 +18,15 @@ export default function IndexPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState("");
   const [analytics, setAnalytics] = useState<any>(null);
+  const [hasCheckedSession, setHasCheckedSession] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setHasCheckedSession(true);
       if (!session) {
-        navigate('/calendar');
+        navigate('/calendar', { replace: true });
       }
     });
 
@@ -32,13 +34,13 @@ export default function IndexPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (!session) {
-        navigate('/calendar');
+      if (!session && hasCheckedSession) {
+        navigate('/calendar', { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, hasCheckedSession]);
 
   useEffect(() => {
     if (session) {
