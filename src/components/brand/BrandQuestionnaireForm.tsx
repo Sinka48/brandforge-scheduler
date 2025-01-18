@@ -60,7 +60,7 @@ export function BrandQuestionnaireForm() {
         return
       }
 
-      const { error } = await supabase.from("brand_questionnaires").insert({
+      const { data, error } = await supabase.from("brand_questionnaires").insert({
         user_id: user.id,
         business_name: values.businessName,
         industry: values.industry,
@@ -69,14 +69,17 @@ export function BrandQuestionnaireForm() {
         color_preferences: values.colorPreferences,
         target_audience: {}, // Simplified, removed detailed targeting
       })
+      .select()
+      .single()
 
       if (error) throw error
 
       toast({
         title: "Success!",
-        description: "Your brand questionnaire has been saved.",
+        description: "Your brand questionnaire has been saved. Generating your brand identity...",
       })
 
+      // Navigate to brand identity page after saving questionnaire
       navigate("/brand/identity")
     } catch (error) {
       console.error("Error saving questionnaire:", error)
