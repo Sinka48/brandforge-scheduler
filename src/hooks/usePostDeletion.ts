@@ -1,9 +1,7 @@
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { Toast } from "@/hooks/use-toast";
 
-export function usePostDeletion() {
-  const { toast } = useToast();
-
+export function usePostDeletion(toast: Toast) {
   const handleDeletePost = async (postId: string, deleteAll: boolean = false) => {
     try {
       if (deleteAll) {

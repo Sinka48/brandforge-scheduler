@@ -22,7 +22,6 @@ export function useCalendarState() {
     handleSaveAsDraft,
     handleDeletePost,
     handlePlatformToggle,
-    handleUpdatePost,
   } = usePostManagement();
 
   const { isLoading: isQueryLoading } = useQuery({
@@ -97,6 +96,5 @@ export function useCalendarState() {
     handleSaveAsDraft,
     handleDeletePost,
     handlePlatformToggle,
-    handleUpdatePost,
   };
 }
