@@ -5,6 +5,8 @@ import { PlatformId } from "@/constants/platforms";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PLATFORMS } from "@/constants/platforms";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Post {
   id: string;
@@ -34,17 +36,28 @@ export function CalendarView({
   onCreatePost,
   onPostClick
 }: CalendarViewProps) {
-  const { data: posts = [], isLoading, error } = useQuery({
-    queryKey: ['posts'],
+  const { toast } = useToast();
+
+  // Check authentication status
+  const { data: authData, isLoading: authLoading } = useQuery({
+    queryKey: ['auth-session'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        console.log('No session found');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return session;
+    },
+  });
+
+  // Fetch posts only if authenticated
+  const { data: posts = [], isLoading, error } = useQuery({
+    queryKey: ['posts', authData?.user?.id],
+    queryFn: async () => {
+      if (!authData?.user) {
+        console.log('No authenticated user found');
         return [];
       }
 
-      console.log('Fetching posts for user:', session.user.id);
+      console.log('Fetching posts for user:', authData.user.id);
       const { data, error } = await supabase
         .from('posts')
         .select(`
@@ -61,7 +74,7 @@ export function CalendarView({
             description
           )
         `)
-        .eq('user_id', session.user.id)
+        .eq('user_id', authData.user.id)
         .order('scheduled_for', { ascending: true });
 
       if (error) {
@@ -90,10 +103,22 @@ export function CalendarView({
         } : undefined
       }));
     },
+    enabled: !!authData?.user,
     staleTime: 1000 * 60, // Consider data fresh for 1 minute
     refetchOnWindowFocus: true,
     retry: 3
   });
+
+  // Handle errors with toast notifications
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading posts",
+        description: "There was a problem loading your posts. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   // Sort posts by scheduled time, earliest first
   const sortedPosts = [...(posts || [])].sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -103,8 +128,27 @@ export function CalendarView({
     icon: <platform.icon className="h-4 w-4" />
   }));
 
+  if (authLoading) {
+    return (
+      <Card className="p-4">
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!authData?.user) {
+    return (
+      <Card className="p-4">
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Please sign in to view your posts</p>
+        </div>
+      </Card>
+    );
+  }
+
   if (error) {
-    console.error('Query error:', error);
     return (
       <Card className="p-4">
         <div className="text-center py-8">
