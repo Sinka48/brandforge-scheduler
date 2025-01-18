@@ -3,11 +3,9 @@ import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Rocket, Settings, LogOut, PenSquare, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

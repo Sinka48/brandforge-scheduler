@@ -10,8 +10,8 @@ export function Layout({ children, session }: LayoutProps) {
   return (
     <div>
       <Header session={session} />
-      <main className="py-10">
-        <div className="px-4 sm:px-6 lg:px-8">{children}</div>
+      <main className="container py-10">
+        {children}
       </main>
     </div>
   );
