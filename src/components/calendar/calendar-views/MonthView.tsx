@@ -19,9 +19,17 @@ interface MonthViewProps {
   selectedDate: Date | undefined;
   onSelectDate: (date: Date | undefined) => void;
   posts: Post[];
+  onCreatePost?: () => void;
+  onPostClick?: (post: Post) => void;
 }
 
-export function MonthView({ selectedDate, onSelectDate, posts }: MonthViewProps) {
+export function MonthView({ 
+  selectedDate, 
+  onSelectDate, 
+  posts,
+  onCreatePost,
+  onPostClick 
+}: MonthViewProps) {
   const postsByDate = useMemo(() => {
     return posts.reduce((acc: Record<string, Post[]>, post) => {
       if (post.status === 'scheduled') {
@@ -46,6 +54,11 @@ export function MonthView({ selectedDate, onSelectDate, posts }: MonthViewProps)
           date={date} 
           posts={datePosts} 
           isSelected={isSelected}
+          onCreatePost={() => {
+            onSelectDate(date);
+            onCreatePost?.();
+          }}
+          onPostClick={onPostClick}
         />
       </PostTooltip>
     );

@@ -19,9 +19,17 @@ interface CalendarViewProps {
   selectedDate: Date | undefined;
   onSelectDate: (date: Date | undefined) => void;
   posts?: Post[];
+  onCreatePost?: () => void;
+  onPostClick?: (post: Post) => void;
 }
 
-export function CalendarView({ selectedDate, onSelectDate, posts = [] }: CalendarViewProps) {
+export function CalendarView({ 
+  selectedDate, 
+  onSelectDate, 
+  posts = [],
+  onCreatePost,
+  onPostClick
+}: CalendarViewProps) {
   return (
     <Card className="p-4">
       <Tabs defaultValue="month" className="w-full">
@@ -45,6 +53,8 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
             posts={posts}
+            onCreatePost={onCreatePost}
+            onPostClick={onPostClick}
           />
         </TabsContent>
 
