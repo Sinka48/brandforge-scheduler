@@ -37,7 +37,8 @@ export function AICampaignDialog({
   };
 
   const handleGenerate = async () => {
-    // Validate required fields
+    console.log('Generating campaign with platforms:', platforms); // Debug log
+
     if (!topic.trim()) {
       toast({
         title: "Missing Information",
@@ -61,6 +62,13 @@ export function AICampaignDialog({
       // Ensure platform values are lowercase to match the constraint
       const normalizedPlatforms = platforms.map(p => p.toLowerCase());
       
+      console.log('Calling generate-campaign with:', { 
+        topic, 
+        platforms: normalizedPlatforms,
+        duration: parseInt(duration), 
+        tone 
+      }); // Debug log
+
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
           topic, 
@@ -70,7 +78,16 @@ export function AICampaignDialog({
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error from generate-campaign:', error); // Debug log
+        throw error;
+      }
+
+      console.log('Campaign data received:', data); // Debug log
+
+      if (!data?.campaign || !Array.isArray(data.campaign)) {
+        throw new Error('Invalid campaign data received');
+      }
 
       // Ensure the campaign posts have the correct platform format
       const formattedCampaign = data.campaign.map((post: any) => ({
@@ -78,8 +95,17 @@ export function AICampaignDialog({
         platform: post.platform.toLowerCase()
       }));
 
+      console.log('Formatted campaign:', formattedCampaign); // Debug log
+
       onGenerateCampaign(formattedCampaign);
       onOpenChange(false);
+      
+      // Reset form
+      setTopic("");
+      setPlatforms([]);
+      setDuration("7");
+      setTone("professional");
+
       toast({
         title: "Campaign Generated",
         description: "Your AI campaign has been created successfully",
