@@ -98,7 +98,7 @@ export default function CalendarPage() {
                     />
                   </div>
                   
-                  <div className="h-full overflow-hidden">
+                  <div className="h-full overflow-y-auto rounded-lg border bg-card p-4">
                     <PostList
                       selectedDate={selectedDate}
                       posts={posts}
