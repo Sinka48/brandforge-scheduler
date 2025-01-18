@@ -2,11 +2,10 @@ import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Clock } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { filterPostsByDate } from "../utils/dateUtils";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PlatformId } from "@/constants/platforms";
-import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
 interface PostListContentProps {
@@ -34,8 +33,6 @@ export function PostListContent({
 }: PostListContentProps) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
-  const [nextPost, setNextPost] = useState<any>(null);
-  const [timeLeft, setTimeLeft] = useState<string>("");
 
   // Get unique campaigns from posts
   const campaigns = Array.from(new Set(posts
@@ -58,29 +55,6 @@ export function PostListContent({
       ? filteredPosts
       : filteredPosts.slice(0, 3);
 
-  useEffect(() => {
-    // Find the next upcoming post
-    const now = new Date();
-    const upcomingPosts = posts
-      .filter(post => new Date(post.date) > now)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    if (upcomingPosts.length > 0) {
-      setNextPost(upcomingPosts[0]);
-    }
-  }, [posts]);
-
-  useEffect(() => {
-    if (!nextPost) return;
-
-    const timer = setInterval(() => {
-      const timeUntilPost = formatDistanceToNow(new Date(nextPost.date), { addSuffix: true });
-      setTimeLeft(timeUntilPost);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [nextPost]);
-
   if (filteredPosts.length === 0) {
     return <EmptyState />;
   }
@@ -88,15 +62,6 @@ export function PostListContent({
   return (
     <div className="space-y-4">
       <div className="flex flex-col space-y-4">
-        {nextPost && (
-          <div className="flex items-center justify-end gap-2 bg-muted p-2 rounded-md">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Next post {timeLeft}
-            </span>
-          </div>
-        )}
-
         <div className="flex flex-wrap gap-2">
           {platforms.map((platform) => (
             <Badge
