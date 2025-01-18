@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ColorPaletteCard } from "@/components/brand/identity/ColorPaletteCard";
@@ -33,7 +33,6 @@ interface BrandAssetMetadata {
   };
 }
 
-// Type guard to check if a value is a BrandAssetMetadata
 function isBrandAssetMetadata(value: unknown): value is BrandAssetMetadata {
   if (!value || typeof value !== 'object') return false;
   const metadata = value as Partial<BrandAssetMetadata>;
@@ -48,6 +47,7 @@ function isBrandAssetMetadata(value: unknown): value is BrandAssetMetadata {
 export default function BrandIdentityPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
   const [versions, setVersions] = useState<Version[]>([]);
   const [currentVersion, setCurrentVersion] = useState(1);
@@ -126,7 +126,6 @@ export default function BrandIdentityPage() {
   const generateBrandIdentity = async () => {
     setGenerating(true);
     try {
-      // First, fetch the latest questionnaire data
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .select("*")
@@ -210,6 +209,36 @@ export default function BrandIdentityPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!brandIdentity) return;
+
+    setDeleting(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from("brand_assets")
+        .delete()
+        .eq("version", currentVersion);
+
+      if (deleteError) throw deleteError;
+
+      setBrandIdentity(null);
+      setVersions([]);
+      toast({
+        title: "Success",
+        description: "Brand identity deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting brand identity:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete brand identity",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -230,17 +259,29 @@ export default function BrandIdentityPage() {
               Generate and manage your brand identity assets
             </p>
           </div>
-          <Button onClick={generateBrandIdentity} disabled={generating}>
-            {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {brandIdentity ? "Regenerate" : "Generate"} Brand Identity
-          </Button>
+          <div className="flex gap-2">
+            {brandIdentity && (
+              <Button 
+                variant="destructive" 
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Brand
+              </Button>
+            )}
+            <Button onClick={generateBrandIdentity} disabled={generating}>
+              {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {brandIdentity ? "Regenerate" : "Generate"} Brand Identity
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           <ColorPaletteCard
             colors={brandIdentity?.colors || []}
             onCustomize={(colors) => {
-              // Implement color customization
               console.log("Customize colors:", colors);
             }}
           />
@@ -249,7 +290,6 @@ export default function BrandIdentityPage() {
               brandIdentity?.typography || { headingFont: "", bodyFont: "" }
             }
             onCustomize={(typography) => {
-              // Implement typography customization
               console.log("Customize typography:", typography);
             }}
           />
@@ -257,7 +297,6 @@ export default function BrandIdentityPage() {
             logoUrl={brandIdentity?.logoUrl || ""}
             onDownload={handleDownload}
             onCustomize={() => {
-              // Implement logo customization
               console.log("Customize logo");
             }}
           />
