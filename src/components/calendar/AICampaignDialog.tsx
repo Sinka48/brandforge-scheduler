@@ -1,34 +1,20 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { Loader2, RefreshCw, Save, Folder, Wand2 } from "lucide-react";
+import { Loader2, Save, Folder, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { PlatformSelector } from "./post-dialog/PlatformSelector";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { TimeSlotSelector } from "./campaign-dialog/TimeSlotSelector";
-import { HashtagSelector } from "./campaign-dialog/HashtagSelector";
 import { SaveTemplateDialog } from "./campaign-dialog/SaveTemplateDialog";
 import { LoadTemplateDialog } from "./campaign-dialog/LoadTemplateDialog";
-import { PlatformPreview } from "./post-dialog/PlatformPreview";
 import { useNavigate } from "react-router-dom";
+import { CampaignConfiguration } from "./campaign-dialog/CampaignConfiguration";
+import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onGenerateCampaign: (posts: any[]) => void;
-}
-
-interface TimeSlot {
-  time: string;
-  days: string[];
 }
 
 export function AICampaignDialog({
@@ -42,7 +28,7 @@ export function AICampaignDialog({
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
   const [tone, setTone] = useState("professional");
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [timeSlots, setTimeSlots] = useState<any[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -212,19 +198,6 @@ export function AICampaignDialog({
     setHashtags(template.hashtags);
   };
 
-  const handleSchedule = () => {
-    onGenerateCampaign(generatedPosts);
-    onOpenChange(false);
-    setTopic("");
-    setPlatforms([]);
-    setDuration("7");
-    setTone("professional");
-    setTimeSlots([]);
-    setHashtags([]);
-    setGeneratedPosts([]);
-    setProgress(0);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col">
@@ -250,123 +223,30 @@ export function AICampaignDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            {/* Campaign Configuration Column */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Campaign Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter campaign name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+            <CampaignConfiguration
+              name={name}
+              setName={setName}
+              topic={topic}
+              setTopic={setTopic}
+              platforms={platforms}
+              onPlatformToggle={handlePlatformToggle}
+              duration={duration}
+              setDuration={setDuration}
+              tone={tone}
+              setTone={setTone}
+              timeSlots={timeSlots}
+              onTimeSlotsChange={setTimeSlots}
+              hashtags={hashtags}
+              onHashtagsChange={setHashtags}
+              suggestedHashtags={suggestedHashtags}
+            />
 
-              <div className="space-y-2">
-                <Label htmlFor="topic">Campaign Topic</Label>
-                <Textarea
-                  id="topic"
-                  placeholder="What is your campaign about?"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                />
-              </div>
-
-              <PlatformSelector
-                selectedPlatforms={platforms}
-                onPlatformToggle={handlePlatformToggle}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Campaign Duration (days)</Label>
-                  <Select value={duration} onValueChange={setDuration}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3">3 days</SelectItem>
-                      <SelectItem value="7">1 week</SelectItem>
-                      <SelectItem value="14">2 weeks</SelectItem>
-                      <SelectItem value="30">1 month</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tone">Campaign Tone</Label>
-                  <Select value={tone} onValueChange={setTone}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select tone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="professional">Professional</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                      <SelectItem value="friendly">Friendly</SelectItem>
-                      <SelectItem value="humorous">Humorous</SelectItem>
-                      <SelectItem value="formal">Formal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <TimeSlotSelector
-                timeSlots={timeSlots}
-                onTimeSlotsChange={setTimeSlots}
-              />
-
-              <HashtagSelector
-                hashtags={hashtags}
-                onHashtagsChange={setHashtags}
-                suggestedHashtags={suggestedHashtags}
-              />
-            </div>
-
-            {/* Generated Content Column */}
-            <div className="space-y-4">
-              {isLoading && (
-                <div className="space-y-2">
-                  <Progress value={progress} className="h-2" />
-                  <p className="text-sm text-muted-foreground text-center">
-                    Generating your campaign...
-                  </p>
-                </div>
-              )}
-
-              {generatedPosts.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-medium">Generated Posts</h3>
-                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                    {generatedPosts.map((post, index) => (
-                      <Card key={index}>
-                        <CardContent className="pt-6 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Badge>{post.platform}</Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRegeneratePost(index)}
-                              disabled={isLoading}
-                            >
-                              <RefreshCw className="h-4 w-4 mr-2" />
-                              Regenerate
-                            </Button>
-                          </div>
-                          <PlatformPreview
-                            content={post.content}
-                            selectedPlatforms={[post.platform]}
-                            imageUrl={post.imageUrl}
-                          />
-                          <div className="text-sm text-muted-foreground">
-                            Scheduled for: {post.time}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <GeneratedContent
+              isLoading={isLoading}
+              progress={progress}
+              generatedPosts={generatedPosts}
+              onRegeneratePost={handleRegeneratePost}
+            />
           </div>
         </div>
 
