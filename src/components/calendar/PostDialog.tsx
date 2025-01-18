@@ -1,7 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
 import { DialogActions } from "./post-dialog/DialogActions";
-import { TemplateSection } from "./post-dialog/TemplateSection";
 import { PlatformSelector } from "./post-dialog/PlatformSelector";
 import { ImageUploader } from "./post-dialog/ImageUploader";
 import { TimeSelector } from "./post-dialog/TimeSelector";
@@ -89,22 +88,6 @@ export function PostDialog({
 
           <TabsContent value="content">
             <div className="space-y-4 py-4">
-              {!editMode && (
-                <TemplateSection
-                  onSelectTemplate={(template) => {
-                    setNewPost({
-                      ...newPost,
-                      content: template.content,
-                      platforms: template.platforms,
-                      image: template.image_url || '',
-                    });
-                  }}
-                  content={newPost.content}
-                  platforms={newPost.platforms}
-                  imageUrl={newPost.image}
-                />
-              )}
-
               {!editMode && !newPost.isRecurring && (
                 <BulkScheduling
                   selectedDates={newPost.bulkDates || []}
