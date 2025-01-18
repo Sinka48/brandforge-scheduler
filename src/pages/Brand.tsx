@@ -1,5 +1,8 @@
 import { Layout } from "@/components/layout/Layout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BrandQuestionnaireForm } from "@/components/brand/BrandQuestionnaireForm";
+import { BrandManager } from "@/components/brand/BrandManager";
+import { Wand2, Library } from "lucide-react";
 
 export default function BrandPage() {
   return (
@@ -8,18 +11,30 @@ export default function BrandPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Brand Generator</h1>
           <p className="text-muted-foreground">
-            Create a unique brand identity powered by AI.
+            Create and manage your brand identity
           </p>
         </div>
-        <div className="rounded-lg border bg-card">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold">Brand Questionnaire</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Fill in the details below to help us understand your brand better.
-            </p>
+
+        <Tabs defaultValue="generator" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="generator" className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4" />
+              Generate Brand
+            </TabsTrigger>
+            <TabsTrigger value="management" className="flex items-center gap-2">
+              <Library className="h-4 w-4" />
+              Saved Brands
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="generator" className="space-y-6">
             <BrandQuestionnaireForm />
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="management" className="space-y-6">
+            <BrandManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
