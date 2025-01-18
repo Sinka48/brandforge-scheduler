@@ -28,32 +28,54 @@ export function useCalendarState() {
   const { isLoading: isQueryLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Not authenticated');
+        }
+
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('scheduled_for', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching posts:', error);
+          throw error;
+        }
+
+        if (!data) {
+          console.log('No posts found');
+          return [];
+        }
+
+        console.log('Fetched posts:', data);
+
+        const formattedPosts = data.map(post => ({
+          id: post.id,
+          content: post.content,
+          date: new Date(post.scheduled_for),
+          platforms: [post.platform],
+          image: post.image_url,
+          status: post.status as 'draft' | 'scheduled',
+          time: format(new Date(post.scheduled_for), 'HH:mm'),
+        }));
+
+        console.log('Formatted posts:', formattedPosts);
+        setPosts(formattedPosts);
+        return formattedPosts;
+      } catch (error) {
+        console.error('Error in queryFn:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch posts. Please try again.",
+          variant: "destructive",
+        });
+        return [];
       }
-
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('scheduled_for', { ascending: true });
-
-      if (error) throw error;
-
-      const formattedPosts = data.map(post => ({
-        id: post.id,
-        content: post.content,
-        date: new Date(post.scheduled_for),
-        platforms: [post.platform],
-        image: post.image_url,
-        status: post.status as 'draft' | 'scheduled',
-        time: format(new Date(post.scheduled_for), 'HH:mm'),
-      }));
-
-      setPosts(formattedPosts);
-      return formattedPosts;
     },
+    refetchOnWindowFocus: false,
   });
 
   return {
