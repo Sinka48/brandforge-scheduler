@@ -14,6 +14,7 @@ import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHand
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Session } from "@supabase/supabase-js";
 
 interface CalendarPageProps {
   session: Session;
