@@ -57,20 +57,30 @@ export function LoginForm() {
             variant: "destructive",
           });
         } else {
-          throw error;
+          console.error("Auth error:", error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          });
         }
         return;
       }
 
-      toast({
-        title: "Success",
-        description: "You have successfully logged in.",
-      });
+      // Successful login
+      const { data: session } = await supabase.auth.getSession();
+      if (session) {
+        toast({
+          title: "Success",
+          description: "You have successfully logged in.",
+        });
+      }
     } catch (error) {
       const authError = error as AuthError;
+      console.error("Login error:", authError);
       toast({
         title: "Error",
-        description: authError.message || "Something went wrong. Please try again.",
+        description: "Failed to sign in. Please try again.",
         variant: "destructive",
       });
     } finally {

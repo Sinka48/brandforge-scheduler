@@ -44,8 +44,32 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchBrands();
-  }, []);
+    const checkAuthAndFetchBrands = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast({
+            title: "Authentication required",
+            description: "Please sign in to view your brands.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        fetchBrands();
+      } catch (error) {
+        console.error("Auth check error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to verify authentication status",
+          variant: "destructive",
+        });
+        setLoading(false);
+      }
+    };
+
+    checkAuthAndFetchBrands();
+  }, [toast]);
 
   const fetchBrands = async () => {
     try {
@@ -55,14 +79,17 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
         .eq("asset_type", "logo")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching brands:", error);
+        throw error;
+      }
 
       setBrands(data || []);
     } catch (error) {
       console.error("Error fetching brands:", error);
       toast({
         title: "Error",
-        description: "Failed to load brands",
+        description: "Failed to load brands. Please try again.",
         variant: "destructive",
       });
     } finally {
