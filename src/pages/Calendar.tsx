@@ -48,7 +48,7 @@ export default function CalendarPage() {
   } = useCalendarState();
 
   const {
-    handleGenerateCampaign: baseHandleGenerateCampaign,
+    handleGenerateCampaign,
     handleEditPost,
     onAddPost,
     onSaveAsDraft,
@@ -57,16 +57,11 @@ export default function CalendarPage() {
     setEditingPost,
     setNewPost,
     setIsDialogOpen,
-    handleAddPost: (selectedDate: Date, post: Post) => handleAddPost(selectedDate, post),
-    handleUpdatePost: (postId: string, selectedDate: Date, post: Post) => handleUpdatePost(postId, selectedDate, post),
+    handleAddPost,
+    handleUpdatePost,
     toast,
     selectedDate,
   });
-
-  const handleGenerateCampaign = async (campaignPosts: any[]) => {
-    await baseHandleGenerateCampaign(campaignPosts);
-    await queryClient.invalidateQueries({ queryKey: ['posts'] });
-  };
 
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
@@ -98,6 +93,7 @@ export default function CalendarPage() {
               <CalendarView 
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
+                posts={posts}
               />
               
               <PostList
