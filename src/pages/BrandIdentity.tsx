@@ -3,10 +3,11 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { VersionHistory } from "@/components/brand/identity/VersionHistory";
 import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
+import { useNavigate } from "react-router-dom";
 
 interface BrandIdentity {
   colors: string[];
@@ -51,6 +52,7 @@ export default function BrandIdentityPage() {
   const [versions, setVersions] = useState<Version[]>([]);
   const [currentVersion, setCurrentVersion] = useState(1);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchBrandIdentity();
@@ -219,6 +221,9 @@ export default function BrandIdentityPage() {
         title: "Success",
         description: "Brand assets saved successfully!",
       });
+
+      // Navigate to brand management page after successful save
+      navigate("/brand/management");
     } catch (error) {
       console.error("Error saving brand assets:", error);
       toast({
