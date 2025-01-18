@@ -27,6 +27,10 @@ serve(async (req) => {
 
     console.log('Generating brand identity for questionnaire:', questionnaire);
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
     // Generate brand identity using OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -35,7 +39,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -53,20 +57,22 @@ serve(async (req) => {
     if (!response.ok) {
       const error = await response.text();
       console.error('OpenAI API error:', error);
-      throw new Error('Failed to generate brand identity');
+      throw new Error(`OpenAI API error: ${error}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
+    
     const suggestions = JSON.parse(data.choices[0].message.content);
 
-    // Store the generated assets with the correct asset_type
+    // Store the generated assets
     const { data: asset, error: assetError } = await supabase
       .from('brand_assets')
       .insert([
         {
           user_id: questionnaire.user_id,
           questionnaire_id: questionnaire.id,
-          asset_type: 'brand_identity',  // Using the correct asset type as per the constraint
+          asset_type: 'brand_identity',
           url: '', // This would be updated once we implement actual asset generation
           version: version,
           metadata: suggestions
