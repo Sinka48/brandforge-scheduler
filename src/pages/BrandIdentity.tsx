@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { Card } from "@/components/ui/card";
-import { VersionHistory } from "@/components/brand/identity/VersionHistory";
 import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
 import { useNavigate } from "react-router-dom";
 
@@ -18,53 +16,22 @@ interface BrandIdentity {
   logoUrl: string;
 }
 
-interface Version {
-  id: string;
-  version: number;
-  createdAt: string;
-}
-
-interface BrandAssetMetadata {
-  colors: string[];
-  typography: {
-    headingFont: string;
-    bodyFont: string;
-  };
-}
-
-function isBrandAssetMetadata(value: unknown): value is BrandAssetMetadata {
-  if (!value || typeof value !== 'object') return false;
-  const metadata = value as Partial<BrandAssetMetadata>;
-  return (
-    Array.isArray(metadata.colors) &&
-    typeof metadata.typography === 'object' &&
-    typeof metadata.typography?.headingFont === 'string' &&
-    typeof metadata.typography?.bodyFont === 'string'
-  );
-}
-
 export default function BrandIdentityPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
-  const [versions, setVersions] = useState<Version[]>([]);
-  const [currentVersion, setCurrentVersion] = useState(1);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchBrandIdentity();
-    fetchVersions();
-  }, []);
 
   const fetchBrandIdentity = async () => {
     try {
       const { data: assets, error } = await supabase
         .from("brand_assets")
         .select("*")
-        .eq("version", currentVersion)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
@@ -103,27 +70,6 @@ export default function BrandIdentityPage() {
     }
   };
 
-  const fetchVersions = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("brand_assets")
-        .select("id, version, created_at")
-        .order("version", { ascending: false });
-
-      if (error) throw error;
-
-      setVersions(
-        data.map((v) => ({
-          id: v.id,
-          version: v.version,
-          createdAt: v.created_at,
-        }))
-      );
-    } catch (error) {
-      console.error("Error fetching versions:", error);
-    }
-  };
-
   const generateBrandIdentity = async () => {
     setGenerating(true);
     try {
@@ -148,18 +94,13 @@ export default function BrandIdentityPage() {
       const { data, error } = await supabase.functions.invoke(
         "generate-brand-identity",
         {
-          body: { 
-            questionnaire,
-            version: currentVersion + 1 
-          },
+          body: { questionnaire },
         }
       );
 
       if (error) throw error;
 
       setBrandIdentity(data);
-      setCurrentVersion((prev) => prev + 1);
-      await fetchVersions();
 
       toast({
         title: "Success",
@@ -198,7 +139,6 @@ export default function BrandIdentityPage() {
         return;
       }
 
-      // Save logo asset
       const { data: logoAsset, error: logoError } = await supabase
         .from("brand_assets")
         .insert({
@@ -209,8 +149,7 @@ export default function BrandIdentityPage() {
           metadata: {
             colors: brandIdentity.colors,
             typography: brandIdentity.typography
-          },
-          version: currentVersion
+          }
         })
         .select()
         .single();
@@ -222,7 +161,6 @@ export default function BrandIdentityPage() {
         description: "Brand assets saved successfully!",
       });
 
-      // Navigate to brand management page after successful save
       navigate("/brand/management");
     } catch (error) {
       console.error("Error saving brand assets:", error);
@@ -236,13 +174,57 @@ export default function BrandIdentityPage() {
     }
   };
 
-  const handleRestore = async (version: number) => {
-    setCurrentVersion(version);
-    await fetchBrandIdentity();
-    toast({
-      title: "Success",
-      description: `Restored to version ${version}`,
-    });
+  const handleColorUpdate = async (newColors: string[]) => {
+    if (!brandIdentity) return;
+    
+    try {
+      setBrandIdentity({
+        ...brandIdentity,
+        colors: newColors,
+      });
+
+      toast({
+        title: "Success",
+        description: "Color palette updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating colors:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update color palette",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!brandIdentity) return;
+
+    setDeleting(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from("brand_assets")
+        .delete()
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (deleteError) throw deleteError;
+
+      setBrandIdentity(null);
+      toast({
+        title: "Success",
+        description: "Brand identity deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting brand identity:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete brand identity",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleDownload = async () => {
@@ -264,71 +246,6 @@ export default function BrandIdentityPage() {
       toast({
         title: "Error",
         description: "Failed to download logo",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!brandIdentity) return;
-
-    setDeleting(true);
-    try {
-      const { error: deleteError } = await supabase
-        .from("brand_assets")
-        .delete()
-        .eq("version", currentVersion);
-
-      if (deleteError) throw deleteError;
-
-      setBrandIdentity(null);
-      setVersions([]);
-      toast({
-        title: "Success",
-        description: "Brand identity deleted successfully",
-      });
-    } catch (error) {
-      console.error("Error deleting brand identity:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete brand identity",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleColorUpdate = async (newColors: string[]) => {
-    if (!brandIdentity) return;
-    
-    try {
-      const { error } = await supabase
-        .from("brand_assets")
-        .update({
-          metadata: {
-            ...brandIdentity,
-            colors: newColors,
-          },
-        })
-        .eq("version", currentVersion);
-
-      if (error) throw error;
-
-      setBrandIdentity({
-        ...brandIdentity,
-        colors: newColors,
-      });
-
-      toast({
-        title: "Success",
-        description: "Color palette updated successfully",
-      });
-    } catch (error) {
-      console.error("Error updating colors:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update color palette",
         variant: "destructive",
       });
     }
@@ -394,15 +311,26 @@ export default function BrandIdentityPage() {
             onDownload={handleDownload}
           />
         )}
-
-        <Card className="p-6">
-          <VersionHistory
-            versions={versions}
-            currentVersion={currentVersion}
-            onRestore={handleRestore}
-          />
-        </Card>
       </div>
     </Layout>
+  );
+}
+
+interface BrandAssetMetadata {
+  colors: string[];
+  typography: {
+    headingFont: string;
+    bodyFont: string;
+  };
+}
+
+function isBrandAssetMetadata(value: unknown): value is BrandAssetMetadata {
+  if (!value || typeof value !== 'object') return false;
+  const metadata = value as Partial<BrandAssetMetadata>;
+  return (
+    Array.isArray(metadata.colors) &&
+    typeof metadata.typography === 'object' &&
+    typeof metadata.typography?.headingFont === 'string' &&
+    typeof metadata.typography?.bodyFont === 'string'
   );
 }
