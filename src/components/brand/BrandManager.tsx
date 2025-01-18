@@ -71,15 +71,19 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
         throw error;
       }
 
-      // Transform the data to match the Brand type
+      // Transform the data to match the Brand type with proper type checking
       const transformedBrands: Brand[] = (data || []).map(item => ({
         id: item.id,
         url: item.url,
         metadata: {
-          colors: item.metadata?.colors || [],
+          colors: Array.isArray(item.metadata?.colors) ? item.metadata.colors : [],
           typography: {
-            headingFont: item.metadata?.typography?.headingFont || "",
-            bodyFont: item.metadata?.typography?.bodyFont || "",
+            headingFont: typeof item.metadata?.typography?.headingFont === 'string' 
+              ? item.metadata.typography.headingFont 
+              : "",
+            bodyFont: typeof item.metadata?.typography?.bodyFont === 'string'
+              ? item.metadata.typography.bodyFont
+              : ""
           }
         },
         version: item.version || 1,
