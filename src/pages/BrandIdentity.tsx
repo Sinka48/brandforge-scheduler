@@ -33,6 +33,18 @@ interface BrandAssetMetadata {
   };
 }
 
+// Type guard to check if a value is a BrandAssetMetadata
+function isBrandAssetMetadata(value: unknown): value is BrandAssetMetadata {
+  if (!value || typeof value !== 'object') return false;
+  const metadata = value as Partial<BrandAssetMetadata>;
+  return (
+    Array.isArray(metadata.colors) &&
+    typeof metadata.typography === 'object' &&
+    typeof metadata.typography?.headingFont === 'string' &&
+    typeof metadata.typography?.bodyFont === 'string'
+  );
+}
+
 export default function BrandIdentityPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -52,20 +64,33 @@ export default function BrandIdentityPage() {
         .from("brand_assets")
         .select("*")
         .eq("version", currentVersion)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
       if (assets) {
-        const metadata = assets.metadata as BrandAssetMetadata;
-        setBrandIdentity({
-          colors: metadata?.colors || [],
-          typography: metadata?.typography || {
-            headingFont: "",
-            bodyFont: "",
-          },
-          logoUrl: assets.url || "",
-        });
+        const metadata = assets.metadata;
+        if (isBrandAssetMetadata(metadata)) {
+          setBrandIdentity({
+            colors: metadata.colors,
+            typography: metadata.typography,
+            logoUrl: assets.url || "",
+          });
+        } else {
+          // Handle invalid metadata format
+          setBrandIdentity({
+            colors: [],
+            typography: {
+              headingFont: "",
+              bodyFont: "",
+            },
+            logoUrl: assets.url || "",
+          });
+          console.warn("Invalid metadata format:", metadata);
+        }
+      } else {
+        // Handle case where no assets exist yet
+        setBrandIdentity(null);
       }
     } catch (error) {
       console.error("Error fetching brand identity:", error);
