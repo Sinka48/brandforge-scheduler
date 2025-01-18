@@ -40,8 +40,27 @@ export function Header({ session }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-end">
-        <div className="flex items-center gap-4">
+      <div className="container flex h-14 items-center">
+        <Link to="/feed" className="mr-4">
+          <div className="relative w-8 h-8 rounded-full overflow-hidden">
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundColor: '#ff99df',
+                backgroundImage: `
+                  radial-gradient(circle at 52% 73%, hsla(310, 85%, 67%, 1) 0px, transparent 50%),
+                  radial-gradient(circle at 0% 30%, hsla(197, 90%, 76%, 1) 0px, transparent 50%),
+                  radial-gradient(circle at 41% 26%, hsla(234, 79%, 69%, 1) 0px, transparent 50%)
+                `,
+                backgroundSize: '150% 150%',
+                animation: 'moveBackground 10s linear infinite',
+              }}
+            />
+            <Rocket className="relative z-10 w-5 h-5 text-white m-1.5" />
+          </div>
+        </Link>
+
+        <div className="flex flex-1 items-center justify-end gap-4">
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
