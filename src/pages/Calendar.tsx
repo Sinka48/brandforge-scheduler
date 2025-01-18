@@ -89,12 +89,14 @@ export default function CalendarPage() {
           </TabsList>
           
           <TabsContent value="calendar" className="mt-6">
-            <div className="grid grid-cols-1 gap-6">
-              <CalendarView 
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-                posts={posts}
-              />
+            <div className="space-y-6">
+              <div className="w-full overflow-x-auto">
+                <CalendarView 
+                  selectedDate={selectedDate}
+                  onSelectDate={setSelectedDate}
+                  posts={posts}
+                />
+              </div>
               
               <PostList
                 selectedDate={selectedDate}
