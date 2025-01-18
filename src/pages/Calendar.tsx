@@ -3,7 +3,7 @@ import { PostDialog } from "@/components/calendar/PostDialog";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { PLATFORMS } from "@/constants/platforms";
-import { Plus, Rocket } from "lucide-react";
+import { Plus } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
@@ -68,10 +68,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
       <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
         <div className="flex-none p-4 md:p-6">
           <div className="space-y-2 mb-6">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
-              <Rocket className="h-8 w-8 text-muted-foreground" />
-            </div>
+            <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
             <p className="text-muted-foreground">
               View and manage your social media posts
             </p>
