@@ -46,6 +46,29 @@ export default function IndexPage({ session }: IndexPageProps) {
   const [isTyping, setIsTyping] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard-analytics', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('dashboard_analytics')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || {
+        total_posts: 0,
+        posts_this_week: 0,
+        active_campaigns: 0,
+        avg_engagement_rate: 0,
+        platforms_used: ''
+      };
+    },
+    enabled: !!session?.user?.id
+  });
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
