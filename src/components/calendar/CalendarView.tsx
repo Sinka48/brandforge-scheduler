@@ -104,7 +104,7 @@ export function CalendarView({
     <Card className="p-4">
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Next post in {timeLeft}</h2>
+          <h2 className="text-lg font-semibold">Next post in: {timeLeft}</h2>
           <Clock className="h-4 w-4 text-muted-foreground" />
         </div>
         {isLoading ? (
