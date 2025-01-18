@@ -1,12 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { PostList } from "./PostList";
 import { format, isAfter, startOfDay } from "date-fns";
+import { PlatformId } from "@/constants/platforms";
 
 interface Post {
   id: string;
   content: string;
   date: Date;
-  platforms: string[];
+  platforms: PlatformId[];
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
