@@ -55,8 +55,16 @@ export function SignUpForm() {
             description: "An account with this email already exists. Please try logging in instead.",
             variant: "destructive",
           });
+          form.setError("email", {
+            type: "manual",
+            message: "This email is already registered. Please log in instead.",
+          });
         } else {
-          throw error;
+          toast({
+            title: "Error",
+            description: error.message || "Something went wrong. Please try again.",
+            variant: "destructive",
+          });
         }
         return;
       }
@@ -65,8 +73,12 @@ export function SignUpForm() {
         title: "Success",
         description: "Check your email to confirm your account.",
       });
+      
+      // Reset form on success
+      form.reset();
     } catch (error) {
       const authError = error as AuthError;
+      console.error("Signup error:", authError);
       toast({
         title: "Error",
         description: authError.message || "Something went wrong. Please try again.",
