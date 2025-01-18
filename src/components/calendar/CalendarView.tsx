@@ -46,7 +46,13 @@ export function CalendarView({
           scheduled_for,
           platform,
           image_url,
-          status
+          status,
+          campaign_id,
+          campaigns (
+            id,
+            name,
+            description
+          )
         `)
         .eq('user_id', session.user.id)
         .order('scheduled_for', { ascending: true });
@@ -63,13 +69,18 @@ export function CalendarView({
         platforms: [post.platform] as PlatformId[],
         image: post.image_url,
         status: post.status as 'draft' | 'scheduled',
-        time: format(new Date(post.scheduled_for), 'HH:mm')
+        time: format(new Date(post.scheduled_for), 'HH:mm'),
+        campaign: post.campaigns ? {
+          id: post.campaign_id,
+          name: post.campaigns.name,
+          description: post.campaigns.description
+        } : undefined
       }));
     }
   });
 
   // Sort posts by scheduled time, earliest first
-  const sortedPosts = [...posts].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const sortedPosts = [...(posts || [])].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
@@ -90,6 +101,7 @@ export function CalendarView({
             platforms={platforms}
             handleDeletePost={() => {}}
             handleEditPost={() => {}}
+            isLoading={isLoading}
           />
         ) : (
           <div className="text-center py-8">
