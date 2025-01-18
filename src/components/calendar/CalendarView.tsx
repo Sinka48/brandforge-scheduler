@@ -76,6 +76,19 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
     setSelectedPosts([]);
   };
 
+  const handleEditPost = (post: Post) => {
+    // Implementation for edit
+    toast({
+      title: "Edit post",
+      description: "Opening post editor..."
+    });
+  };
+
+  const handleViewPost = (post: Post) => {
+    // Implementation for view
+    onSelectDate(post.date);
+  };
+
   return (
     <Card className="p-4">
       <div className="mb-4 flex items-center justify-between">
@@ -125,6 +138,9 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
                   : [...prev, postId]
               );
             }}
+            onEditPost={handleEditPost}
+            onDeletePost={handleBulkDelete}
+            onViewPost={handleViewPost}
           />
         </TabsContent>
 

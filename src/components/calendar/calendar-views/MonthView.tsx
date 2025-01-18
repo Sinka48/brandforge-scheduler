@@ -1,5 +1,14 @@
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  format,
+} from "date-fns";
+import { DayCell } from "./month-view/DayCell";
 import { Card } from "@/components/ui/card";
-import { format } from "date-fns";
 
 interface Post {
   id: string;
@@ -12,63 +21,75 @@ interface Post {
 }
 
 interface MonthViewProps {
-  selectedDate: Date;
-  onSelectDate: (date: Date) => void;
-  posts: Post[];
+  selectedDate: Date | undefined;
+  onSelectDate: (date: Date | undefined) => void;
+  posts?: Post[];
   selectedPosts?: string[];
   onSelectPost?: (postId: string) => void;
+  onEditPost?: (post: Post) => void;
+  onDeletePost?: (postId: string) => void;
+  onViewPost?: (post: Post) => void;
 }
 
-export function MonthView({ selectedDate, onSelectDate, posts, selectedPosts = [], onSelectPost }: MonthViewProps) {
-  const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-  const lastDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), daysInMonth);
-  
-  const getDaysArray = () => {
-    const daysArray = [];
-    for (let i = 1; i <= daysInMonth; i++) {
-      daysArray.push(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i));
-    }
-    return daysArray;
-  };
+export function MonthView({
+  selectedDate,
+  onSelectDate,
+  posts = [],
+  selectedPosts = [],
+  onSelectPost,
+  onEditPost,
+  onDeletePost,
+  onViewPost,
+}: MonthViewProps) {
+  if (!selectedDate) return null;
 
-  const handleDayClick = (date: Date) => {
-    onSelectDate(date);
-  };
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
 
-  // Helper function to get a truncated title from content
-  const getPostTitle = (content: string) => {
-    const firstLine = content.split('\n')[0];
-    return firstLine.length > 30 ? `${firstLine.substring(0, 27)}...` : firstLine;
-  };
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const weeks = Math.ceil(days.length / 7);
 
   return (
-    <div className="grid grid-cols-7 gap-4">
-      {getDaysArray().map((date) => {
-        const dayPosts = posts.filter(post => post.date.toDateString() === date.toDateString());
-        return (
-          <Card key={date.toString()} className="p-4 cursor-pointer hover:bg-accent transition-colors" onClick={() => handleDayClick(date)}>
-            <div className="text-center">
-              <h3 className="font-medium">{format(date, 'd')}</h3>
-              <p className="text-sm text-muted-foreground">{dayPosts.length} posts</p>
-            </div>
-            {dayPosts.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {dayPosts.slice(0, 2).map(post => (
-                  <div key={post.id} className="text-xs truncate text-muted-foreground">
-                    {getPostTitle(post.content)}
-                  </div>
-                ))}
-                {dayPosts.length > 2 && (
-                  <div className="text-xs text-muted-foreground">
-                    +{dayPosts.length - 2} more
-                  </div>
-                )}
-              </div>
+    <Card className="p-4">
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          <div
+            key={day}
+            className="text-center text-sm font-medium text-muted-foreground p-2"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div 
+        className="grid grid-cols-7 gap-1"
+        style={{ 
+          gridTemplateRows: `repeat(${weeks}, minmax(100px, 1fr))` 
+        }}
+      >
+        {days.map((day) => (
+          <div
+            key={day.toString()}
+            className={cn(
+              "border rounded-md transition-colors",
+              !isSameMonth(day, monthStart) && "opacity-50 bg-muted",
             )}
-          </Card>
-        );
-      })}
-    </div>
+          >
+            <DayCell
+              date={day}
+              posts={posts}
+              isSelected={selectedDate ? isSameMonth(day, selectedDate) : false}
+              onSelect={onSelectDate}
+              onEdit={onEditPost}
+              onDelete={onDeletePost}
+              onView={onViewPost}
+            />
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
