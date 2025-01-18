@@ -1,126 +1,75 @@
-import { useToast } from "./use-toast";
-import { createBulkPosts } from "./useBulkScheduling";
-import { createRecurringPosts } from "./useRecurringPosts";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
-export function usePostActions() {
+export function usePostActions(userId: string) {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const createPost = async (newPost: any, selectedDate: Date | undefined) => {
-    if (!selectedDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date first.",
-        variant: "destructive",
-      });
-      return false;
-    }
+  const createPost = async (postData: {
+    content: string;
+    platform: string;
+    image_url?: string;
+    scheduled_for: string;
+    status?: string;
+    is_recurring?: boolean;
+    recurrence_pattern?: string;
+    recurrence_end_date?: string;
+  }) => {
+    const { error } = await supabase.from('posts').insert({
+      ...postData,
+      user_id: userId,
+      status: postData.status || 'draft'
+    });
 
-    try {
-      const scheduledTime = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate(),
-        parseInt(newPost.time.split(':')[0]),
-        parseInt(newPost.time.split(':')[1])
-      );
+    if (error) throw error;
 
-      const { data: parentPost, error } = await supabase
-        .from('posts')
-        .insert({
-          content: newPost.content,
-          platform: newPost.platforms[0],
-          image_url: newPost.image || null,
-          scheduled_for: scheduledTime.toISOString(),
-          status: 'scheduled',
-          is_recurring: newPost.isRecurring || false,
-          recurrence_pattern: newPost.recurringPattern,
-          recurrence_end_date: newPost.recurringEndDate?.toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Create additional platform posts
-      for (let i = 1; i < newPost.platforms.length; i++) {
-        await supabase
-          .from('posts')
-          .insert({
-            content: newPost.content,
-            platform: newPost.platforms[i],
-            image_url: newPost.image || null,
-            scheduled_for: scheduledTime.toISOString(),
-            status: 'scheduled',
-            batch_id: parentPost.id
-          });
-      }
-
-      // Handle bulk scheduling
-      if (newPost.bulkDates && newPost.bulkDates.length > 0) {
-        await createBulkPosts(parentPost, newPost);
-      }
-
-      // Handle recurring posts
-      if (newPost.isRecurring && newPost.recurringEndDate) {
-        await createRecurringPosts(
-          parentPost.id,
-          selectedDate,
-          newPost,
-          newPost.recurringEndDate
-        );
-      }
-
-      toast({
-        title: "Success",
-        description: "Your post has been scheduled.",
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Error creating post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
+    queryClient.invalidateQueries({ queryKey: ['posts'] });
+    toast({
+      title: "Success",
+      description: "Post created successfully",
+    });
   };
 
-  const saveDraft = async (newPost: any, selectedDate: Date | undefined) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .insert({
-          content: newPost.content,
-          platform: newPost.platforms[0],
-          image_url: newPost.image || null,
-          scheduled_for: selectedDate ? selectedDate.toISOString() : new Date().toISOString(),
-          status: 'draft'
-        });
+  const updatePost = async (postId: string, postData: {
+    content?: string;
+    platform?: string;
+    image_url?: string;
+    scheduled_for?: string;
+    status?: string;
+    is_recurring?: boolean;
+    recurrence_pattern?: string;
+    recurrence_end_date?: string;
+  }) => {
+    const { error } = await supabase.from('posts').update({
+      ...postData,
+      user_id: userId,
+    }).eq('id', postId);
 
-      if (error) throw error;
+    if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Your draft has been saved.",
-      });
+    queryClient.invalidateQueries({ queryKey: ['posts'] });
+    toast({
+      title: "Success",
+      description: "Post updated successfully",
+    });
+  };
 
-      return true;
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save draft. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
+  const deletePost = async (postId: string) => {
+    const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', userId);
+
+    if (error) throw error;
+
+    queryClient.invalidateQueries({ queryKey: ['posts'] });
+    toast({
+      title: "Success",
+      description: "Post deleted successfully",
+    });
   };
 
   return {
     createPost,
-    saveDraft
+    updatePost,
+    deletePost,
   };
 }

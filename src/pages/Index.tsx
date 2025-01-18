@@ -18,6 +18,52 @@ interface IndexPageProps {
 export default function IndexPage({ session }: IndexPageProps) {
   const [showLogin, setShowLogin] = useState(true);
 
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard-analytics', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('dashboard_analytics')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || {
+        total_posts: 0,
+        posts_this_week: 0,
+        active_campaigns: 0,
+        avg_engagement_rate: 0,
+        platforms_used: ''
+      };
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const { data: activityData } = useQuery({
+    queryKey: ['activity-data', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(7);
+
+      if (error) throw error;
+
+      // Transform the data to match the ActivityChart component's expected format
+      return data.map(post => ({
+        name: new Date(post.scheduled_for).toLocaleDateString('en-US', { weekday: 'short' }),
+        posts: 1
+      }));
+    },
+    enabled: !!session?.user?.id
+  });
+
   // If user is not authenticated, show landing page
   if (!session) {
     return (
@@ -61,47 +107,6 @@ export default function IndexPage({ session }: IndexPageProps) {
       </div>
     );
   }
-
-  // If user is authenticated, show dashboard
-  const { data: analytics } = useQuery({
-    queryKey: ['dashboard-analytics', session.user.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dashboard_analytics')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data || {
-        total_posts: 0,
-        posts_this_week: 0,
-        active_campaigns: 0,
-        avg_engagement_rate: 0,
-        platforms_used: ''
-      };
-    }
-  });
-
-  const { data: activityData } = useQuery({
-    queryKey: ['activity-data', session.user.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
-        .limit(7);
-
-      if (error) throw error;
-
-      // Transform the data to match the ActivityChart component's expected format
-      return data.map(post => ({
-        name: new Date(post.scheduled_for).toLocaleDateString('en-US', { weekday: 'short' }),
-        posts: 1
-      }));
-    }
-  });
 
   return (
     <Layout session={session}>
