@@ -75,28 +75,36 @@ export function PostDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] w-[95vw] max-h-[90vh] overflow-y-auto">
-        <DialogHeader editMode={editMode} selectedDate={selectedDate} />
-        
-        {!newPost ? (
-          <LoadingState />
-        ) : (
-          <>
-            <PostDialogContent
-              newPost={newPost}
-              setNewPost={setNewPost}
-              handlePlatformToggle={handlePlatformToggle}
-              editMode={editMode}
-            />
+      <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] max-h-[90vh] p-0">
+        <div className="h-full flex flex-col">
+          <div className="p-6">
+            <DialogHeader editMode={editMode} selectedDate={selectedDate} />
+          </div>
+          
+          {!newPost ? (
+            <LoadingState />
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto px-6">
+                <PostDialogContent
+                  newPost={newPost}
+                  setNewPost={setNewPost}
+                  handlePlatformToggle={handlePlatformToggle}
+                  editMode={editMode}
+                />
+              </div>
 
-            <DialogActions
-              onSaveAsDraft={handleDraftSubmit}
-              onAddPost={handleSubmit}
-              isDisabled={!newPost.content.trim()}
-              editMode={editMode}
-            />
-          </>
-        )}
+              <div className="p-6 border-t">
+                <DialogActions
+                  onSaveAsDraft={handleDraftSubmit}
+                  onAddPost={handleSubmit}
+                  isDisabled={!newPost.content.trim()}
+                  editMode={editMode}
+                />
+              </div>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
