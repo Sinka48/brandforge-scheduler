@@ -1,4 +1,4 @@
-import { Home, PenTool, Library, Calendar, Settings, Rocket, LogOut } from "lucide-react";
+import { Home, PenTool, Library, Calendar, Settings, Rocket, LogOut, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <Button
             variant="ghost"
             size="sm"
@@ -83,6 +83,16 @@ export function Header() {
           >
             <LogOut className="h-4 w-4" />
             <span>Sign out</span>
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto flex items-center gap-2"
+            onClick={() => navigate('/')}
+          >
+            <LogIn className="h-4 w-4" />
+            <span>Sign in</span>
           </Button>
         )}
       </div>
