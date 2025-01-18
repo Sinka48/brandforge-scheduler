@@ -1,7 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -59,13 +58,27 @@ export function AICampaignDialog({
 
     setIsLoading(true);
     try {
+      // Ensure platform values are lowercase to match the constraint
+      const normalizedPlatforms = platforms.map(p => p.toLowerCase());
+      
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
-        body: { topic, platforms, duration: parseInt(duration), tone },
+        body: { 
+          topic, 
+          platforms: normalizedPlatforms,
+          duration: parseInt(duration), 
+          tone 
+        },
       });
 
       if (error) throw error;
 
-      onGenerateCampaign(data.campaign);
+      // Ensure the campaign posts have the correct platform format
+      const formattedCampaign = data.campaign.map((post: any) => ({
+        ...post,
+        platform: post.platform.toLowerCase()
+      }));
+
+      onGenerateCampaign(formattedCampaign);
       onOpenChange(false);
       toast({
         title: "Campaign Generated",
