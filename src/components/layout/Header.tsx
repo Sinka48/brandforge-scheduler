@@ -40,8 +40,8 @@ export function Header({ session }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
-        <div className="flex items-center">
+      <div className="container flex h-14 items-center justify-end">
+        <div className="flex items-center gap-4">
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
@@ -79,10 +79,6 @@ export function Header({ session }: HeaderProps) {
             </NavigationMenuList>
           </NavigationMenu>
 
-          <MobileNav />
-        </div>
-
-        <div className="flex items-center gap-4">
           <Link to="/settings">
             <Button variant="ghost" size="icon">
               <Settings className="h-4 w-4" />
@@ -92,6 +88,10 @@ export function Header({ session }: HeaderProps) {
           <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
           </Button>
+        </div>
+
+        <div className="lg:hidden">
+          <MobileNav />
         </div>
       </div>
     </header>
