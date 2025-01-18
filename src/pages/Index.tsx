@@ -9,6 +9,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Github, Twitter, Google } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const features = [
   {
@@ -42,6 +44,30 @@ export default function IndexPage({ session }: IndexPageProps) {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard-analytics', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('dashboard_analytics')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || {
+        total_posts: 0,
+        posts_this_week: 0,
+        active_campaigns: 0,
+        avg_engagement_rate: 0,
+        platforms_used: ''
+      };
+    },
+    enabled: !!session?.user?.id
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,28 +97,12 @@ export default function IndexPage({ session }: IndexPageProps) {
     return () => clearInterval(typingInterval);
   }, [currentFeature, isTyping]);
 
-  const { data: analytics } = useQuery({
-    queryKey: ['dashboard-analytics', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('dashboard_analytics')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data || {
-        total_posts: 0,
-        posts_this_week: 0,
-        active_campaigns: 0,
-        avg_engagement_rate: 0,
-        platforms_used: ''
-      };
-    },
-    enabled: !!session?.user?.id
-  });
+  const handleSocialLogin = async (provider: string) => {
+    setIsLoading(true);
+    // Dummy function - will be replaced with actual implementation
+    console.log(`Logging in with ${provider}`);
+    setTimeout(() => setIsLoading(false), 1000);
+  };
 
   if (session) {
     return (
@@ -116,7 +126,7 @@ export default function IndexPage({ session }: IndexPageProps) {
       <div className="w-[40%] p-8 flex flex-col items-center justify-center">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary mb-2"></h1>
+            <h1 className="text-4xl font-bold text-primary mb-2">Welcome</h1>
           </div>
           
           <div className="p-6">
@@ -137,6 +147,39 @@ export default function IndexPage({ session }: IndexPageProps) {
               </Button>
             </div>
             {showLogin ? <LoginForm /> : <SignUpForm />}
+            
+            <div className="mt-6">
+              <Separator className="my-4" />
+              <div className="grid grid-cols-3 gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => handleSocialLogin('google')}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  <Google className="h-4 w-4 mr-2" />
+                  Google
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleSocialLogin('github')}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  <Github className="h-4 w-4 mr-2" />
+                  GitHub
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleSocialLogin('twitter')}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  <Twitter className="h-4 w-4 mr-2" />
+                  Twitter
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
