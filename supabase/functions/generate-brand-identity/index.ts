@@ -15,6 +15,15 @@ serve(async (req) => {
     const { questionnaire } = await req.json()
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured')
+    }
+
+    if (!questionnaire) {
+      throw new Error('Questionnaire data is required')
+    }
+
+    console.log('Generating color palette...')
     // Generate color palette
     const colorResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -37,9 +46,21 @@ serve(async (req) => {
       }),
     })
 
-    const colorData = await colorResponse.json()
-    const colors = JSON.parse(colorData.choices[0].message.content)
+    if (!colorResponse.ok) {
+      const errorData = await colorResponse.text()
+      console.error('OpenAI Color API Error:', errorData)
+      throw new Error(`OpenAI Color API Error: ${colorResponse.status}`)
+    }
 
+    const colorData = await colorResponse.json()
+    if (!colorData.choices?.[0]?.message?.content) {
+      throw new Error('Invalid color response from OpenAI')
+    }
+    
+    const colors = JSON.parse(colorData.choices[0].message.content)
+    console.log('Generated colors:', colors)
+
+    console.log('Generating typography recommendations...')
     // Generate typography recommendations
     const typographyResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -62,9 +83,21 @@ serve(async (req) => {
       }),
     })
 
-    const typographyData = await typographyResponse.json()
-    const typography = JSON.parse(typographyData.choices[0].message.content)
+    if (!typographyResponse.ok) {
+      const errorData = await typographyResponse.text()
+      console.error('OpenAI Typography API Error:', errorData)
+      throw new Error(`OpenAI Typography API Error: ${typographyResponse.status}`)
+    }
 
+    const typographyData = await typographyResponse.json()
+    if (!typographyData.choices?.[0]?.message?.content) {
+      throw new Error('Invalid typography response from OpenAI')
+    }
+
+    const typography = JSON.parse(typographyData.choices[0].message.content)
+    console.log('Generated typography:', typography)
+
+    console.log('Generating logo concept...')
     // Generate logo concepts using DALL-E
     const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -82,7 +115,18 @@ serve(async (req) => {
       }),
     })
 
+    if (!logoResponse.ok) {
+      const errorData = await logoResponse.text()
+      console.error('DALL-E API Error:', errorData)
+      throw new Error(`DALL-E API Error: ${logoResponse.status}`)
+    }
+
     const logoData = await logoResponse.json()
+    if (!logoData.data?.[0]?.url) {
+      throw new Error('Invalid logo response from DALL-E')
+    }
+
+    console.log('Brand identity generation completed successfully')
 
     return new Response(
       JSON.stringify({
@@ -93,7 +137,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in generate-brand-identity function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 },
