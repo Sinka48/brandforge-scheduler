@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PostList } from "./PostList";
 import { PlatformId } from "@/constants/platforms";
-import { Search, FileText, Filter, Trash2 } from "lucide-react";
+import { FileText, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { DraftFilters } from "./draft-manager/DraftFilters";
 
 interface Platform {
   id: PlatformId;
@@ -76,7 +75,6 @@ export function DraftManager({
   const handleBulkDelete = () => {
     if (selectedDrafts.length === 0) return;
 
-    // Show confirmation toast
     toast({
       title: `Delete ${selectedDrafts.length} drafts?`,
       description: "This action cannot be undone.",
@@ -121,42 +119,15 @@ export function DraftManager({
             </Button>
           )}
           
-          <Select value={sortBy} onValueChange={(value: "date" | "content") => setSortBy(value)}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Sort by Date</SelectItem>
-              <SelectItem value="content">Sort by Content</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Platform" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Platforms</SelectItem>
-              {platforms.map((platform) => (
-                <SelectItem key={platform.id} value={platform.id}>
-                  <div className="flex items-center gap-2">
-                    {platform.icon}
-                    {platform.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search drafts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8"
-            />
-          </div>
+          <DraftFilters
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedPlatform={selectedPlatform}
+            setSelectedPlatform={setSelectedPlatform}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            platforms={platforms}
+          />
         </div>
       </div>
 
