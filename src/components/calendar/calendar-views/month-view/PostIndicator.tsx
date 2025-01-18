@@ -6,6 +6,7 @@ import { Clock, CheckCircle2, AlertCircle } from "lucide-react";
 interface PostIndicatorProps {
   platform: PlatformId;
   status: 'draft' | 'scheduled' | 'published';
+  size?: 'sm' | 'md' | 'lg' | string; // Added size prop
 }
 
 const platformColors: Record<PlatformId, string> = {
@@ -21,14 +22,21 @@ const statusIcons = {
   published: CheckCircle2,
 };
 
-export function PostIndicator({ platform, status }: PostIndicatorProps) {
+export function PostIndicator({ platform, status, size = 'md' }: PostIndicatorProps) {
   const StatusIcon = statusIcons[status];
+  
+  const sizeClasses = {
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-base',
+  }[size] || 'text-sm';
   
   return (
     <Badge 
       variant="secondary" 
       className={cn(
-        "flex items-center gap-1 text-xs",
+        "flex items-center gap-1",
+        sizeClasses,
         platformColors[platform]
       )}
     >

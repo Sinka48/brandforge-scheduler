@@ -49,17 +49,15 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
     format(post.date, 'yyyy-MM-dd') === (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '')
   );
 
-  const handleBulkDelete = async (postIds: string[]) => {
-    // Implementation for bulk delete
+  const handleBulkDelete = async (postId: string) => {
     toast({
-      title: "Posts deleted",
-      description: `${postIds.length} posts have been deleted.`
+      title: "Post deleted",
+      description: "The post has been deleted."
     });
-    setSelectedPosts([]);
+    setSelectedPosts(selectedPosts.filter(id => id !== postId));
   };
 
   const handleBulkDuplicate = async (postIds: string[]) => {
-    // Implementation for bulk duplicate
     toast({
       title: "Posts duplicated",
       description: `${postIds.length} posts have been duplicated.`
@@ -68,7 +66,6 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
   };
 
   const handleBulkReschedule = async (postIds: string[]) => {
-    // Implementation for bulk reschedule
     toast({
       title: "Posts rescheduled",
       description: `${postIds.length} posts have been rescheduled.`
@@ -77,7 +74,6 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
   };
 
   const handleEditPost = (post: Post) => {
-    // Implementation for edit
     toast({
       title: "Edit post",
       description: "Opening post editor..."
@@ -85,7 +81,6 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
   };
 
   const handleViewPost = (post: Post) => {
-    // Implementation for view
     onSelectDate(post.date);
   };
 

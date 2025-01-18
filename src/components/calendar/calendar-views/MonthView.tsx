@@ -9,6 +9,7 @@ import {
 } from "date-fns";
 import { DayCell } from "./month-view/DayCell";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils"; // Added cn import
 
 interface Post {
   id: string;
