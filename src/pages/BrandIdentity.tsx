@@ -9,8 +9,18 @@ import { Tables } from "@/integrations/supabase/types";
 
 type BrandQuestionnaire = Tables<"brand_questionnaires">;
 
+interface BrandIdentity {
+  colors: string[];
+  typography: {
+    headingFont: string;
+    bodyFont: string;
+  };
+  logoUrl: string;
+}
+
 export default function BrandIdentityPage() {
   const [questionnaire, setQuestionnaire] = useState<BrandQuestionnaire | null>(null);
+  const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
@@ -41,12 +51,20 @@ export default function BrandIdentityPage() {
   };
 
   const generateBrandIdentity = async () => {
+    if (!questionnaire) return;
+    
     setGenerating(true);
     try {
-      // TODO: Implement AI generation logic
+      const { data, error } = await supabase.functions.invoke("generate-brand-identity", {
+        body: { questionnaire },
+      });
+
+      if (error) throw error;
+      
+      setBrandIdentity(data);
       toast({
-        title: "Coming Soon",
-        description: "Brand identity generation will be available soon!",
+        title: "Success",
+        description: "Brand identity generated successfully!",
       });
     } catch (error) {
       console.error("Error generating brand identity:", error);
@@ -102,7 +120,7 @@ export default function BrandIdentityPage() {
             disabled={generating}
           >
             {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Generate Brand Identity
+            {brandIdentity ? 'Regenerate' : 'Generate'} Brand Identity
           </Button>
         </div>
 
@@ -115,11 +133,23 @@ export default function BrandIdentityPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              {brandIdentity ? (
+                <div className="grid grid-cols-5 gap-2">
+                  {brandIdentity.colors.map((color, index) => (
+                    <div key={index} className="space-y-2">
+                      <div
+                        className="w-full aspect-square rounded-lg border"
+                        style={{ backgroundColor: color }}
+                      />
+                      <p className="text-xs text-center font-mono">{color}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
                 <p className="text-sm text-muted-foreground">
                   Your brand color palette will appear here after generation.
                 </p>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -131,11 +161,22 @@ export default function BrandIdentityPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              {brandIdentity ? (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-semibold">Heading Font</h4>
+                    <p className="text-sm">{brandIdentity.typography.headingFont}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold">Body Font</h4>
+                    <p className="text-sm">{brandIdentity.typography.bodyFont}</p>
+                  </div>
+                </div>
+              ) : (
                 <p className="text-sm text-muted-foreground">
                   Your brand typography recommendations will appear here after generation.
                 </p>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -143,15 +184,23 @@ export default function BrandIdentityPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
-                Logo Concepts
+                Logo Concept
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              {brandIdentity ? (
+                <div className="space-y-4">
+                  <img
+                    src={brandIdentity.logoUrl}
+                    alt="Generated logo concept"
+                    className="w-full rounded-lg border"
+                  />
+                </div>
+              ) : (
                 <p className="text-sm text-muted-foreground">
-                  Your logo concepts will appear here after generation.
+                  Your logo concept will appear here after generation.
                 </p>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
