@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { PlatformIndicators } from "./PlatformIndicators";
 import { Post } from "../MonthView";
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 interface MonthViewDayProps {
   date: Date;
@@ -11,6 +12,13 @@ interface MonthViewDayProps {
   onCreatePost?: () => void;
   onPostClick?: (post: Post) => void;
 }
+
+const platformIcons: Record<string, React.ReactNode> = {
+  facebook: <Facebook className="h-3 w-3" />,
+  twitter: <Twitter className="h-3 w-3" />,
+  instagram: <Instagram className="h-3 w-3" />,
+  linkedin: <Linkedin className="h-3 w-3" />,
+};
 
 export function MonthViewDay({ 
   date, 
@@ -48,14 +56,25 @@ export function MonthViewDay({
         {posts.map((post) => (
           <button 
             key={post.id}
-            className="w-full text-left text-xs truncate p-1 rounded bg-accent/40 hover:bg-accent transition-colors"
-            title={post.content}
+            className="w-full group text-left text-xs p-1.5 rounded bg-accent/40 hover:bg-accent transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onPostClick?.(post);
             }}
           >
-            {post.content}
+            <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+              {platformIcons[post.platforms[0]]}
+              <span className="text-[10px]">{post.time}</span>
+              <Badge 
+                variant={post.status === 'scheduled' ? 'default' : 'secondary'}
+                className="h-4 px-1 text-[10px] ml-auto"
+              >
+                {post.status}
+              </Badge>
+            </div>
+            <p className="truncate group-hover:text-primary transition-colors">
+              {post.content}
+            </p>
           </button>
         ))}
       </div>
