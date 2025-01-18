@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
-import { BrandManager } from "@/components/brand/BrandManager";
+import { BrandManager } from "@/components/brand-generator/BrandManager";
 
 export default function BrandListPage() {
   return (

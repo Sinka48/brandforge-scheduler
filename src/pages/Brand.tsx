@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
-import { BrandQuestionnaireForm } from "@/components/brand/BrandQuestionnaireForm";
+import { BrandQuestionnaireForm } from "@/components/brand-generator/BrandQuestionnaireForm";
 
 export default function BrandPage() {
   return (
