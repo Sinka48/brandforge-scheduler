@@ -11,19 +11,10 @@ import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
 import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
-import { useQueryClient } from "@tanstack/react-query";
-
-interface Post {
-  content: string;
-  platforms: string[];
-  image: string;
-  time: string;
-  status: 'scheduled' | 'draft';
-}
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function CalendarPage() {
   useCalendarAuth();
-  const queryClient = useQueryClient();
 
   const {
     selectedDate,
@@ -70,53 +61,65 @@ export default function CalendarPage() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <CalendarHeader 
-          onNewPost={() => setIsDialogOpen(true)}
-          onNewCampaign={() => setIsCampaignDialogOpen(true)}
-        />
+      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex-none p-4 md:p-6">
+          <CalendarHeader 
+            onNewPost={() => setIsDialogOpen(true)}
+            onNewCampaign={() => setIsCampaignDialogOpen(true)}
+          />
+        </div>
         
-        <Tabs defaultValue="calendar" className="w-full">
-          <TabsList>
-            <TabsTrigger value="calendar" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="drafts" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Drafts
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="calendar" className="mt-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <CalendarView 
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-                posts={posts}
-              />
-              
-              <PostList
-                selectedDate={selectedDate}
-                posts={posts}
-                platforms={platforms}
-                handleDeletePost={handleDeletePost}
-                handleEditPost={handleEditPost}
-                isLoading={isQueryLoading || isManagementLoading}
-              />
+        <div className="flex-1 overflow-hidden">
+          <Tabs defaultValue="calendar" className="h-full">
+            <div className="px-4 md:px-6">
+              <TabsList className="w-full md:w-auto">
+                <TabsTrigger value="calendar" className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Calendar
+                </TabsTrigger>
+                <TabsTrigger value="drafts" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Drafts
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="drafts" className="mt-6">
-            <DraftManager
-              posts={posts}
-              platforms={platforms}
-              handleDeletePost={handleDeletePost}
-              handleEditPost={handleEditPost}
-              isLoading={isQueryLoading || isManagementLoading}
-            />
-          </TabsContent>
-        </Tabs>
+            
+            <ScrollArea className="flex-1 p-4 md:p-6">
+              <TabsContent value="calendar" className="mt-0 h-full">
+                <div className="grid lg:grid-cols-2 gap-6 h-full">
+                  <div className="min-h-[500px] lg:h-full">
+                    <CalendarView 
+                      selectedDate={selectedDate}
+                      onSelectDate={setSelectedDate}
+                      posts={posts}
+                    />
+                  </div>
+                  
+                  <div className="h-full overflow-hidden">
+                    <PostList
+                      selectedDate={selectedDate}
+                      posts={posts}
+                      platforms={platforms}
+                      handleDeletePost={handleDeletePost}
+                      handleEditPost={handleEditPost}
+                      isLoading={isQueryLoading || isManagementLoading}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="drafts" className="mt-0">
+                <DraftManager
+                  posts={posts}
+                  platforms={platforms}
+                  handleDeletePost={handleDeletePost}
+                  handleEditPost={handleEditPost}
+                  isLoading={isQueryLoading || isManagementLoading}
+                />
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+        </div>
 
         <PostDialog
           isOpen={isDialogOpen}

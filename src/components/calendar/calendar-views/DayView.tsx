@@ -42,9 +42,9 @@ export function DayView({ selectedDate, posts = [] }: DayViewProps) {
             dayPosts.map((post) => (
               <Card key={post.id} className="p-4">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="space-y-2">
                     <div className="text-lg font-medium">{post.time}</div>
-                    <div className="mt-2 text-muted-foreground">
+                    <div className="text-muted-foreground">
                       {post.content}
                     </div>
                     {post.image && (
@@ -54,8 +54,14 @@ export function DayView({ selectedDate, posts = [] }: DayViewProps) {
                         className="mt-2 rounded-md max-w-[200px]"
                       />
                     )}
+                    <div className="flex gap-2 mt-2">
+                      {post.platforms.map((platform) => (
+                        <Badge key={platform} variant="outline">
+                          {platform}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                  <Badge>{post.platforms[0]}</Badge>
                 </div>
               </Card>
             ))

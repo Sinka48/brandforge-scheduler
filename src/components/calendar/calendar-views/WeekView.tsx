@@ -26,7 +26,7 @@ export function WeekView({ selectedDate, onSelectDate, posts = [] }: WeekViewPro
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
   return (
-    <div className="grid grid-cols-7 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 h-full">
       {weekDays.map((day) => {
         const dayPosts = posts.filter(
           (post) => post.status === 'scheduled' && isSameDay(post.date, day)
@@ -39,13 +39,21 @@ export function WeekView({ selectedDate, onSelectDate, posts = [] }: WeekViewPro
             onClick={() => onSelectDate(day)}
           >
             <div className="text-sm font-medium mb-2">
-              {format(day, 'EEE')}
-              <span className="ml-2">{format(day, 'd')}</span>
+              <div className="md:hidden">{format(day, 'EEE, MMM d')}</div>
+              <div className="hidden md:block">
+                <div>{format(day, 'EEE')}</div>
+                <div className="text-2xl mt-1">{format(day, 'd')}</div>
+              </div>
             </div>
-            {dayPosts.length > 0 && (
-              <ScrollArea className="h-[calc(100vh-300px)]">
-                <div className="space-y-2">
-                  {dayPosts.map((post) => (
+            
+            <ScrollArea className="h-[calc(100vh-300px)]">
+              <div className="space-y-2">
+                {dayPosts.length === 0 ? (
+                  <div className="text-center text-sm text-muted-foreground py-4">
+                    No posts
+                  </div>
+                ) : (
+                  dayPosts.map((post) => (
                     <div
                       key={post.id}
                       className="p-2 bg-muted rounded-md text-sm"
@@ -58,10 +66,10 @@ export function WeekView({ selectedDate, onSelectDate, posts = [] }: WeekViewPro
                         {post.platforms[0]}
                       </Badge>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
+                  ))
+                )}
+              </div>
+            </ScrollArea>
           </Card>
         );
       })}
