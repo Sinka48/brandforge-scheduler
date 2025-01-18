@@ -1,10 +1,11 @@
-import { Home, Settings, Calendar, PenTool } from "lucide-react";
+import { Home, Settings, Calendar, PenTool, Library } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Brand Generator", href: "/brand", icon: PenTool },
+  { name: "Brands", href: "/brand/identity", icon: Library },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
