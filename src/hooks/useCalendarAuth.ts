@@ -1,29 +1,45 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export const useCalendarAuth = () => {
   const navigate = useNavigate();
-  const [hasCheckedSession, setHasCheckedSession] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setHasCheckedSession(true);
-      
-      if (!session) {
-        navigate('/', { replace: true });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          if (!session) {
+            navigate('/', { replace: true });
+          }
+          setIsInitialized(true);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        if (mounted) {
+          setIsInitialized(true);
+        }
       }
     };
-    
+
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && hasCheckedSession) {
+      if (mounted && isInitialized && !session) {
         navigate('/', { replace: true });
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, hasCheckedSession]);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate, isInitialized]);
+
+  return { isInitialized };
 };
