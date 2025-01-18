@@ -60,7 +60,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
   return (
     <Layout session={session}>
       <div className="space-y-6">
-        <div>
+        <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
           <p className="text-muted-foreground">
             View and manage your social media posts
@@ -73,14 +73,10 @@ export default function CalendarPage({ session }: CalendarPageProps) {
             onNewCampaign={() => setIsCampaignDialogOpen(true)}
           />
           
-          <div className="rounded-lg border bg-card">
-            <div className="p-6">
-              <CalendarView 
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-              />
-            </div>
-          </div>
+          <CalendarView 
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+          />
         </div>
 
         {isMobile && (
