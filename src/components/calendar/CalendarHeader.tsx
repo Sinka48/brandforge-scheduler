@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Wand2 } from "lucide-react";
+import { Plus, Wand2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,6 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
       <div className="flex items-center gap-2">
-        <Calendar className="h-5 w-5" />
         <h1 className="text-xl font-semibold">Content Calendar</h1>
       </div>
 
