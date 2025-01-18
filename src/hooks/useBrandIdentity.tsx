@@ -65,7 +65,7 @@ export function useBrandIdentity() {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (questionnaireError) throw questionnaireError;
 
@@ -75,6 +75,7 @@ export function useBrandIdentity() {
           description: "Please complete the brand questionnaire first",
           variant: "destructive",
         });
+        navigate("/brand"); // Redirect to questionnaire page
         return;
       }
 
