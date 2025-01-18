@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { Loader2 } from "lucide-react";
-import { BrandReviewSection } from "@/components/brand-generator/identity/BrandReviewSection";
-import { BrandIdentityHeader } from "@/components/brand-generator/identity/BrandIdentityHeader";
+import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
+import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
 import { useBrandIdentity } from "@/hooks/useBrandIdentity";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
