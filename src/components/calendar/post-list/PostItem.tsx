@@ -25,7 +25,7 @@ interface Post {
   id: string;
   content: string;
   date: Date;
-  platforms: PlatformId[];
+  platforms: PlatformId[] | PlatformId;
   image?: string;
   status: 'draft' | 'scheduled' | 'paused';
   time?: string;
@@ -55,7 +55,10 @@ export function PostItem({
 }: PostItemProps) {
   const [isPaused, setIsPaused] = useState(post.status === 'paused');
   const { toast } = useToast();
-  const postPlatforms = platforms.filter(p => post.platforms.includes(p.id));
+  
+  // Convert single platform to array if needed
+  const platformsArray = Array.isArray(post.platforms) ? post.platforms : [post.platforms];
+  const postPlatforms = platforms.filter(p => platformsArray.includes(p.id));
 
   const handlePauseToggle = async () => {
     try {
