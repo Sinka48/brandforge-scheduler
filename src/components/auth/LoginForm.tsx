@@ -187,7 +187,7 @@ export function LoginForm() {
             control={form.control}
             name="remember"
             render={({ field }) => (
-              <FormItem className="flex items-center space-x-2 m-0">
+              <FormItem className="flex items-center space-x-2">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
