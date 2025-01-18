@@ -1,8 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
 import { BrandQuestionnaireForm } from "@/components/brand/BrandQuestionnaireForm";
-import { BrandManager } from "@/components/brand/BrandManager";
-import { Wand2 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 export default function BrandPage() {
   return (
@@ -17,13 +14,6 @@ export default function BrandPage() {
 
         <div className="space-y-6">
           <BrandQuestionnaireForm />
-        </div>
-
-        <Separator className="my-8" />
-
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Your Generated Brands</h2>
-          <BrandManager />
         </div>
       </div>
     </Layout>
