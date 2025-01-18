@@ -6,7 +6,7 @@ import { MobileNav } from "./MobileNav";
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Brand Generator", href: "/brand", icon: PenTool },
-  { name: "Brands", href: "/brand/identity", icon: Library },
+  { name: "Brands", href: "/brands", icon: Library },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Settings", href: "/settings", icon: Settings },
 ];

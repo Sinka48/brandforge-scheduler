@@ -1,83 +1,18 @@
 import { Layout } from "@/components/layout/Layout";
-import { Loader2 } from "lucide-react";
-import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
-import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
-import { useBrandIdentity } from "@/hooks/useBrandIdentity";
-import { useEffect } from "react";
+import { BrandManager } from "@/components/brand/BrandManager";
 
 export default function BrandIdentityPage() {
-  const {
-    loading,
-    saving,
-    generating,
-    deleting,
-    brandIdentity,
-    fetchBrandIdentity,
-    generateBrandIdentity,
-    saveBrandAssets,
-    deleteBrandIdentity,
-  } = useBrandIdentity();
-
-  useEffect(() => {
-    fetchBrandIdentity();
-  }, []);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-[50vh]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </Layout>
-    );
-  }
-
-  const handleDownload = async () => {
-    if (!brandIdentity?.logoUrl) return;
-
-    try {
-      const response = await fetch(brandIdentity.logoUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "logo.png";
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Error downloading logo:", error);
-    }
-  };
-
   return (
     <Layout>
-      <div className="space-y-6">
-        <BrandIdentityHeader
-          brandExists={!!brandIdentity}
-          isGenerating={generating}
-          isSaving={saving}
-          isDeleting={deleting}
-          onGenerate={generateBrandIdentity}
-          onSave={saveBrandAssets}
-          onDelete={deleteBrandIdentity}
-        />
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Your Brands</h1>
+          <p className="text-muted-foreground">
+            View and manage your generated brand identities
+          </p>
+        </div>
 
-        {brandIdentity && (
-          <BrandReviewSection
-            colors={brandIdentity.colors}
-            typography={brandIdentity.typography}
-            logoUrl={brandIdentity.logoUrl}
-            onColorUpdate={(colors) => {
-              if (brandIdentity) {
-                brandIdentity.colors = colors;
-              }
-            }}
-            onLogoCustomize={() => console.log("Customize logo")}
-            onDownload={handleDownload}
-          />
-        )}
+        <BrandManager />
       </div>
     </Layout>
   );

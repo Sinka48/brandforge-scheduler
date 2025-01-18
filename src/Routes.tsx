@@ -11,7 +11,7 @@ export function Routes() {
       <Route path="/" element={<IndexPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/brand" element={<BrandPage />} />
-      <Route path="/brand/identity" element={<BrandIdentityPage />} />
+      <Route path="/brands" element={<BrandIdentityPage />} />
       <Route path="/settings" element={<SettingsPage />} />
     </RouterRoutes>
   );
