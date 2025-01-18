@@ -5,6 +5,7 @@ import { useToast } from "./use-toast";
 export function useBulkScheduling() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { data: { session } } = await supabase.auth.getSession();
 
   const createBulkPosts = async (posts: Array<{
     content: string;
@@ -14,8 +15,6 @@ export function useBulkScheduling() {
     status: string;
     batch_id?: string;
   }>) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
     if (!session?.user?.id) {
       toast({
         title: "Error",

@@ -7,10 +7,6 @@ import { MonthView } from "./calendar-views/MonthView";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BulkActions } from "./BulkActions";
-import { Filters } from "./Filters";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 interface Post {
   id: string;
@@ -29,81 +25,13 @@ interface CalendarViewProps {
 }
 
 export function CalendarView({ selectedDate, onSelectDate, posts = [] }: CalendarViewProps) {
-  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<('draft' | 'scheduled' | 'published')[]>([]);
-  const { toast } = useToast();
-
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.content.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPlatform = selectedPlatforms.length === 0 || 
-      post.platforms.some(p => selectedPlatforms.includes(p));
-    const matchesStatus = selectedStatuses.length === 0 || 
-      selectedStatuses.includes(post.status);
-    return matchesSearch && matchesPlatform && matchesStatus;
-  });
-
-  const selectedDatePosts = filteredPosts.filter(
+  const selectedDatePosts = posts.filter(
     post => post.status === 'scheduled' && 
     format(post.date, 'yyyy-MM-dd') === (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '')
   );
 
-  const handleBulkDelete = async (postIds: string[]) => {
-    toast({
-      title: "Posts deleted",
-      description: `${postIds.length} posts have been deleted.`
-    });
-    setSelectedPosts([]);
-  };
-
-  const handleBulkDuplicate = async (postIds: string[]) => {
-    toast({
-      title: "Posts duplicated",
-      description: `${postIds.length} posts have been duplicated.`
-    });
-    setSelectedPosts([]);
-  };
-
-  const handleBulkReschedule = async (postIds: string[]) => {
-    toast({
-      title: "Posts rescheduled",
-      description: `${postIds.length} posts have been rescheduled.`
-    });
-    setSelectedPosts([]);
-  };
-
-  const handleEditPost = (post: Post) => {
-    toast({
-      title: "Edit post",
-      description: "Opening post editor..."
-    });
-  };
-
-  const handleViewPost = (post: Post) => {
-    onSelectDate(post.date);
-  };
-
   return (
     <Card className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <Filters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedPlatforms={selectedPlatforms}
-          onPlatformChange={setSelectedPlatforms}
-          selectedStatuses={selectedStatuses}
-          onStatusChange={setSelectedStatuses}
-        />
-        
-        <BulkActions
-          selectedPosts={selectedPosts}
-          onDelete={handleBulkDelete}
-          onDuplicate={handleBulkDuplicate}
-          onReschedule={handleBulkReschedule}
-        />
-      </div>
-
       <Tabs defaultValue="month" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="month" className="flex items-center gap-2">
@@ -124,18 +52,7 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
           <MonthView 
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
-            posts={filteredPosts}
-            selectedPosts={selectedPosts}
-            onSelectPost={(postId) => {
-              setSelectedPosts(prev => 
-                prev.includes(postId)
-                  ? prev.filter(id => id !== postId)
-                  : [...prev, postId]
-              );
-            }}
-            onEditPost={handleEditPost}
-            onDeletePost={(postId) => handleBulkDelete([postId])}
-            onViewPost={handleViewPost}
+            posts={posts}
           />
         </TabsContent>
 
@@ -143,7 +60,7 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
           <WeekView 
             selectedDate={selectedDate} 
             onSelectDate={onSelectDate}
-            posts={filteredPosts}
+            posts={posts}
           />
         </TabsContent>
 
@@ -151,7 +68,7 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
           <DayView
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
-            posts={filteredPosts}
+            posts={posts}
           />
         </TabsContent>
       </Tabs>

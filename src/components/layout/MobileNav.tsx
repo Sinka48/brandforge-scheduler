@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, PenTool, Library } from "lucide-react";
@@ -7,9 +7,6 @@ import { cn } from "@/lib/utils";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
-  const location = useLocation();
-
-  const isActive = (path: string) => location.pathname === path;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -22,10 +19,9 @@ export function MobileNav() {
       <SheetContent side="left" className="w-[300px] sm:w-[400px]">
         <nav className="flex flex-col gap-4">
           <Link
-            to="/calendar"
+            to="/"
             className={cn(
-              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
-              isActive("/calendar") && "text-primary"
+              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
             onClick={() => setOpen(false)}
           >
@@ -36,8 +32,7 @@ export function MobileNav() {
             <Link
               to="/brand"
               className={cn(
-                "flex items-center gap-2 pl-4 text-sm font-medium transition-colors hover:text-primary",
-                isActive("/brand") && "text-primary"
+                "flex items-center gap-2 pl-4 text-sm font-medium transition-colors hover:text-primary"
               )}
               onClick={() => setOpen(false)}
             >
@@ -47,8 +42,7 @@ export function MobileNav() {
             <Link
               to="/brands"
               className={cn(
-                "flex items-center gap-2 pl-4 text-sm font-medium transition-colors hover:text-primary",
-                isActive("/brands") && "text-primary"
+                "flex items-center gap-2 pl-4 text-sm font-medium transition-colors hover:text-primary"
               )}
               onClick={() => setOpen(false)}
             >
@@ -59,8 +53,7 @@ export function MobileNav() {
           <Link
             to="/calendar"
             className={cn(
-              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
-              isActive("/calendar") && "text-primary"
+              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
             onClick={() => setOpen(false)}
           >
@@ -69,8 +62,7 @@ export function MobileNav() {
           <Link
             to="/campaigns"
             className={cn(
-              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
-              isActive("/campaigns") && "text-primary"
+              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
             onClick={() => setOpen(false)}
           >
