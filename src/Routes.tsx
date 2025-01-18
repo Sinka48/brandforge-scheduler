@@ -7,7 +7,7 @@ import BrandIdentityPage from "@/pages/BrandIdentity";
 import BrandListPage from "@/pages/BrandList";
 import SettingsPage from "@/pages/Settings";
 import CampaignsPage from "@/pages/Campaigns";
-import { Header } from "@/components/layout/Header";
+import { Layout } from "@/components/layout/Layout";
 
 interface RoutesProps {
   session: Session | null;
@@ -25,8 +25,7 @@ export function Routes({ session }: RoutesProps) {
   }
 
   return (
-    <>
-      <Header session={session} />
+    <Layout session={session}>
       <RouterRoutes>
         <Route path="/" element={<IndexPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
@@ -36,6 +35,6 @@ export function Routes({ session }: RoutesProps) {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
       </RouterRoutes>
-    </>
+    </Layout>
   );
 }
