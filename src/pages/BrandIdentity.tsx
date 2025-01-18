@@ -25,6 +25,14 @@ interface Version {
   createdAt: string;
 }
 
+interface BrandAssetMetadata {
+  colors: string[];
+  typography: {
+    headingFont: string;
+    bodyFont: string;
+  };
+}
+
 export default function BrandIdentityPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -49,9 +57,10 @@ export default function BrandIdentityPage() {
       if (error) throw error;
 
       if (assets) {
+        const metadata = assets.metadata as BrandAssetMetadata;
         setBrandIdentity({
-          colors: assets.metadata.colors || [],
-          typography: assets.metadata.typography || {
+          colors: metadata?.colors || [],
+          typography: metadata?.typography || {
             headingFont: "",
             bodyFont: "",
           },
