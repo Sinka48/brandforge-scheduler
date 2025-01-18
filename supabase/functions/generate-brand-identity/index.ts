@@ -43,7 +43,12 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a brand identity expert. Generate brand identity suggestions based on the questionnaire data. Return a JSON object with color palette (array of hex codes), typography (object with headingFont and bodyFont), and logo description.'
+            content: `You are a brand identity expert. Generate a complete brand identity based on the questionnaire data. 
+            Return a JSON object with:
+            - colors: array of exactly 5 hex color codes that work well together
+            - typography: object with headingFont and bodyFont (use Google Fonts names)
+            - logoDescription: detailed description of a logo that matches the brand
+            Format the response as a valid JSON object with these exact keys.`
           },
           {
             role: 'user',
@@ -65,6 +70,9 @@ serve(async (req) => {
     
     const suggestions = JSON.parse(data.choices[0].message.content);
 
+    // Generate a placeholder logo URL (in production this would call a logo generation service)
+    const placeholderLogoUrl = "https://via.placeholder.com/300x300.png?text=Generated+Logo";
+
     // Store the generated assets
     const { data: asset, error: assetError } = await supabase
       .from('brand_assets')
@@ -73,9 +81,13 @@ serve(async (req) => {
           user_id: questionnaire.user_id,
           questionnaire_id: questionnaire.id,
           asset_type: 'brand_identity',
-          url: '', // This would be updated once we implement actual asset generation
+          url: placeholderLogoUrl,
           version: version,
-          metadata: suggestions
+          metadata: {
+            colors: suggestions.colors,
+            typography: suggestions.typography,
+            logoDescription: suggestions.logoDescription
+          }
         }
       ])
       .select()
@@ -87,7 +99,11 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify(suggestions),
+      JSON.stringify({
+        colors: suggestions.colors,
+        typography: suggestions.typography,
+        logoUrl: placeholderLogoUrl
+      }),
       { 
         headers: { 
           ...corsHeaders,
