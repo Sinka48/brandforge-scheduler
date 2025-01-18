@@ -7,7 +7,6 @@ import BrandIdentityPage from "@/pages/BrandIdentity";
 import BrandListPage from "@/pages/BrandList";
 import SettingsPage from "@/pages/Settings";
 import CampaignsPage from "@/pages/Campaigns";
-import { Layout } from "@/components/layout/Layout";
 
 interface RoutesProps {
   session: Session | null;
@@ -18,23 +17,21 @@ export function Routes({ session }: RoutesProps) {
   if (!session) {
     return (
       <RouterRoutes>
-        <Route path="/" element={<IndexPage />} />
+        <Route path="/" element={<IndexPage session={null} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </RouterRoutes>
     );
   }
 
   return (
-    <Layout session={session}>
-      <RouterRoutes>
-        <Route path="/" element={<IndexPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/brand" element={<BrandPage />} />
-        <Route path="/brand/identity" element={<BrandIdentityPage />} />
-        <Route path="/brands" element={<BrandListPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/campaigns" element={<CampaignsPage />} />
-      </RouterRoutes>
-    </Layout>
+    <RouterRoutes>
+      <Route path="/" element={<IndexPage session={session} />} />
+      <Route path="/calendar" element={<CalendarPage session={session} />} />
+      <Route path="/brand" element={<BrandPage session={session} />} />
+      <Route path="/brand/identity" element={<BrandIdentityPage session={session} />} />
+      <Route path="/brands" element={<BrandListPage session={session} />} />
+      <Route path="/settings" element={<SettingsPage session={session} />} />
+      <Route path="/campaigns" element={<CampaignsPage session={session} />} />
+    </RouterRoutes>
   );
 }

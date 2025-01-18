@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
+import { Session } from "@supabase/supabase-js";
 
 const settingsFormSchema = z.object({
   displayName: z.string().min(2, {
@@ -36,7 +37,11 @@ const settingsFormSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
-export default function SettingsPage() {
+interface SettingsPageProps {
+  session: Session;
+}
+
+export default function SettingsPage({ session }: SettingsPageProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -96,7 +101,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      <Layout session={session}>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -108,7 +113,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <Layout>
+    <Layout session={session}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>

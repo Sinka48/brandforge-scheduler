@@ -1,13 +1,19 @@
 import { Layout } from "@/components/layout/Layout";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
 import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
 import { useBrandIdentity } from "@/hooks/useBrandIdentity";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Session } from "@supabase/supabase-js";
 
-export default function BrandIdentityPage() {
+interface BrandIdentityPageProps {
+  session: Session;
+}
+
+export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const {
@@ -37,7 +43,7 @@ export default function BrandIdentityPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout session={session}>
         <div className="flex items-center justify-center h-[50vh]">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
@@ -65,8 +71,19 @@ export default function BrandIdentityPage() {
   };
 
   return (
-    <Layout>
+    <Layout session={session}>
       <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </div>
+
         <BrandIdentityHeader
           brandExists={!!brandIdentity}
           isGenerating={generating}

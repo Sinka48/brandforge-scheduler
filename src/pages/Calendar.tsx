@@ -15,7 +15,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export default function CalendarPage() {
+interface CalendarPageProps {
+  session: Session;
+}
+
+export default function CalendarPage({ session }: CalendarPageProps) {
   useCalendarAuth();
   const isMobile = useIsMobile();
 
@@ -63,7 +67,7 @@ export default function CalendarPage() {
   }));
 
   return (
-    <Layout>
+    <Layout session={session}>
       <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
         <div className="flex-none p-4 md:p-6">
           <CalendarHeader 

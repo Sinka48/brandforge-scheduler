@@ -15,8 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlatformSelector } from "@/components/calendar/post-dialog/PlatformSelector";
 import { Layout } from "@/components/layout/Layout";
+import { Session } from "@supabase/supabase-js";
 
-export default function CampaignsPage() {
+interface CampaignsPageProps {
+  session: Session;
+}
+
+export default function CampaignsPage({ session }: CampaignsPageProps) {
   const { toast } = useToast();
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
@@ -186,7 +191,7 @@ export default function CampaignsPage() {
   };
 
   return (
-    <Layout>
+    <Layout session={session}>
       <div className="container mx-auto py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
