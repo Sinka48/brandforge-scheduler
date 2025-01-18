@@ -30,8 +30,8 @@ export default function IndexPage() {
         
         if (mounted) {
           setSession(currentSession);
-          if (!currentSession) {
-            navigate('/calendar');
+          if (currentSession && window.location.pathname === '/') {
+            navigate('/calendar', { replace: true });
           }
           setIsInitialized(true);
         }
@@ -49,8 +49,8 @@ export default function IndexPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (mounted && isInitialized) {
         setSession(newSession);
-        if (!newSession) {
-          navigate('/calendar');
+        if (newSession && window.location.pathname === '/') {
+          navigate('/calendar', { replace: true });
         }
       }
     });

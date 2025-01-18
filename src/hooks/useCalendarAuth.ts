@@ -15,7 +15,10 @@ export const useCalendarAuth = () => {
         
         if (mounted) {
           if (!session) {
-            navigate('/', { replace: true });
+            // Only navigate if we're not already on the home page
+            if (window.location.pathname !== '/') {
+              navigate('/', { replace: true });
+            }
           }
           setIsInitialized(true);
         }
@@ -31,7 +34,10 @@ export const useCalendarAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted && isInitialized && !session) {
-        navigate('/', { replace: true });
+        // Only navigate if we're not already on the home page
+        if (window.location.pathname !== '/') {
+          navigate('/', { replace: true });
+        }
       }
     });
 
