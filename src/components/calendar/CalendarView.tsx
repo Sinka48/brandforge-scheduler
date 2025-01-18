@@ -134,7 +134,7 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
               );
             }}
             onEditPost={handleEditPost}
-            onDeletePost={handleBulkDelete}
+            onDeletePost={(postId) => handleBulkDelete([postId])}
             onViewPost={handleViewPost}
           />
         </TabsContent>
