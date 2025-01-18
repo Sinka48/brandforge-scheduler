@@ -1,4 +1,4 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FacebookPreview } from "./platform-previews/FacebookPreview";
@@ -13,6 +13,13 @@ interface PlatformPreviewProps {
   selectedPlatforms: string[];
   imageUrl?: string;
 }
+
+const platformIcons = {
+  facebook: Facebook,
+  twitter: Twitter,
+  instagram: Instagram,
+  linkedin: Linkedin,
+};
 
 export function PlatformPreview({ content, selectedPlatforms, imageUrl }: PlatformPreviewProps) {
   const issues = getValidationIssues(content, selectedPlatforms);
@@ -41,15 +48,18 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
 
       <Tabs defaultValue={selectedPlatforms[0]} className="w-full">
         <TabsList className="w-full">
-          {selectedPlatforms.map(platform => (
-            <TabsTrigger
-              key={platform}
-              value={platform}
-              className="flex-1"
-            >
-              {PLATFORM_LIMITS[platform]?.name}
-            </TabsTrigger>
-          ))}
+          {selectedPlatforms.map(platform => {
+            const Icon = platformIcons[platform as keyof typeof platformIcons];
+            return (
+              <TabsTrigger
+                key={platform}
+                value={platform}
+                className="flex-1"
+              >
+                <Icon className="h-4 w-4" />
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
         {selectedPlatforms.map(platform => (
           <TabsContent key={platform} value={platform} className="mt-4">
