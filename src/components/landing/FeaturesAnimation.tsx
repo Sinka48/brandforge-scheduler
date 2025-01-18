@@ -3,24 +3,24 @@ import { useEffect, useState } from "react";
 
 const features = [
   {
-    title: "AI-Powered Content Engine",
-    description: "Generate engaging posts with our next-gen AI that understands your brand voice.",
+    title: "AI Content Creation",
+    description: "Generate engaging posts in seconds with our AI engine.",
   },
   {
-    title: "Smart Schedule Optimization",
-    description: "Leverage predictive analytics to post at peak engagement times.",
+    title: "Smart Scheduling",
+    description: "Post at optimal times with predictive analytics.",
   },
   {
-    title: "Cross-Platform Synergy",
-    description: "Seamlessly manage your digital presence across all social networks.",
+    title: "Cross-Platform Management",
+    description: "Manage all social networks from one dashboard.",
   },
   {
-    title: "Real-Time Analytics",
-    description: "Track performance metrics with instant insights and predictions.",
+    title: "Live Analytics",
+    description: "Track performance with real-time insights.",
   },
   {
-    title: "Dynamic Brand Evolution",
-    description: "Adapt your brand identity with AI-driven style recommendations.",
+    title: "Brand Evolution",
+    description: "Adapt your brand with AI recommendations.",
   }
 ];
 
@@ -34,7 +34,7 @@ export function FeaturesAnimation() {
       setCurrentFeature((prev) => (prev + 1) % features.length);
       setDisplayText("");
       setIsTyping(true);
-    }, 5000);
+    }, 5000); // Set to 5 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -52,7 +52,7 @@ export function FeaturesAnimation() {
         setIsTyping(false);
         clearInterval(typingInterval);
       }
-    }, 30); // Reduced from 50ms to 30ms for smoother typing
+    }, 30);
 
     return () => clearInterval(typingInterval);
   }, [currentFeature, isTyping]);
@@ -63,28 +63,30 @@ export function FeaturesAnimation() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: "easeOut" }} // Added smoother transition
-      className="max-w-2xl text-left space-y-6 relative z-10"
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="max-w-2xl text-left space-y-4"
     >
       <motion.h2 
-        className="text-3xl font-bold text-white"
+        className="text-3xl font-bold text-white truncate"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
         {features[currentFeature].title}
       </motion.h2>
-      <p className="text-xl text-white/80">
-        <motion.span 
-          className="bg-blue-500/30 rounded px-1"
+      <div className="overflow-hidden whitespace-nowrap">
+        <motion.p 
+          className="text-sm text-white/80 font-normal"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
         >
-          {displayText}
-        </motion.span>
-        <span className="ml-1 animate-[blink_1s_infinite]">|</span>
-      </p>
+          <span className="bg-blue-500/30 rounded px-1 truncate max-w-full">
+            {displayText}
+          </span>
+          <span className="ml-1 animate-[blink_1s_infinite]">|</span>
+        </motion.p>
+      </div>
     </motion.div>
   );
 }
