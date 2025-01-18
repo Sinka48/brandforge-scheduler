@@ -15,27 +15,22 @@ const features = [
   {
     title: "Social Media Calendar",
     description: "Plan and schedule your content across multiple platforms with our intuitive calendar interface.",
-    icon: "📅"
   },
   {
     title: "Brand Identity Management",
     description: "Create and maintain consistent brand guidelines, color schemes, and visual assets.",
-    icon: "🎨"
   },
   {
     title: "Campaign Analytics",
     description: "Track performance metrics and engagement rates for all your social media campaigns.",
-    icon: "📊"
   },
   {
     title: "AI-Powered Content",
     description: "Generate engaging content ideas and captions with our AI assistant.",
-    icon: "🤖"
   },
   {
     title: "Multi-Platform Support",
     description: "Manage content for all major social media platforms in one place.",
-    icon: "🌐"
   }
 ];
 
@@ -46,13 +41,36 @@ interface IndexPageProps {
 export default function IndexPage({ session }: IndexPageProps) {
   const [showLogin, setShowLogin] = useState(true);
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
+      setDisplayText("");
+      setIsTyping(true);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!isTyping) return;
+
+    const text = features[currentFeature].description;
+    let currentIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < text.length) {
+        setDisplayText(prev => prev + text[currentIndex]);
+        currentIndex++;
+      } else {
+        setIsTyping(false);
+        clearInterval(typingInterval);
+      }
+    }, 50);
+
+    return () => clearInterval(typingInterval);
+  }, [currentFeature, isTyping]);
 
   const { data: analytics } = useQuery({
     queryKey: ['dashboard-analytics', session?.user?.id],
@@ -94,10 +112,8 @@ export default function IndexPage({ session }: IndexPageProps) {
     );
   }
 
-  // Landing page with 40/60 split
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left side - 40% */}
       <div className="w-[40%] p-8 flex flex-col items-center justify-center border-r">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
@@ -127,18 +143,19 @@ export default function IndexPage({ session }: IndexPageProps) {
         </div>
       </div>
 
-      {/* Right side - 60% */}
       <div className="w-[60%] p-8 flex flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/20">
         <motion.div 
           key={currentFeature}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-center space-y-6"
+          className="max-w-2xl text-left space-y-6"
         >
-          <div className="text-6xl mb-4">{features[currentFeature].icon}</div>
           <h2 className="text-3xl font-bold text-primary">{features[currentFeature].title}</h2>
-          <p className="text-xl text-muted-foreground">{features[currentFeature].description}</p>
+          <p className="text-xl text-muted-foreground">
+            {displayText}
+            <span className="ml-1 animate-[blink_1s_infinite]">|</span>
+          </p>
         </motion.div>
       </div>
     </div>
