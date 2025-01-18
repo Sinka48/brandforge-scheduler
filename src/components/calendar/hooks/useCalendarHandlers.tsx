@@ -1,4 +1,6 @@
 import { format } from "date-fns";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface CalendarHandlersProps {
   setEditingPost: (post: any) => void;
@@ -24,34 +26,57 @@ export function useCalendarHandlers({
     const errors: string[] = [];
     
     try {
+      // Check authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication Error",
+          description: "Please log in to schedule posts",
+          variant: "destructive",
+        });
+        return;
+      }
+
       for (const post of campaignPosts) {
-        // Parse the time string to get hours and minutes
-        const [hours, minutes] = post.time.split(':').map(Number);
-        
-        // Create a new date object for the scheduled time
-        const scheduledDate = new Date(selectedDate!);
-        scheduledDate.setHours(hours, minutes, 0, 0);
-
-        const postData = {
-          content: post.content,
-          platforms: [post.platform],
-          image: post.imageUrl || '',
-          time: post.time,
-          status: 'scheduled' as const,
-          scheduled_for: scheduledDate.toISOString(),
-        };
-
-        console.log('Scheduling post:', postData);
-
         try {
-          const result = await handleAddPost(scheduledDate);
-          if (result) {
-            successCount++;
-            console.log('Successfully scheduled post:', result);
-          } else {
-            errors.push(`Failed to schedule post for ${post.platform}`);
+          // Parse the time string to get hours and minutes
+          const [hours, minutes] = post.time.split(':').map(Number);
+          
+          // Create a new date object for the scheduled time
+          const scheduledDate = new Date(selectedDate!);
+          scheduledDate.setHours(hours, minutes, 0, 0);
+
+          // Validate scheduled time
+          if (scheduledDate < new Date()) {
+            errors.push(`Cannot schedule post for ${post.platform} in the past`);
+            continue;
           }
-        } catch (error) {
+
+          const postData = {
+            content: post.content,
+            platform: post.platform.toLowerCase(),
+            image_url: post.imageUrl || '',
+            scheduled_for: scheduledDate.toISOString(),
+            status: 'scheduled' as const,
+            user_id: session.user.id
+          };
+
+          console.log('Scheduling post:', postData);
+
+          const { data, error } = await supabase
+            .from('posts')
+            .insert(postData)
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Error scheduling post:', error);
+            errors.push(`Failed to schedule post for ${post.platform}: ${error.message}`);
+          } else {
+            successCount++;
+            console.log('Successfully scheduled post:', data);
+          }
+        } catch (error: any) {
           console.error('Error scheduling post:', error);
           errors.push(`Error scheduling post for ${post.platform}: ${error.message}`);
         }
@@ -74,7 +99,7 @@ export function useCalendarHandlers({
         console.error('Scheduling errors:', errors);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error scheduling campaign:', error);
       toast({
         title: "Error",
