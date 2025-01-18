@@ -1,6 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 import {
   Form,
   FormControl,
@@ -20,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const formSchema = z.object({
   businessName: z.string().min(2, {
@@ -43,6 +47,9 @@ const formSchema = z.object({
 })
 
 export function BrandQuestionnaireForm() {
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,9 +66,48 @@ export function BrandQuestionnaireForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    // We'll implement the submission logic later
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save your brand questionnaire.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const { error } = await supabase.from("brand_questionnaires").insert({
+        user_id: user.id,
+        business_name: values.businessName,
+        industry: values.industry,
+        description: values.description,
+        target_audience: values.targetAudience,
+        brand_personality: values.brandPersonality,
+        color_preferences: values.colorPreferences,
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Success!",
+        description: "Your brand questionnaire has been saved.",
+      })
+
+      // Navigate to the next step (we'll implement this later)
+      navigate("/brand/identity")
+    } catch (error) {
+      console.error("Error saving questionnaire:", error)
+      toast({
+        title: "Error",
+        description: "Failed to save your questionnaire. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   const industries = [
@@ -75,6 +121,32 @@ export function BrandQuestionnaireForm() {
     "Travel",
     "Real Estate",
     "Other",
+  ]
+
+  const personalityTraits = [
+    "Professional",
+    "Friendly",
+    "Innovative",
+    "Traditional",
+    "Luxurious",
+    "Playful",
+    "Minimalist",
+    "Bold",
+    "Trustworthy",
+    "Creative",
+  ]
+
+  const colorOptions = [
+    "Blue",
+    "Green",
+    "Red",
+    "Purple",
+    "Yellow",
+    "Orange",
+    "Black",
+    "White",
+    "Gray",
+    "Brown",
   ]
 
   return (
@@ -146,18 +218,158 @@ export function BrandQuestionnaireForm() {
           )}
         />
 
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Target Audience</h3>
+          
+          <FormField
+            control={form.control}
+            name="targetAudience.ageRange"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Age Range</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., 25-34" {...field} />
+                </FormControl>
+                <FormDescription>
+                  What age group are you primarily targeting?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="targetAudience.location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., United States, Global" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Where is your target audience located?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="targetAudience.interests"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Interests</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Technology, Fashion, Sports" {...field} />
+                </FormControl>
+                <FormDescription>
+                  What are your target audience's main interests?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
-          name="targetAudience.ageRange"
-          render={({ field }) => (
+          name="brandPersonality"
+          render={() => (
             <FormItem>
-              <FormLabel>Target Age Range</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., 25-34" {...field} />
-              </FormControl>
-              <FormDescription>
-                What age group are you primarily targeting?
-              </FormDescription>
+              <div className="mb-4">
+                <FormLabel>Brand Personality</FormLabel>
+                <FormDescription>
+                  Select traits that best describe your brand's personality.
+                </FormDescription>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {personalityTraits.map((trait) => (
+                  <FormField
+                    key={trait}
+                    control={form.control}
+                    name="brandPersonality"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={trait}
+                          className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(trait)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...field.value, trait])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== trait
+                                      )
+                                    )
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {trait}
+                          </FormLabel>
+                        </FormItem>
+                      )
+                    }}
+                  />
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="colorPreferences"
+          render={() => (
+            <FormItem>
+              <div className="mb-4">
+                <FormLabel>Color Preferences</FormLabel>
+                <FormDescription>
+                  Select colors you'd like to incorporate into your brand.
+                </FormDescription>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {colorOptions.map((color) => (
+                  <FormField
+                    key={color}
+                    control={form.control}
+                    name="colorPreferences"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={color}
+                          className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(color)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...field.value, color])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== color
+                                      )
+                                    )
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {color}
+                          </FormLabel>
+                        </FormItem>
+                      )
+                    }}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}
