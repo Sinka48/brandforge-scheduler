@@ -3,6 +3,7 @@ import { DialogHeader } from "./post-dialog/DialogHeader";
 import { DialogActions } from "./post-dialog/DialogActions";
 import { DialogContent as PostDialogContent } from "./post-dialog/DialogContent";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "./post-dialog/LoadingState";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -32,20 +33,39 @@ export function PostDialog({
   const handleSubmit = () => {
     if (newPost.platforms.length === 0) {
       toast({
-        title: "Error",
-        description: "Please select at least one platform.",
+        title: "Platform Required",
+        description: "Please select at least one social media platform for your post.",
         variant: "destructive",
       });
       return;
     }
+
+    if (!newPost.content.trim()) {
+      toast({
+        title: "Content Required",
+        description: "Please add some content to your post before publishing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newPost.time) {
+      toast({
+        title: "Time Required",
+        description: "Please select a posting time for your content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     handleAddPost();
   };
 
   const handleDraftSubmit = () => {
-    if (newPost.platforms.length === 0) {
+    if (!newPost.content.trim()) {
       toast({
-        title: "Error",
-        description: "Please select at least one platform.",
+        title: "Content Required",
+        description: "Please add some content before saving as draft.",
         variant: "destructive",
       });
       return;
@@ -55,22 +75,28 @@ export function PostDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader editMode={editMode} selectedDate={selectedDate} />
         
-        <PostDialogContent
-          newPost={newPost}
-          setNewPost={setNewPost}
-          handlePlatformToggle={handlePlatformToggle}
-          editMode={editMode}
-        />
+        {!newPost ? (
+          <LoadingState />
+        ) : (
+          <>
+            <PostDialogContent
+              newPost={newPost}
+              setNewPost={setNewPost}
+              handlePlatformToggle={handlePlatformToggle}
+              editMode={editMode}
+            />
 
-        <DialogActions
-          onSaveAsDraft={handleDraftSubmit}
-          onAddPost={handleSubmit}
-          isDisabled={newPost.content.length === 0}
-          editMode={editMode}
-        />
+            <DialogActions
+              onSaveAsDraft={handleDraftSubmit}
+              onAddPost={handleSubmit}
+              isDisabled={!newPost.content.trim()}
+              editMode={editMode}
+            />
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
