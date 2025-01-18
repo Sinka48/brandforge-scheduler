@@ -60,7 +60,7 @@ export function CalendarView({
         id: post.id,
         content: post.content,
         date: new Date(post.scheduled_for),
-        platforms: [post.platform], // Ensure this is always an array
+        platforms: [post.platform as PlatformId], // Cast the platform to PlatformId type
         image: post.image_url,
         status: post.status as 'draft' | 'scheduled',
         time: format(new Date(post.scheduled_for), 'HH:mm')
