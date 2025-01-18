@@ -1,5 +1,12 @@
 import { supabase } from "@/lib/supabase";
-import type { ToastProps } from "@/components/ui/toast";
+import type { ToastActionElement } from "@/components/ui/toast";
+
+type ToastProps = {
+  title?: string;
+  description?: string;
+  action?: ToastActionElement;
+  variant?: "default" | "destructive";
+};
 
 type ToastFunction = (props: ToastProps) => void;
 
