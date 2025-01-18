@@ -1,45 +1,50 @@
-import { useState } from "react";
-import { usePostActions } from "./usePostActions";
-import { useToast } from "./use-toast";
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function usePostCreation() {
-  const [loading, setLoading] = useState(false);
-  const { createPost, updatePost, deletePost } = usePostActions();
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleCreatePost = async (postData: {
-    content: string;
-    platform: string;
-    image_url?: string;
-    scheduled_for: string;
-    status?: string;
-    is_recurring?: boolean;
-    recurrence_pattern?: string;
-    recurrence_end_date?: string;
-  }) => {
-    setLoading(true);
+  const createPost = async (postData: any) => {
+    if (!postData) {
+      toast({
+        title: "Error",
+        description: "Post data is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const result = await createPost(postData);
-      if (result) {
-        toast({
-          title: "Success",
-          description: "Post created successfully",
-        });
-        return result;
-      }
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([postData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Post created successfully!",
+      });
+
+      return data;
     } catch (error) {
+      console.error('Error creating post:', error);
       toast({
         title: "Error",
         description: "Failed to create post",
-        variant: "destructive",
+        variant: "destructive"
       });
+      return false;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return {
-    loading,
-    handleCreatePost,
+    createPost,
+    isLoading
   };
 }

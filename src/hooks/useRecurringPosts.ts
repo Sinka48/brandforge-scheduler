@@ -1,62 +1,28 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "./use-toast";
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useRecurringPosts() {
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  const { data: { session } } = await supabase.auth.getSession();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const createRecurringPost = async (postData: {
-    content: string;
-    platform: string;
-    image_url?: string;
-    scheduled_for: string;
-    status: string;
-    is_recurring: boolean;
-    recurrence_pattern: string;
-    recurrence_end_date: string;
-  }) => {
-    if (!session?.user?.id) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create posts",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
+  const createRecurringPost = async (postData: any) => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from("posts")
-        .insert({
-          ...postData,
-          user_id: session.user.id,
-        });
-
+        .from('posts')
+        .insert([postData]);
+      
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Recurring post created successfully",
-      });
-
       return data;
     } catch (error) {
-      console.error("Error creating recurring post:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create recurring post",
-        variant: "destructive",
-      });
+      console.error('Error creating recurring post:', error);
+      throw error;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return {
-    loading,
     createRecurringPost,
+    isLoading
   };
 }
