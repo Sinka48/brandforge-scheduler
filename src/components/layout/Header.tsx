@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ interface HeaderProps {
 
 export function Header({ session }: HeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,6 +52,8 @@ export function Header({ session }: HeaderProps) {
       });
     }
   };
+
+  const isActive = (path: string) => location.pathname === path;
 
   if (!session) {
     return (
@@ -75,17 +78,18 @@ export function Header({ session }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="mr-6 flex items-center space-x-2">
+          <Link to="/calendar" className="mr-6 flex items-center space-x-2">
             <span className="text-xl font-bold">Brand Management</span>
           </Link>
 
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link to="/">
+                <Link to="/calendar">
                   <NavigationMenuLink
                     className={cn(
-                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                      isActive("/calendar") && "bg-accent/50"
                     )}
                   >
                     Dashboard
@@ -137,7 +141,8 @@ export function Header({ session }: HeaderProps) {
                 <Link to="/calendar">
                   <NavigationMenuLink
                     className={cn(
-                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                      isActive("/calendar") && "bg-accent/50"
                     )}
                   >
                     Calendar
@@ -149,7 +154,8 @@ export function Header({ session }: HeaderProps) {
                 <Link to="/campaigns">
                   <NavigationMenuLink
                     className={cn(
-                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                      isActive("/campaigns") && "bg-accent/50"
                     )}
                   >
                     Campaigns
