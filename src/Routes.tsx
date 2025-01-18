@@ -9,10 +9,10 @@ import SettingsPage from "@/pages/Settings";
 import CampaignsPage from "@/pages/Campaigns";
 
 interface RoutesProps {
-  session: Session | null;
+  session?: Session | null;
 }
 
-export function Routes({ session }: RoutesProps) {
+function Routes({ session }: RoutesProps) {
   // If not authenticated, only show index page which contains login form
   if (!session) {
     return (
@@ -35,3 +35,5 @@ export function Routes({ session }: RoutesProps) {
     </RouterRoutes>
   );
 }
+
+export default Routes;

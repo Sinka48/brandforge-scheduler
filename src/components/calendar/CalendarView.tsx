@@ -49,12 +49,12 @@ export function CalendarView({ selectedDate, onSelectDate, posts = [] }: Calenda
     format(post.date, 'yyyy-MM-dd') === (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '')
   );
 
-  const handleBulkDelete = async (postId: string) => {
+  const handleBulkDelete = async (postIds: string[]) => {
     toast({
-      title: "Post deleted",
-      description: "The post has been deleted."
+      title: "Posts deleted",
+      description: `${postIds.length} posts have been deleted.`
     });
-    setSelectedPosts(selectedPosts.filter(id => id !== postId));
+    setSelectedPosts([]);
   };
 
   const handleBulkDuplicate = async (postIds: string[]) => {
