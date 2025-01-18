@@ -65,27 +65,25 @@ export default function CalendarPage({ session }: CalendarPageProps) {
 
   return (
     <Layout session={session}>
-      <div className="space-y-6 px-4 md:px-6 lg:px-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
-          <p className="text-muted-foreground">
-            View and manage your social media posts
-          </p>
-        </div>
-        <div className="grid gap-4">
+      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex-none p-4 md:p-6">
+          <div className="space-y-2 mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
+            <p className="text-muted-foreground">
+              View and manage your social media posts
+            </p>
+          </div>
           <CalendarHeader 
             onNewPost={() => setIsDialogOpen(true)}
             onNewCampaign={() => setIsCampaignDialogOpen(true)}
           />
-          
-          <div className="rounded-lg border bg-card">
-            <div className="p-6">
-              <CalendarView 
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-              />
-            </div>
-          </div>
+        </div>
+        
+        <div className="flex-1 p-4 md:p-6 overflow-auto">
+          <CalendarView 
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+          />
         </div>
 
         {isMobile && (
