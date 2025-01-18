@@ -1,29 +1,20 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-
-interface Campaign {
-  id: string;
-  name: string;
-  description: string | null;
-  status: string;
-  start_date: string | null;
-  end_date: string | null;
-  platforms: string[];
-  settings: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
+import { Campaign } from "@/types/campaign";
+import { useNavigate } from "react-router-dom";
 
 interface CampaignManagerProps {
   campaigns: Campaign[];
 }
 
 export function CampaignManager({ campaigns }: CampaignManagerProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button>
+        <Button onClick={() => navigate('/calendar')}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Campaign
         </Button>
