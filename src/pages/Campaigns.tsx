@@ -31,9 +31,15 @@ export default function CampaignsPage() {
   const { data: campaigns, isLoading, refetch } = useQuery({
     queryKey: ['campaigns'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
+        .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -43,10 +49,16 @@ export default function CampaignsPage() {
 
   const handleStatusChange = async (campaignId: string, newStatus: string) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { error } = await supabase
         .from('campaigns')
         .update({ status: newStatus })
-        .eq('id', campaignId);
+        .eq('id', campaignId)
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
 
@@ -68,10 +80,16 @@ export default function CampaignsPage() {
 
   const handleDelete = async (campaignId: string) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { error } = await supabase
         .from('campaigns')
         .delete()
-        .eq('id', campaignId);
+        .eq('id', campaignId)
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
 
@@ -102,6 +120,11 @@ export default function CampaignsPage() {
     }
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { error } = await supabase
         .from('campaigns')
         .insert({
@@ -112,7 +135,8 @@ export default function CampaignsPage() {
           settings: {
             duration: parseInt(newCampaign.duration),
             tone: newCampaign.tone
-          }
+          },
+          user_id: session.user.id
         });
 
       if (error) throw error;

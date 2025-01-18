@@ -118,6 +118,11 @@ export function AICampaignDialog({
     setGeneratedPosts([]);
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const { data: campaignData, error: campaignError } = await supabase
         .from('campaigns')
         .insert({
@@ -130,7 +135,8 @@ export function AICampaignDialog({
             tone,
             timeSlots,
             hashtags
-          }
+          },
+          user_id: session.user.id
         })
         .select()
         .single();
