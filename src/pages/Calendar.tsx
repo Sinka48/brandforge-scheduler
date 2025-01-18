@@ -77,7 +77,6 @@ export default function CalendarPage({ session }: CalendarPageProps) {
           <CalendarView 
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            posts={posts}
           />
         </div>
 
