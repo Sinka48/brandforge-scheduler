@@ -77,7 +77,6 @@ export default function BrandIdentityPage() {
             logoUrl: assets.url || "",
           });
         } else {
-          // Handle invalid metadata format
           setBrandIdentity({
             colors: [],
             typography: {
@@ -89,7 +88,6 @@ export default function BrandIdentityPage() {
           console.warn("Invalid metadata format:", metadata);
         }
       } else {
-        // Handle case where no assets exist yet
         setBrandIdentity(null);
       }
     } catch (error) {
@@ -128,10 +126,32 @@ export default function BrandIdentityPage() {
   const generateBrandIdentity = async () => {
     setGenerating(true);
     try {
+      // First, fetch the latest questionnaire data
+      const { data: questionnaire, error: questionnaireError } = await supabase
+        .from("brand_questionnaires")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (questionnaireError) throw questionnaireError;
+
+      if (!questionnaire) {
+        toast({
+          title: "Error",
+          description: "Please complete the brand questionnaire first",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke(
         "generate-brand-identity",
         {
-          body: { version: currentVersion + 1 },
+          body: { 
+            questionnaire,
+            version: currentVersion + 1 
+          },
         }
       );
 

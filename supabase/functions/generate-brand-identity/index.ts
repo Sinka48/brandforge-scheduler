@@ -19,7 +19,7 @@ serve(async (req) => {
   }
 
   try {
-    const { questionnaire } = await req.json();
+    const { questionnaire, version } = await req.json();
     
     if (!questionnaire) {
       throw new Error('Questionnaire data is required');
@@ -68,6 +68,7 @@ serve(async (req) => {
           questionnaire_id: questionnaire.id,
           asset_type: 'brand_identity',
           url: '', // This would be updated once we implement actual asset generation
+          version: version,
           metadata: suggestions
         }
       ])
