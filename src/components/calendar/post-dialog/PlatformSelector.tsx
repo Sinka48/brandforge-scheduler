@@ -38,7 +38,7 @@ interface PlatformSelectorProps {
 export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: PlatformSelectorProps) {
   return (
     <TooltipProvider>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2 w-full">
         {platforms.map((platform) => {
           const isSelected = selectedPlatforms.includes(platform.id);
           const Icon = platform.icon;
@@ -48,23 +48,24 @@ export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: Platfo
               <TooltipTrigger asChild>
                 <Button
                   variant={isSelected ? "default" : "outline"}
-                  size="icon"
                   onClick={() => onPlatformToggle(platform.id)}
-                  className="relative"
+                  className="relative w-full h-10 px-4"
                 >
-                  <Icon className="h-4 w-4" />
-                  {isSelected && (
-                    <Badge 
-                      variant="secondary" 
-                      className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
-                    >
-                      ✓
-                    </Badge>
-                  )}
+                  <div className="flex items-center justify-center gap-2 w-full">
+                    <Icon className="h-4 w-4" />
+                    <span className="text-sm">{platform.name}</span>
+                    {isSelected && (
+                      <Badge 
+                        variant="secondary" 
+                        className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                      >
+                        ✓
+                      </Badge>
+                    )}
+                  </div>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p className="font-medium">{platform.name}</p>
                 <p className="text-xs text-muted-foreground">{platform.description}</p>
               </TooltipContent>
             </Tooltip>
