@@ -10,6 +10,7 @@ import { LoadTemplateDialog } from "./campaign-dialog/LoadTemplateDialog";
 import { useNavigate } from "react-router-dom";
 import { CampaignConfiguration } from "./campaign-dialog/CampaignConfiguration";
 import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
+import { addDays, parse, format } from "date-fns";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -123,6 +124,9 @@ export function AICampaignDialog({
         throw new Error('Not authenticated');
       }
 
+      const startDate = new Date(); // Campaign starts today
+      const endDate = addDays(startDate, parseInt(duration));
+
       const { data: campaignData, error: campaignError } = await supabase
         .from('campaigns')
         .insert({
@@ -130,6 +134,8 @@ export function AICampaignDialog({
           description: topic,
           platforms,
           status: 'draft',
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
           settings: {
             duration,
             tone,
@@ -156,14 +162,25 @@ export function AICampaignDialog({
 
       if (error) throw error;
 
-      const postsToCreate = data.campaign.map((post: any) => ({
-        content: post.content,
-        platform: post.platform,
-        scheduled_for: post.time,
-        image_url: post.imageUrl,
-        status: 'draft',
-        campaign_id: campaignData.id
-      }));
+      const postsToCreate = data.campaign.map((post: any) => {
+        // Parse the time string (e.g., "09:00") into a Date object
+        const timeDate = parse(post.time, 'HH:mm', new Date());
+        
+        // Create a new date for scheduling that combines the campaign start date with the time
+        const scheduledDate = new Date(startDate);
+        scheduledDate.setHours(timeDate.getHours());
+        scheduledDate.setMinutes(timeDate.getMinutes());
+        
+        return {
+          content: post.content,
+          platform: post.platform,
+          scheduled_for: scheduledDate.toISOString(),
+          image_url: post.imageUrl,
+          status: 'draft',
+          campaign_id: campaignData.id,
+          user_id: session.user.id
+        };
+      });
 
       const { error: postsError } = await supabase
         .from('posts')
