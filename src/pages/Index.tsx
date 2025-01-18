@@ -4,13 +4,13 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Github, Twitter, Mail } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const features = [
   {
@@ -40,7 +40,6 @@ interface IndexPageProps {
 }
 
 export default function IndexPage({ session }: IndexPageProps) {
-  const [showLogin, setShowLogin] = useState(true);
   const [currentFeature, setCurrentFeature] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
@@ -130,30 +129,25 @@ export default function IndexPage({ session }: IndexPageProps) {
           </div>
           
           <div className="p-6">
-            <div className="flex gap-4 mb-6">
-              <Button 
-                variant={showLogin ? "default" : "outline"}
-                onClick={() => setShowLogin(true)}
-                className="flex-1"
-              >
-                Login
-              </Button>
-              <Button 
-                variant={!showLogin ? "default" : "outline"}
-                onClick={() => setShowLogin(false)}
-                className="flex-1"
-              >
-                Sign Up
-              </Button>
-            </div>
-            {showLogin ? <LoginForm /> : <SignUpForm />}
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              <TabsContent value="login">
+                <LoginForm />
+              </TabsContent>
+              <TabsContent value="signup">
+                <SignUpForm />
+              </TabsContent>
+            </Tabs>
             
             <div className="mt-6">
               <Separator className="my-4" />
               <div className="grid grid-cols-3 gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => handleSocialLogin('google')}
+                  onClick={() => handleSocialLogin('email')}
                   disabled={isLoading}
                   className="w-full"
                 >
