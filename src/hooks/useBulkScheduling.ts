@@ -1,26 +1,64 @@
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./use-toast";
 
-export async function createBulkPosts(parentPost: any, newPost: any) {
-  if (!newPost.bulkDates || newPost.bulkDates.length === 0) return;
+export function useBulkScheduling() {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { data: { session } } = await supabase.auth.getSession();
 
-  for (const date of newPost.bulkDates) {
-    for (const platform of newPost.platforms) {
-      await supabase
-        .from('posts')
-        .insert({
-          content: newPost.content,
-          platform: platform,
-          image_url: newPost.image || null,
-          scheduled_for: new Date(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate(),
-            parseInt(newPost.time.split(':')[0]),
-            parseInt(newPost.time.split(':')[1])
-          ).toISOString(),
-          status: 'scheduled',
-          batch_id: parentPost.id
-        });
+  const createBulkPosts = async (posts: Array<{
+    content: string;
+    platform: string;
+    image_url?: string;
+    scheduled_for: string;
+    status: string;
+    batch_id?: string;
+  }>) => {
+    if (!session?.user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create posts",
+        variant: "destructive",
+      });
+      return;
     }
-  }
+
+    setLoading(true);
+    try {
+      const batchId = crypto.randomUUID();
+      const postsWithBatchId = posts.map(post => ({
+        ...post,
+        batch_id: batchId,
+        user_id: session.user.id,
+      }));
+
+      const { data, error } = await supabase
+        .from("posts")
+        .insert(postsWithBatchId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Posts scheduled successfully",
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Error creating bulk posts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to schedule posts",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    createBulkPosts,
+  };
 }

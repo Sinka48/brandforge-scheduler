@@ -1,10 +1,10 @@
 export interface Campaign {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   status: string;
-  start_date: string;
-  end_date: string;
+  start_date: string | null;
+  end_date: string | null;
   platforms: string[];
   settings: Record<string, any>;
   created_at: string;

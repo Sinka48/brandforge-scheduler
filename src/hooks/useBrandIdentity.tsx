@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Brand } from "@/types/brand";
 
 interface BrandIdentity {
   colors: string[];
@@ -33,7 +34,7 @@ export function useBrandIdentity() {
       if (error) throw error;
 
       if (assets) {
-        const metadata = assets.metadata;
+        const metadata = assets.metadata as Brand['metadata'];
         setBrandIdentity({
           colors: metadata.colors || [],
           typography: metadata.typography || {

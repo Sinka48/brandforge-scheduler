@@ -1,70 +1,62 @@
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./use-toast";
 
-export async function createRecurringPosts(
-  parentPostId: string,
-  selectedDate: Date,
-  newPost: any,
-  endDate: Date
-) {
-  if (!endDate) return;
+export function useRecurringPosts() {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { data: { session } } = await supabase.auth.getSession();
 
-  const interval = newPost.recurringPattern || 'daily';
-  let currentDate = new Date(selectedDate);
-  
-  while (currentDate <= endDate) {
-    // Skip the first date as it's already created as the parent post
-    if (currentDate.getTime() === selectedDate.getTime()) {
-      // Move to next date based on interval
-      switch (interval) {
-        case 'daily':
-          currentDate.setDate(currentDate.getDate() + 1);
-          break;
-        case 'weekly':
-          currentDate.setDate(currentDate.getDate() + 7);
-          break;
-        case 'monthly':
-          currentDate.setMonth(currentDate.getMonth() + 1);
-          break;
-      }
-      continue;
+  const createRecurringPost = async (postData: {
+    content: string;
+    platform: string;
+    image_url?: string;
+    scheduled_for: string;
+    status: string;
+    is_recurring: boolean;
+    recurrence_pattern: string;
+    recurrence_end_date: string;
+  }) => {
+    if (!session?.user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create posts",
+        variant: "destructive",
+      });
+      return;
     }
 
-    // Create child post
-    for (const platform of newPost.platforms) {
-      const scheduledTime = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        currentDate.getDate(),
-        parseInt(newPost.time.split(':')[0]),
-        parseInt(newPost.time.split(':')[1])
-      );
-
-      await supabase
-        .from('posts')
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("posts")
         .insert({
-          content: newPost.content,
-          platform: platform,
-          image_url: newPost.image || null,
-          scheduled_for: scheduledTime.toISOString(),
-          status: 'scheduled',
-          is_recurring: true,
-          recurrence_pattern: interval,
-          recurrence_end_date: endDate.toISOString(),
-          parent_post_id: parentPostId
+          ...postData,
+          user_id: session.user.id,
         });
-    }
 
-    // Move to next date based on interval
-    switch (interval) {
-      case 'daily':
-        currentDate.setDate(currentDate.getDate() + 1);
-        break;
-      case 'weekly':
-        currentDate.setDate(currentDate.getDate() + 7);
-        break;
-      case 'monthly':
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        break;
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Recurring post created successfully",
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Error creating recurring post:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create recurring post",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  return {
+    loading,
+    createRecurringPost,
+  };
 }

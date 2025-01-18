@@ -1,44 +1,45 @@
-import { format } from "date-fns";
-import { usePostState } from "./usePostState";
+import { useState } from "react";
 import { usePostActions } from "./usePostActions";
+import { useToast } from "./use-toast";
 
 export function usePostCreation() {
-  const { newPost, setNewPost, handlePlatformToggle } = usePostState();
-  const { createPost, saveDraft } = usePostActions();
+  const [loading, setLoading] = useState(false);
+  const { createPost, updatePost, deletePost } = usePostActions();
+  const { toast } = useToast();
 
-  const handleAddPost = async (selectedDate: Date | undefined) => {
-    const success = await createPost(newPost, selectedDate);
-    if (success) {
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
+  const handleCreatePost = async (postData: {
+    content: string;
+    platform: string;
+    image_url?: string;
+    scheduled_for: string;
+    status?: string;
+    is_recurring?: boolean;
+    recurrence_pattern?: string;
+    recurrence_end_date?: string;
+  }) => {
+    setLoading(true);
+    try {
+      const result = await createPost(postData);
+      if (result) {
+        toast({
+          title: "Success",
+          description: "Post created successfully",
+        });
+        return result;
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create post",
+        variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-    return success;
-  };
-
-  const handleSaveAsDraft = async (selectedDate: Date | undefined) => {
-    const success = await saveDraft(newPost, selectedDate);
-    if (success) {
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'draft',
-      });
-    }
-    return success;
   };
 
   return {
-    newPost,
-    setNewPost,
-    handleAddPost,
-    handleSaveAsDraft,
-    handlePlatformToggle,
+    loading,
+    handleCreatePost,
   };
 }
