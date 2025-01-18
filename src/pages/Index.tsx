@@ -9,8 +9,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Separator } from "@/components/ui/separator";
-import { Github, Mail } from "lucide-react";
+import { Icons } from "@/components/ui/icons";
 
 const features = [
   {
@@ -46,29 +45,6 @@ export default function IndexPage({ session }: IndexPageProps) {
   const [isTyping, setIsTyping] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: analytics } = useQuery({
-    queryKey: ['dashboard-analytics', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('dashboard_analytics')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data || {
-        total_posts: 0,
-        posts_this_week: 0,
-        active_campaigns: 0,
-        avg_engagement_rate: 0,
-        platforms_used: ''
-      };
-    },
-    enabled: !!session?.user?.id
-  });
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
@@ -97,14 +73,41 @@ export default function IndexPage({ session }: IndexPageProps) {
     return () => clearInterval(typingInterval);
   }, [currentFeature, isTyping]);
 
-  const handleGithubLogin = async () => {
-    setIsLoading(true);
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard-analytics', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('dashboard_analytics')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || {
+        total_posts: 0,
+        posts_this_week: 0,
+        active_campaigns: 0,
+        avg_engagement_rate: 0,
+        platforms_used: ''
+      };
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const handleGoogleLogin = async () => {
     try {
-      await supabase.auth.signInWithOAuth({
-        provider: 'github',
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
       });
+      if (error) throw error;
     } catch (error) {
-      console.error('Error signing in with Github:', error);
+      console.error('Error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -130,44 +133,66 @@ export default function IndexPage({ session }: IndexPageProps) {
   return (
     <div className="min-h-screen bg-background flex">
       <div className="w-[40%] p-8 flex flex-col items-center justify-center">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">Sign in to your account</p>
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-primary mb-2">Welcome</h1>
+            <p className="text-muted-foreground">Sign in to continue to your account</p>
           </div>
           
-          <div className="space-y-4">
-            {showLogin ? <LoginForm /> : <SignUpForm />}
-            
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleGithubLogin}
+          <div className="p-6">
+            <div className="flex flex-col gap-4">
+              <Button
+                variant="outline"
+                onClick={handleGoogleLogin}
                 disabled={isLoading}
                 className="w-full"
               >
-                <Github className="mr-2 h-4 w-4" />
-                Github
+                {isLoading ? (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Icons.google className="mr-2 h-4 w-4" />
+                )}
+                Continue with Google
               </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setShowLogin(!showLogin)}
-                className="w-full"
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                {showLogin ? "Create an account" : "Sign in with email"}
-              </Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              {showLogin ? <LoginForm /> : <SignUpForm />}
+              
+              <div className="text-center text-sm">
+                {showLogin ? (
+                  <p className="text-muted-foreground">
+                    Don't have an account?{" "}
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto font-normal"
+                      onClick={() => setShowLogin(false)}
+                    >
+                      Sign up
+                    </Button>
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Already have an account?{" "}
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto font-normal"
+                      onClick={() => setShowLogin(true)}
+                    >
+                      Sign in
+                    </Button>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
