@@ -19,18 +19,6 @@ export function AuthSection() {
   return (
     <div className="w-[40%] p-8 flex flex-col items-center justify-center">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 
-            className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 animate-gradient-x"
-            style={{
-              backgroundSize: '200% auto',
-              animation: 'gradient 8s linear infinite',
-            }}
-          >
-            Welcome
-          </h1>
-        </div>
-        
         <div className="p-6">
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
