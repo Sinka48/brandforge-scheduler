@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ColorPaletteCard } from "@/components/brand/identity/ColorPaletteCard";
-import { TypographyCard } from "@/components/brand/identity/TypographyCard";
-import { LogoCard } from "@/components/brand/identity/LogoCard";
+import { Card } from "@/components/ui/card";
 import { VersionHistory } from "@/components/brand/identity/VersionHistory";
+import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
 
 interface BrandIdentity {
   colors: string[];
@@ -239,6 +237,41 @@ export default function BrandIdentityPage() {
     }
   };
 
+  const handleColorUpdate = async (newColors: string[]) => {
+    if (!brandIdentity) return;
+    
+    try {
+      const { error } = await supabase
+        .from("brand_assets")
+        .update({
+          metadata: {
+            ...brandIdentity,
+            colors: newColors,
+          },
+        })
+        .eq("version", currentVersion);
+
+      if (error) throw error;
+
+      setBrandIdentity({
+        ...brandIdentity,
+        colors: newColors,
+      });
+
+      toast({
+        title: "Success",
+        description: "Color palette updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating colors:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update color palette",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -256,13 +289,13 @@ export default function BrandIdentityPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Brand Identity</h1>
             <p className="text-muted-foreground">
-              Generate and manage your brand identity assets
+              Review and customize your brand identity
             </p>
           </div>
           <div className="flex gap-2">
             {brandIdentity && (
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={handleDelete}
                 disabled={deleting}
               >
@@ -278,29 +311,16 @@ export default function BrandIdentityPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <ColorPaletteCard
-            colors={brandIdentity?.colors || []}
-            onCustomize={(colors) => {
-              console.log("Customize colors:", colors);
-            }}
-          />
-          <TypographyCard
-            typography={
-              brandIdentity?.typography || { headingFont: "", bodyFont: "" }
-            }
-            onCustomize={(typography) => {
-              console.log("Customize typography:", typography);
-            }}
-          />
-          <LogoCard
-            logoUrl={brandIdentity?.logoUrl || ""}
+        {brandIdentity && (
+          <BrandReviewSection
+            colors={brandIdentity.colors}
+            typography={brandIdentity.typography}
+            logoUrl={brandIdentity.logoUrl}
+            onColorUpdate={handleColorUpdate}
+            onLogoCustomize={() => console.log("Customize logo")}
             onDownload={handleDownload}
-            onCustomize={() => {
-              console.log("Customize logo");
-            }}
           />
-        </div>
+        )}
 
         <Card className="p-6">
           <VersionHistory
