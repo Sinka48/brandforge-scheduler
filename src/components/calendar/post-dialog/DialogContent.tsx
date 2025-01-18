@@ -9,6 +9,7 @@ import { RecurringOptions } from "./RecurringOptions";
 import { BulkScheduling } from "./BulkScheduling";
 import { Button } from "@/components/ui/button";
 import { PlatformPreview } from "./PlatformPreview";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DialogContentProps {
   newPost: any;
@@ -23,6 +24,8 @@ export function DialogContent({
   handlePlatformToggle,
   editMode = false
 }: DialogContentProps) {
+  const isMobile = useIsMobile();
+
   return (
     <div className="space-y-4 py-4">
       <div className="flex items-center gap-2 mb-4">
@@ -37,7 +40,7 @@ export function DialogContent({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-8">
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-2 gap-8'}`}>
         {/* Left Column - Preview */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Preview</h3>
@@ -64,7 +67,7 @@ export function DialogContent({
               imageUrl={newPost.image}
             />
             
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-2">
               <TimeSelector
                 time={newPost.time}
                 onTimeChange={(time) => setNewPost({ ...newPost, time })}
