@@ -1,9 +1,10 @@
-import { Route, Routes as RouterRoutes } from "react-router-dom";
-import CalendarPage from "@/pages/Calendar";
-import BrandPage from "@/pages/Brand";
+import { Routes as RouterRoutes, Route } from "react-router-dom";
 import IndexPage from "@/pages/Index";
-import SettingsPage from "@/pages/Settings";
+import CalendarPage from "@/pages/Calendar";
+import BrandPage from "@/pages/Brand"; 
 import BrandIdentityPage from "@/pages/BrandIdentity";
+import BrandListPage from "@/pages/BrandList";
+import SettingsPage from "@/pages/Settings";
 
 export function Routes() {
   return (
@@ -11,7 +12,8 @@ export function Routes() {
       <Route path="/" element={<IndexPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/brand" element={<BrandPage />} />
-      <Route path="/brands" element={<BrandIdentityPage />} />
+      <Route path="/brand/identity" element={<BrandIdentityPage />} />
+      <Route path="/brands" element={<BrandListPage />} />
       <Route path="/settings" element={<SettingsPage />} />
     </RouterRoutes>
   );
