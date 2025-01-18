@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Save, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -44,6 +44,7 @@ function isBrandAssetMetadata(value: unknown): value is BrandAssetMetadata {
 
 export default function BrandIdentityPage() {
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
@@ -174,6 +175,62 @@ export default function BrandIdentityPage() {
     }
   };
 
+  const saveBrandAssets = async () => {
+    if (!brandIdentity) return;
+
+    setSaving(true);
+    try {
+      const { data: questionnaire } = await supabase
+        .from("brand_questionnaires")
+        .select("id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!questionnaire) {
+        toast({
+          title: "Error",
+          description: "No brand questionnaire found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Save logo asset
+      const { data: logoAsset, error: logoError } = await supabase
+        .from("brand_assets")
+        .insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          questionnaire_id: questionnaire.id,
+          asset_type: "logo",
+          url: brandIdentity.logoUrl,
+          metadata: {
+            colors: brandIdentity.colors,
+            typography: brandIdentity.typography
+          },
+          version: currentVersion
+        })
+        .select()
+        .single();
+
+      if (logoError) throw logoError;
+
+      toast({
+        title: "Success",
+        description: "Brand assets saved successfully!",
+      });
+    } catch (error) {
+      console.error("Error saving brand assets:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save brand assets",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleRestore = async (version: number) => {
     setCurrentVersion(version);
     await fetchBrandIdentity();
@@ -294,15 +351,26 @@ export default function BrandIdentityPage() {
           </div>
           <div className="flex gap-2">
             {brandIdentity && (
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
-                {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Brand
-              </Button>
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Brand
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={saveBrandAssets}
+                  disabled={saving}
+                >
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Brand
+                </Button>
+              </>
             )}
             <Button onClick={generateBrandIdentity} disabled={generating}>
               {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
