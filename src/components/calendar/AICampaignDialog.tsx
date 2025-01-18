@@ -38,10 +38,20 @@ export function AICampaignDialog({
   };
 
   const handleGenerate = async () => {
-    if (!topic || platforms.length === 0) {
+    // Validate required fields
+    if (!topic.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please enter a campaign topic",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (platforms.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please select at least one platform",
         variant: "destructive",
       });
       return;
@@ -133,7 +143,7 @@ export function AICampaignDialog({
           <Button
             onClick={handleGenerate}
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || !topic.trim() || platforms.length === 0}
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
