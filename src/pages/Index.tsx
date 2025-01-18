@@ -18,38 +18,48 @@ export default function IndexPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState("");
   const [analytics, setAnalytics] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initial session check
+    let mounted = true;
+
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (!session && !isLoading) {
-          navigate('/calendar', { replace: true });
+        if (mounted) {
+          setSession(currentSession);
+          if (!currentSession) {
+            navigate('/calendar');
+          }
+          setIsInitialized(true);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-      } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setError("Failed to initialize authentication");
+          setIsInitialized(true);
+        }
       }
     };
 
     initializeAuth();
 
-    // Auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (!session && !isLoading) {
-        navigate('/calendar', { replace: true });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (mounted && isInitialized) {
+        setSession(newSession);
+        if (!newSession) {
+          navigate('/calendar');
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, isLoading]);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate, isInitialized]);
 
   useEffect(() => {
     if (session) {
@@ -108,7 +118,7 @@ export default function IndexPage() {
     { name: 'Sun', posts: 3 },
   ];
 
-  if (isLoading) {
+  if (!isInitialized) {
     return <Layout>Loading...</Layout>;
   }
 
