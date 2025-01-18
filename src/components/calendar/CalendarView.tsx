@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PLATFORMS } from "@/constants/platforms";
 import { usePostFetching } from "@/hooks/usePostFetching";
+import { useToast } from "@/hooks/use-toast";
 import {
   LoadingState,
   AuthCheckingState,
@@ -40,6 +41,8 @@ export function CalendarView({
   onCreatePost,
   onPostClick
 }: CalendarViewProps) {
+  const { toast } = useToast();
+  
   // Check authentication status
   const { data: session, isLoading: authLoading } = useQuery({
     queryKey: ['auth-session'],
@@ -87,8 +90,19 @@ export function CalendarView({
         .eq('id', postId);
 
       if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+      });
+      
     } catch (error) {
       console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
