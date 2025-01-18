@@ -17,10 +17,8 @@ export default function BrandPage({ session }: BrandPageProps) {
           </p>
         </div>
 
-        <div className="rounded-lg border bg-card">
-          <div className="p-6">
-            <BrandQuestionnaireForm />
-          </div>
+        <div className="space-y-6">
+          <BrandQuestionnaireForm />
         </div>
       </div>
     </Layout>

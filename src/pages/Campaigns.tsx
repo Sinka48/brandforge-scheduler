@@ -24,13 +24,17 @@ export default function CampaignsPage({ session }: { session: any }) {
   return (
     <Layout session={session}>
       <div className="space-y-6">
-        <div className="space-y-1">
+        <div>
           <h1 className="text-3xl font-bold tracking-tight">Campaigns</h1>
           <p className="text-muted-foreground">
             Create and manage your marketing campaigns
           </p>
         </div>
-        <CampaignManager campaigns={campaigns || []} />
+        {isLoading ? (
+          <div>Loading campaigns...</div>
+        ) : (
+          <CampaignManager campaigns={campaigns || []} />
+        )}
       </div>
     </Layout>
   );

@@ -6,26 +6,15 @@ import { Routes } from "./Routes";
 import { useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "./hooks/use-toast";
 
 const queryClient = new QueryClient();
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Error getting session:', error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem with your session. Please try logging in again.",
-          variant: "destructive",
-        });
-        return;
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
@@ -33,17 +22,11 @@ function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (_event === 'SIGNED_OUT') {
-        // Clear any cached data when user signs out
-        queryClient.clear();
-      }
       setSession(session);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [toast]);
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
