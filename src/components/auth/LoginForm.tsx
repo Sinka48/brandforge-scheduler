@@ -15,12 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  remember: z.boolean().default(false),
 });
 
 type LoginFormValues = z.infer<typeof formSchema>;
@@ -34,7 +32,6 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
-      remember: false,
     },
   });
 
@@ -182,22 +179,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <div className="flex items-center justify-between">
-          <FormField
-            control={form.control}
-            name="remember"
-            render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="text-sm font-normal leading-none m-0">Remember me</FormLabel>
-              </FormItem>
-            )}
-          />
+        <div className="flex items-center justify-end">
           <Button
             type="button"
             variant="link"

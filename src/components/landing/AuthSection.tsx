@@ -3,7 +3,7 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Github, Twitter, Mail } from "lucide-react";
+import { Mail, Facebook } from "lucide-react";
 import { useState } from "react";
 
 export function AuthSection() {
@@ -35,7 +35,7 @@ export function AuthSection() {
           
           <div className="mt-6">
             <Separator className="my-4" />
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
                 onClick={() => handleSocialLogin('email')}
@@ -47,21 +47,12 @@ export function AuthSection() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleSocialLogin('github')}
+                onClick={() => handleSocialLogin('meta')}
                 disabled={isLoading}
                 className="w-full"
               >
-                <Github className="h-4 w-4 mr-2" />
-                GitHub
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleSocialLogin('twitter')}
-                disabled={isLoading}
-                className="w-full"
-              >
-                <Twitter className="h-4 w-4 mr-2" />
-                Twitter
+                <Facebook className="h-4 w-4 mr-2" />
+                Meta
               </Button>
             </div>
           </div>
