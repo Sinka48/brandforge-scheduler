@@ -26,7 +26,7 @@ export function Routes({ session }: RoutesProps) {
   return (
     <RouterRoutes>
       <Route path="/" element={<IndexPage session={session} />} />
-      <Route path="/calendar" element={<CalendarPage session={session} />} />
+      <Route path="/feed" element={<CalendarPage session={session} />} />
       <Route path="/brand" element={<BrandPage session={session} />} />
       <Route path="/brand/identity" element={<BrandIdentityPage session={session} />} />
       <Route path="/brands" element={<BrandListPage session={session} />} />
