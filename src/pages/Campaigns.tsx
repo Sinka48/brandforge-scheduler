@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlatformSelector } from "@/components/calendar/post-dialog/PlatformSelector";
+import { Layout } from "@/components/layout/Layout";
 
 export default function CampaignsPage() {
   const { toast } = useToast();
@@ -161,186 +162,193 @@ export default function CampaignsPage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Campaigns</h1>
-        <div className="flex gap-2">
-          <Button onClick={() => setIsManualDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Campaign
-          </Button>
-          <Button onClick={() => setIsAIDialogOpen(true)} variant="secondary">
-            <Wand2 className="h-4 w-4 mr-2" />
-            AI Campaign
-          </Button>
+    <Layout>
+      <div className="container mx-auto py-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Campaigns</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage and track your marketing campaigns
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setIsManualDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Campaign
+            </Button>
+            <Button onClick={() => setIsAIDialogOpen(true)} variant="secondary">
+              <Wand2 className="h-4 w-4 mr-2" />
+              AI Campaign
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {isLoading ? (
-        <div className="text-center py-8">Loading campaigns...</div>
-      ) : campaigns?.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">No campaigns found. Create your first campaign!</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {campaigns?.map((campaign) => (
-            <Card key={campaign.id}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xl font-semibold">
-                  {campaign.name}
-                </CardTitle>
-                <Badge className={getStatusColor(campaign.status)}>
-                  {campaign.status}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground mb-4">
-                  {campaign.description}
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-                  <div className="text-sm">
-                    Start: {campaign.start_date ? format(new Date(campaign.start_date), 'PPP') : 'Not set'}
+        {isLoading ? (
+          <div className="text-center py-8">Loading campaigns...</div>
+        ) : campaigns?.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-8">
+              <p className="text-muted-foreground">No campaigns found. Create your first campaign!</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {campaigns?.map((campaign) => (
+              <Card key={campaign.id}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-xl font-semibold">
+                    {campaign.name}
+                  </CardTitle>
+                  <Badge className={getStatusColor(campaign.status)}>
+                    {campaign.status}
+                  </Badge>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground mb-4">
+                    {campaign.description}
                   </div>
-                  <div className="text-sm">
-                    End: {campaign.end_date ? format(new Date(campaign.end_date), 'PPP') : 'Not set'}
+                  <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+                    <div className="text-sm">
+                      Start: {campaign.start_date ? format(new Date(campaign.start_date), 'PPP') : 'Not set'}
+                    </div>
+                    <div className="text-sm">
+                      End: {campaign.end_date ? format(new Date(campaign.end_date), 'PPP') : 'Not set'}
+                    </div>
+                    <div className="text-sm">
+                      Platforms: {campaign.platforms.join(', ')}
+                    </div>
                   </div>
-                  <div className="text-sm">
-                    Platforms: {campaign.platforms.join(', ')}
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  {campaign.status === 'active' ? (
+                  <div className="flex gap-2 mt-4">
+                    {campaign.status === 'active' ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(campaign.id, 'paused')}
+                      >
+                        <Pause className="h-4 w-4 mr-2" />
+                        Pause
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(campaign.id, 'active')}
+                        disabled={campaign.status === 'completed'}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleStatusChange(campaign.id, 'paused')}
+                      onClick={() => handleDelete(campaign.id)}
                     >
-                      <Pause className="h-4 w-4 mr-2" />
-                      Pause
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusChange(campaign.id, 'active')}
-                      disabled={campaign.status === 'completed'}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Start
-                    </Button>
-                  )}
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(campaign.id)}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <AICampaignDialog 
+          isOpen={isAIDialogOpen}
+          onOpenChange={setIsAIDialogOpen}
+          onGenerateCampaign={() => {
+            refetch();
+            setIsAIDialogOpen(false);
+          }}
+        />
+
+        <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Create New Campaign</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Campaign Name</Label>
+                <Input
+                  id="name"
+                  value={newCampaign.name}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter campaign name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newCampaign.description}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Enter campaign description"
+                />
+              </div>
+
+              <PlatformSelector
+                selectedPlatforms={newCampaign.platforms}
+                onPlatformToggle={handlePlatformToggle}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Campaign Duration (days)</Label>
+                  <Select 
+                    value={newCampaign.duration}
+                    onValueChange={(value) => setNewCampaign(prev => ({ ...prev, duration: value }))}
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">3 days</SelectItem>
+                      <SelectItem value="7">1 week</SelectItem>
+                      <SelectItem value="14">2 weeks</SelectItem>
+                      <SelectItem value="30">1 month</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
-      <AICampaignDialog 
-        isOpen={isAIDialogOpen}
-        onOpenChange={setIsAIDialogOpen}
-        onGenerateCampaign={() => {
-          refetch();
-          setIsAIDialogOpen(false);
-        }}
-      />
-
-      <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Campaign</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Campaign Name</Label>
-              <Input
-                id="name"
-                value={newCampaign.name}
-                onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter campaign name"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={newCampaign.description}
-                onChange={(e) => setNewCampaign(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter campaign description"
-              />
-            </div>
-
-            <PlatformSelector
-              selectedPlatforms={newCampaign.platforms}
-              onPlatformToggle={handlePlatformToggle}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="duration">Campaign Duration (days)</Label>
-                <Select 
-                  value={newCampaign.duration}
-                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, duration: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3">3 days</SelectItem>
-                    <SelectItem value="7">1 week</SelectItem>
-                    <SelectItem value="14">2 weeks</SelectItem>
-                    <SelectItem value="30">1 month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tone">Campaign Tone</Label>
-                <Select 
-                  value={newCampaign.tone}
-                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, tone: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select tone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="casual">Casual</SelectItem>
-                    <SelectItem value="friendly">Friendly</SelectItem>
-                    <SelectItem value="humorous">Humorous</SelectItem>
-                    <SelectItem value="formal">Formal</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="tone">Campaign Tone</Label>
+                  <Select 
+                    value={newCampaign.tone}
+                    onValueChange={(value) => setNewCampaign(prev => ({ ...prev, tone: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="professional">Professional</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="friendly">Friendly</SelectItem>
+                      <SelectItem value="humorous">Humorous</SelectItem>
+                      <SelectItem value="formal">Formal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsManualDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateManualCampaign}>
-              Create Campaign
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsManualDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateManualCampaign}>
+                Create Campaign
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Layout>
   );
 }

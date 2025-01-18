@@ -1,29 +1,35 @@
-import { Home, PenTool, Library, Calendar, Settings } from "lucide-react";
+import { Home, PenTool, Library, Calendar, Settings, Rocket } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Brand Generator", href: "/brand", icon: PenTool },
   { name: "Saved Brands", href: "/brands", icon: Library },
   { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Campaigns", href: "/campaigns", icon: Rocket },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Header() {
   return (
-    <header className="flex items-center justify-between p-4 bg-white shadow">
-      <h1 className="text-xl font-bold">Brand Management</h1>
-      <nav>
-        <ul className="flex space-x-4">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <Link to="/" className="mr-6 flex items-center space-x-2">
+          <span className="text-xl font-bold">Brand Management</span>
+        </Link>
+        <nav className="flex flex-1 items-center space-x-6">
           {navigation.map((item) => (
-            <li key={item.name}>
-              <a href={item.href} className="flex items-center space-x-2">
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </a>
-            </li>
+            <Link
+              key={item.name}
+              to={item.href}
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <item.icon className="h-4 w-4" />
+              <span>{item.name}</span>
+            </Link>
           ))}
-        </ul>
-      </nav>
+        </nav>
+      </div>
     </header>
   );
 }
