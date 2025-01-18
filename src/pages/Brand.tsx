@@ -9,7 +9,7 @@ interface BrandPageProps {
 export default function BrandPage({ session }: BrandPageProps) {
   return (
     <Layout session={session}>
-      <div className="space-y-8">
+      <div className="space-y-8 p-4 md:p-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Brand Generator</h1>
           <p className="text-muted-foreground">
