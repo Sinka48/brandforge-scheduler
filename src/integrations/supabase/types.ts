@@ -169,6 +169,48 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          platforms: string[]
+          settings: Json
+          start_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          platforms?: string[]
+          settings?: Json
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          platforms?: string[]
+          settings?: Json
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_analytics: {
         Row: {
           clicks: number | null
@@ -256,6 +298,7 @@ export type Database = {
       posts: {
         Row: {
           batch_id: string | null
+          campaign_id: string | null
           content: string
           created_at: string
           id: string
@@ -271,6 +314,7 @@ export type Database = {
         }
         Insert: {
           batch_id?: string | null
+          campaign_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -286,6 +330,7 @@ export type Database = {
         }
         Update: {
           batch_id?: string | null
+          campaign_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -305,6 +350,13 @@ export type Database = {
             columns: ["batch_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
           {

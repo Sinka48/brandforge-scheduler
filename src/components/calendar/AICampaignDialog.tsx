@@ -3,6 +3,7 @@ import { DialogHeader } from "./post-dialog/DialogHeader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { Loader2, RefreshCw, Save, Folder, Wand2 } from "lucide-react";
@@ -17,6 +18,7 @@ import { HashtagSelector } from "./campaign-dialog/HashtagSelector";
 import { SaveTemplateDialog } from "./campaign-dialog/SaveTemplateDialog";
 import { LoadTemplateDialog } from "./campaign-dialog/LoadTemplateDialog";
 import { PlatformPreview } from "./post-dialog/PlatformPreview";
+import { useNavigate } from "react-router-dom";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -34,6 +36,8 @@ export function AICampaignDialog({
   onOpenChange,
   onGenerateCampaign,
 }: AICampaignDialogProps) {
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
@@ -96,6 +100,15 @@ export function AICampaignDialog({
   };
 
   const handleGenerate = async () => {
+    if (!name.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a campaign name",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!topic.trim()) {
       toast({
         title: "Missing Information",
@@ -119,6 +132,25 @@ export function AICampaignDialog({
     setGeneratedPosts([]);
     
     try {
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('campaigns')
+        .insert({
+          name,
+          description: topic,
+          platforms,
+          status: 'draft',
+          settings: {
+            duration,
+            tone,
+            timeSlots,
+            hashtags
+          }
+        })
+        .select()
+        .single();
+
+      if (campaignError) throw campaignError;
+
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
           topic,
@@ -132,14 +164,32 @@ export function AICampaignDialog({
 
       if (error) throw error;
 
+      const postsToCreate = data.campaign.map((post: any) => ({
+        content: post.content,
+        platform: post.platform,
+        scheduled_for: post.time,
+        image_url: post.imageUrl,
+        status: 'draft',
+        campaign_id: campaignData.id
+      }));
+
+      const { error: postsError } = await supabase
+        .from('posts')
+        .insert(postsToCreate);
+
+      if (postsError) throw postsError;
+
       setGeneratedPosts(data.campaign);
       setSuggestedHashtags(data.suggestedHashtags || []);
       setProgress(100);
 
       toast({
-        title: "Campaign Generated",
-        description: "Review your posts before scheduling",
+        title: "Campaign Created",
+        description: "Campaign has been created successfully",
       });
+
+      // Navigate to campaigns page after successful creation
+      navigate('/campaigns');
     } catch (error) {
       console.error('Error generating campaign:', error);
       toast({
@@ -202,6 +252,16 @@ export function AICampaignDialog({
           <div className="grid grid-cols-2 gap-6">
             {/* Campaign Configuration Column */}
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Campaign Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter campaign name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="topic">Campaign Topic</Label>
                 <Textarea
@@ -323,15 +383,6 @@ export function AICampaignDialog({
             )}
             Generate Campaign
           </Button>
-          {generatedPosts.length > 0 && (
-            <Button
-              onClick={handleSchedule}
-              className="flex-1"
-              disabled={isLoading}
-            >
-              Schedule All Posts
-            </Button>
-          )}
         </div>
 
         <SaveTemplateDialog

@@ -5,6 +5,7 @@ import BrandPage from "@/pages/Brand";
 import BrandIdentityPage from "@/pages/BrandIdentity";
 import BrandListPage from "@/pages/BrandList";
 import SettingsPage from "@/pages/Settings";
+import CampaignsPage from "@/pages/Campaigns";
 
 export function Routes() {
   return (
@@ -15,6 +16,7 @@ export function Routes() {
       <Route path="/brand/identity" element={<BrandIdentityPage />} />
       <Route path="/brands" element={<BrandListPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/campaigns" element={<CampaignsPage />} />
     </RouterRoutes>
   );
 }
