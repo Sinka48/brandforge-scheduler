@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase";
-import { Toast } from "@/hooks/use-toast";
+import type { ToastProps } from "@/components/ui/toast";
 
-export function usePostDeletion(toast: Toast) {
+type ToastFunction = (props: ToastProps) => void;
+
+export function usePostDeletion(toast: ToastFunction) {
   const handleDeletePost = async (postId: string, deleteAll: boolean = false) => {
     try {
       if (deleteAll) {
