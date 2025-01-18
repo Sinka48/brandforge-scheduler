@@ -14,7 +14,12 @@ import { ColorPicker } from "./ColorPicker";
 import { FontPicker } from "./FontPicker";
 import { ImageUploader } from "./ImageUploader";
 
-export function BrandManager() {
+interface BrandManagerProps {
+  selectedBrandId?: string;
+  onSelectBrand?: (brand: Brand) => void;
+}
+
+export function BrandManager({ selectedBrandId, onSelectBrand }: BrandManagerProps) {
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]);
   const { toast } = useToast();
