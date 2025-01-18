@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import IndexPage from "@/pages/Index";
@@ -10,37 +10,42 @@ import SettingsPage from "@/pages/Settings";
 import CampaignsPage from "@/pages/Campaigns";
 import { supabase } from "@/integrations/supabase/client";
 
-interface RoutesProps {
-  session?: Session | null;
-}
-
-export default function Routes({ session }: RoutesProps) {
+export default function Routes() {
   const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial session
-    if (session) {
-      navigate('/calendar');
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session); // Debug log
-      
-      if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in, redirecting to calendar"); // Debug log
-        navigate('/calendar', { replace: true });
-      } else if (event === 'SIGNED_OUT') {
-        console.log("User signed out, redirecting to home"); // Debug log
-        navigate('/', { replace: true });
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsLoading(false);
+      if (session) {
+        navigate('/calendar');
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, session]);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session);
+      setSession(session);
+      
+      if (session) {
+        console.log("User authenticated, redirecting to calendar");
+        navigate('/calendar');
+      } else {
+        console.log("User not authenticated, redirecting to home");
+        navigate('/');
+      }
+    });
 
-  // If not authenticated, only show index page which contains login form
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   if (!session) {
     return (
       <RouterRoutes>
