@@ -8,9 +8,9 @@ interface LayoutProps {
 
 export function Layout({ children, session }: LayoutProps) {
   return (
-    <div>
+    <div className="min-h-screen bg-background">
       <Header session={session} />
-      <main className="container py-10">
+      <main className="container mx-auto py-10 px-4 md:px-6 lg:px-8">
         {children}
       </main>
     </div>

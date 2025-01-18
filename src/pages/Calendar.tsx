@@ -58,28 +58,22 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     selectedDate,
   });
 
-  const platforms = PLATFORMS.map(platform => ({
-    ...platform,
-    icon: <platform.icon className="h-4 w-4" />,
-  }));
-
   return (
     <Layout session={session}>
-      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
-        <div className="flex-none p-4 md:p-6">
-          <div className="space-y-2 mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
-            <p className="text-muted-foreground">
-              View and manage your social media posts
-            </p>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
+          <p className="text-muted-foreground">
+            View and manage your social media posts
+          </p>
+        </div>
+
+        <div className="space-y-6">
           <CalendarHeader 
             onNewPost={() => setIsDialogOpen(true)}
             onNewCampaign={() => setIsCampaignDialogOpen(true)}
           />
-        </div>
-        
-        <div className="flex-1 p-4 md:p-6 overflow-auto">
+          
           <CalendarView 
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
