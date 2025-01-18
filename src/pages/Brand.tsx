@@ -1,4 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
+import { BrandQuestionnaireForm } from "@/components/brand/BrandQuestionnaireForm";
 
 export default function BrandPage() {
   return (
@@ -12,11 +13,11 @@ export default function BrandPage() {
         </div>
         <div className="rounded-lg border bg-card">
           <div className="p-6">
-            <h2 className="text-lg font-semibold">Brand Details</h2>
-            <p className="text-sm text-muted-foreground">
-              Fill in the details below to generate your brand identity.
+            <h2 className="text-lg font-semibold">Brand Questionnaire</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Fill in the details below to help us understand your brand better.
             </p>
-            {/* Brand generator form will be added here later */}
+            <BrandQuestionnaireForm />
           </div>
         </div>
       </div>
