@@ -13,6 +13,14 @@ import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
 import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
 import { useQueryClient } from "@tanstack/react-query";
 
+interface Post {
+  content: string;
+  platforms: string[];
+  image: string;
+  time: string;
+  status: 'scheduled' | 'draft';
+}
+
 export default function CalendarPage() {
   useCalendarAuth();
   const queryClient = useQueryClient();
@@ -49,16 +57,14 @@ export default function CalendarPage() {
     setEditingPost,
     setNewPost,
     setIsDialogOpen,
-    handleAddPost,
-    handleUpdatePost,
+    handleAddPost: (selectedDate: Date, post: Post) => handleAddPost(selectedDate, post),
+    handleUpdatePost: (postId: string, selectedDate: Date, post: Post) => handleUpdatePost(postId, selectedDate, post),
     toast,
     selectedDate,
   });
 
-  // Wrap handleGenerateCampaign to invalidate queries after successful campaign creation
   const handleGenerateCampaign = async (campaignPosts: any[]) => {
     await baseHandleGenerateCampaign(campaignPosts);
-    // Always invalidate the query to ensure we have the latest data
     await queryClient.invalidateQueries({ queryKey: ['posts'] });
   };
 
