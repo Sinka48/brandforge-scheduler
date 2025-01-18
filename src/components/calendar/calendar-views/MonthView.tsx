@@ -36,6 +36,12 @@ export function MonthView({ selectedDate, onSelectDate, posts, selectedPosts = [
     onSelectDate(date);
   };
 
+  // Helper function to get a truncated title from content
+  const getPostTitle = (content: string) => {
+    const firstLine = content.split('\n')[0];
+    return firstLine.length > 30 ? `${firstLine.substring(0, 27)}...` : firstLine;
+  };
+
   return (
     <div className="grid grid-cols-7 gap-4">
       {getDaysArray().map((date) => {
@@ -47,12 +53,17 @@ export function MonthView({ selectedDate, onSelectDate, posts, selectedPosts = [
               <p className="text-sm text-muted-foreground">{dayPosts.length} posts</p>
             </div>
             {dayPosts.length > 0 && (
-              <div className="mt-2">
-                {dayPosts.map(post => (
-                  <div key={post.id} className="text-sm">
-                    {post.content}
+              <div className="mt-2 space-y-1">
+                {dayPosts.slice(0, 2).map(post => (
+                  <div key={post.id} className="text-xs truncate text-muted-foreground">
+                    {getPostTitle(post.content)}
                   </div>
                 ))}
+                {dayPosts.length > 2 && (
+                  <div className="text-xs text-muted-foreground">
+                    +{dayPosts.length - 2} more
+                  </div>
+                )}
               </div>
             )}
           </Card>
