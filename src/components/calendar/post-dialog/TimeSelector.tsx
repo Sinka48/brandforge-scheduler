@@ -1,14 +1,18 @@
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useState, useEffect } from "react";
-import { PlatformId } from "@/constants/platforms";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface TimeSelectorProps {
   time: string;
   onTimeChange: (time: string) => void;
-  selectedPlatforms: PlatformId[];
+  selectedPlatforms: string[];
 }
 
 export function TimeSelector({ time, onTimeChange, selectedPlatforms }: TimeSelectorProps) {
@@ -16,7 +20,7 @@ export function TimeSelector({ time, onTimeChange, selectedPlatforms }: TimeSele
 
   const validateTime = (timeStr: string) => {
     if (!timeStr) {
-      setError("Please select a time");
+      setError("Required");
       return false;
     }
 
@@ -26,7 +30,7 @@ export function TimeSelector({ time, onTimeChange, selectedPlatforms }: TimeSele
     selectedTime.setHours(hours, minutes);
 
     if (selectedTime < currentTime) {
-      setError("Selected time cannot be in the past");
+      setError("Future time required");
       return false;
     }
 
@@ -40,33 +44,52 @@ export function TimeSelector({ time, onTimeChange, selectedPlatforms }: TimeSele
     }
   }, [time]);
 
+  const commonTimes = [
+    "09:00", "12:00", "15:00", "18:00", "21:00"
+  ];
+
   return (
-    <div className="space-y-2">
-      <Label htmlFor="time">Posting Time</Label>
-      <div className="space-y-2">
-        <Input
-          type="time"
-          id="time"
-          value={time}
-          onChange={(e) => {
-            if (validateTime(e.target.value)) {
-              onTimeChange(e.target.value);
-            }
-          }}
-          className="w-full md:w-auto"
-        />
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        {selectedPlatforms.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Post will be scheduled for {time} on {selectedPlatforms.join(', ')}
-          </p>
-        )}
-      </div>
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="icon"
+          className={error ? "border-destructive" : ""}
+        >
+          <Clock className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2">
+        <div className="space-y-2">
+          <Input
+            type="time"
+            value={time}
+            onChange={(e) => {
+              if (validateTime(e.target.value)) {
+                onTimeChange(e.target.value);
+              }
+            }}
+            className="w-full"
+          />
+          <div className="grid grid-cols-2 gap-1">
+            {commonTimes.map((t) => (
+              <Button
+                key={t}
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (validateTime(t)) {
+                    onTimeChange(t);
+                  }
+                }}
+                className="text-xs"
+              >
+                {format(new Date(`2000-01-01T${t}`), 'h:mm a')}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

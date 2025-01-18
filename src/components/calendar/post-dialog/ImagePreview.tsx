@@ -9,7 +9,7 @@ export function ImagePreview({ imageUrl }: ImagePreviewProps) {
     <img
       src={imageUrl}
       alt="Preview"
-      className="mt-2 rounded-md max-h-32 object-cover"
+      className="h-10 w-10 rounded-md object-cover"
     />
   );
 }

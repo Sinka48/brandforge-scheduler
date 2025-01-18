@@ -1,12 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette } from "lucide-react";
-import { BrandManager } from "../../brand/BrandManager";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, Sparkles } from "lucide-react";
 import { PostContent } from "./PostContent";
 import { PlatformSelector } from "./PlatformSelector";
 import { ImageUploader } from "./ImageUploader";
 import { TimeSelector } from "./TimeSelector";
 import { RecurringOptions } from "./RecurringOptions";
 import { BulkScheduling } from "./BulkScheduling";
+import { Button } from "@/components/ui/button";
 
 interface DialogContentProps {
   newPost: any;
@@ -22,24 +23,21 @@ export function DialogContent({
   editMode = false
 }: DialogContentProps) {
   return (
-    <Tabs defaultValue="content" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="content">Content</TabsTrigger>
-        <TabsTrigger value="brand" className="flex items-center gap-2">
-          <Palette className="h-4 w-4" />
-          Brand
-        </TabsTrigger>
-      </TabsList>
+    <div className="space-y-4 py-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={() => setNewPost({ ...newPost, isQuickPost: true })}
+        >
+          <Sparkles className="h-4 w-4" />
+          Quick Post
+        </Button>
+      </div>
 
-      <TabsContent value="content">
-        <div className="space-y-4 py-4">
-          {!editMode && !newPost.isRecurring && (
-            <BulkScheduling
-              selectedDates={newPost.bulkDates || []}
-              onDatesChange={(dates) => setNewPost({ ...newPost, bulkDates: dates })}
-            />
-          )}
-
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4">
           <PostContent
             content={newPost.content}
             onContentChange={(content) => setNewPost({ ...newPost, content })}
@@ -47,55 +45,60 @@ export function DialogContent({
             imageUrl={newPost.image}
           />
           
+          <div className="flex items-center gap-2">
+            <TimeSelector
+              time={newPost.time}
+              onTimeChange={(time) => setNewPost({ ...newPost, time })}
+              selectedPlatforms={newPost.platforms}
+            />
+            <ImageUploader
+              imageUrl={newPost.image}
+              onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
           <PlatformSelector
             selectedPlatforms={newPost.platforms}
             onPlatformToggle={handlePlatformToggle}
           />
-
-          <ImageUploader
-            imageUrl={newPost.image}
-            onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
-          />
-
-          <TimeSelector
-            time={newPost.time}
-            onTimeChange={(time) => setNewPost({ ...newPost, time })}
-            selectedPlatforms={newPost.platforms}
-          />
-
-          {!editMode && (
-            <RecurringOptions
-              isRecurring={newPost.isRecurring || false}
-              onIsRecurringChange={(isRecurring) => {
-                setNewPost({ 
-                  ...newPost, 
-                  isRecurring,
-                  bulkDates: isRecurring ? undefined : newPost.bulkDates 
-                });
-              }}
-              pattern={newPost.recurringPattern || 'daily'}
-              onPatternChange={(pattern) => setNewPost({ ...newPost, recurringPattern: pattern })}
-              endDate={newPost.recurringEndDate}
-              onEndDateChange={(date) => setNewPost({ ...newPost, recurringEndDate: date })}
-            />
-          )}
         </div>
-      </TabsContent>
+      </div>
 
-      <TabsContent value="brand">
-        <div className="space-y-4 py-4">
-          <BrandManager
-            selectedBrandId={newPost.brandId}
-            onSelectBrand={(brand) => {
-              setNewPost({
-                ...newPost,
-                brandId: brand.id,
-                image: brand.url,
-              });
-            }}
-          />
-        </div>
-      </TabsContent>
-    </Tabs>
+      {!newPost.isQuickPost && (
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground">
+            <ChevronDown className="h-4 w-4" />
+            Advanced Options
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 pt-4">
+            {!editMode && !newPost.isRecurring && (
+              <BulkScheduling
+                selectedDates={newPost.bulkDates || []}
+                onDatesChange={(dates) => setNewPost({ ...newPost, bulkDates: dates })}
+              />
+            )}
+
+            {!editMode && (
+              <RecurringOptions
+                isRecurring={newPost.isRecurring || false}
+                onIsRecurringChange={(isRecurring) => {
+                  setNewPost({ 
+                    ...newPost, 
+                    isRecurring,
+                    bulkDates: isRecurring ? undefined : newPost.bulkDates 
+                  });
+                }}
+                pattern={newPost.recurringPattern || 'daily'}
+                onPatternChange={(pattern) => setNewPost({ ...newPost, recurringPattern: pattern })}
+                endDate={newPost.recurringEndDate}
+                onEndDateChange={(date) => setNewPost({ ...newPost, recurringEndDate: date })}
+              />
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
   );
 }

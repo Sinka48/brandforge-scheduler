@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Upload, Library } from "lucide-react";
+import { Image, Upload, X } from "lucide-react";
 import { useState } from "react";
-import { MediaLibrary } from "./MediaLibrary";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { ImagePreview } from "./ImagePreview";
 import { UploadProgress } from "./UploadProgress";
@@ -24,47 +22,39 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Image</label>
-      <div className="flex gap-2">
-        <Input
-          type="url"
-          placeholder="Enter image URL"
-          value={imageUrl}
-          onChange={(e) => onImageUrlChange(e.target.value)}
-        />
-        <Input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          id="image-upload"
-          onChange={handleFileChange}
-        />
+    <div className="relative">
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        id="image-upload"
+        onChange={handleFileChange}
+      />
+      
+      {imageUrl ? (
+        <div className="relative inline-block">
+          <ImagePreview imageUrl={imageUrl} />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-background shadow-sm"
+            onClick={() => onImageUrlChange("")}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
         <Button
           variant="outline"
           size="icon"
           onClick={() => document.getElementById('image-upload')?.click()}
           disabled={uploading}
         >
-          <Upload className="h-4 w-4" />
+          <Image className="h-4 w-4" />
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setIsMediaLibraryOpen(true)}
-        >
-          <Library className="h-4 w-4" />
-        </Button>
-      </div>
+      )}
       
       <UploadProgress progress={uploadProgress} />
-      <ImagePreview imageUrl={imageUrl} />
-
-      <MediaLibrary
-        isOpen={isMediaLibraryOpen}
-        onClose={() => setIsMediaLibraryOpen(false)}
-        onSelectImage={onImageUrlChange}
-      />
     </div>
   );
 }
