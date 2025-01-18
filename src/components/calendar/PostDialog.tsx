@@ -11,6 +11,7 @@ import { BulkScheduling } from "./post-dialog/BulkScheduling";
 import { BrandManager } from "../brand/BrandManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Palette } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -46,6 +47,32 @@ export function PostDialog({
   selectedDate,
   editMode = false,
 }: PostDialogProps) {
+  const { toast } = useToast();
+
+  const handleSubmit = () => {
+    if (newPost.platforms.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one platform.",
+        variant: "destructive",
+      });
+      return;
+    }
+    handleAddPost();
+  };
+
+  const handleDraftSubmit = () => {
+    if (newPost.platforms.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one platform.",
+        variant: "destructive",
+      });
+      return;
+    }
+    handleSaveAsDraft();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -144,9 +171,9 @@ export function PostDialog({
         </Tabs>
 
         <DialogActions
-          onSaveAsDraft={handleSaveAsDraft}
-          onAddPost={handleAddPost}
-          isDisabled={newPost.content.length === 0 || newPost.platforms.length === 0}
+          onSaveAsDraft={handleDraftSubmit}
+          onAddPost={handleSubmit}
+          isDisabled={newPost.content.length === 0}
           editMode={editMode}
         />
       </DialogContent>
