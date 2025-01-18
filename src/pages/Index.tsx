@@ -52,11 +52,9 @@ export default function IndexPage({ session }: IndexPageProps) {
   });
 
   useEffect(() => {
-    // Fetch random image from Unsplash
-    fetch('https://source.unsplash.com/1600x900/?social-media,marketing')
-      .then(response => {
-        setBgImage(response.url);
-      });
+    // Use a random number to prevent caching
+    const randomNumber = Math.floor(Math.random() * 30);
+    setBgImage(`https://images.unsplash.com/photo-${randomNumber}?w=1600&h=900&fit=crop&q=80&fm=jpg&crop=entropy&cs=tinysrgb&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`);
 
     // Rotate features every 5 seconds
     const interval = setInterval(() => {
@@ -91,7 +89,8 @@ export default function IndexPage({ session }: IndexPageProps) {
         <div 
           className="w-1/2 relative overflow-hidden"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${bgImage})`,
+            backgroundImage: bgImage ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${bgImage})` : 'none',
+            backgroundColor: !bgImage ? 'rgba(0, 0, 0, 0.9)' : 'transparent',
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
