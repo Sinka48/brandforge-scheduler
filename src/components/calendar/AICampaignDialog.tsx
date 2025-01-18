@@ -177,7 +177,7 @@ export function AICampaignDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col">
         <DialogHeader editMode={false} selectedDate={undefined} />
         
         <div className="space-y-6 py-4 flex-1 overflow-y-auto">
@@ -199,107 +199,115 @@ export function AICampaignDialog({
             </Button>
           </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="topic">Campaign Topic</Label>
-              <Textarea
-                id="topic"
-                placeholder="What is your campaign about?"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+          <div className="grid grid-cols-2 gap-6">
+            {/* Campaign Configuration Column */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="topic">Campaign Topic</Label>
+                <Textarea
+                  id="topic"
+                  placeholder="What is your campaign about?"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                />
+              </div>
+
+              <PlatformSelector
+                selectedPlatforms={platforms}
+                onPlatformToggle={handlePlatformToggle}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Campaign Duration (days)</Label>
+                  <Select value={duration} onValueChange={setDuration}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">3 days</SelectItem>
+                      <SelectItem value="7">1 week</SelectItem>
+                      <SelectItem value="14">2 weeks</SelectItem>
+                      <SelectItem value="30">1 month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tone">Campaign Tone</Label>
+                  <Select value={tone} onValueChange={setTone}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="professional">Professional</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="friendly">Friendly</SelectItem>
+                      <SelectItem value="humorous">Humorous</SelectItem>
+                      <SelectItem value="formal">Formal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <TimeSlotSelector
+                timeSlots={timeSlots}
+                onTimeSlotsChange={setTimeSlots}
+              />
+
+              <HashtagSelector
+                hashtags={hashtags}
+                onHashtagsChange={setHashtags}
+                suggestedHashtags={suggestedHashtags}
               />
             </div>
 
-            <PlatformSelector
-              selectedPlatforms={platforms}
-              onPlatformToggle={handlePlatformToggle}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="duration">Campaign Duration (days)</Label>
-                <Select value={duration} onValueChange={setDuration}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3">3 days</SelectItem>
-                    <SelectItem value="7">1 week</SelectItem>
-                    <SelectItem value="14">2 weeks</SelectItem>
-                    <SelectItem value="30">1 month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tone">Campaign Tone</Label>
-                <Select value={tone} onValueChange={setTone}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select tone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="casual">Casual</SelectItem>
-                    <SelectItem value="friendly">Friendly</SelectItem>
-                    <SelectItem value="humorous">Humorous</SelectItem>
-                    <SelectItem value="formal">Formal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <TimeSlotSelector
-              timeSlots={timeSlots}
-              onTimeSlotsChange={setTimeSlots}
-            />
-
-            <HashtagSelector
-              hashtags={hashtags}
-              onHashtagsChange={setHashtags}
-              suggestedHashtags={suggestedHashtags}
-            />
-          </div>
-
-          {isLoading && (
-            <div className="space-y-2">
-              <Progress value={progress} className="h-2" />
-              <p className="text-sm text-muted-foreground text-center">
-                Generating your campaign...
-              </p>
-            </div>
-          )}
-
-          {generatedPosts.length > 0 && (
+            {/* Generated Content Column */}
             <div className="space-y-4">
-              <h3 className="font-medium">Generated Posts</h3>
-              {generatedPosts.map((post, index) => (
-                <Card key={index}>
-                  <CardContent className="pt-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Badge>{post.platform}</Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRegeneratePost(index)}
-                        disabled={isLoading}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Regenerate
-                      </Button>
-                    </div>
-                    <PlatformPreview
-                      content={post.content}
-                      selectedPlatforms={[post.platform]}
-                      imageUrl={post.imageUrl}
-                    />
-                    <div className="text-sm text-muted-foreground">
-                      Scheduled for: {post.time}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {isLoading && (
+                <div className="space-y-2">
+                  <Progress value={progress} className="h-2" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Generating your campaign...
+                  </p>
+                </div>
+              )}
+
+              {generatedPosts.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium">Generated Posts</h3>
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    {generatedPosts.map((post, index) => (
+                      <Card key={index}>
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Badge>{post.platform}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRegeneratePost(index)}
+                              disabled={isLoading}
+                            >
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                              Regenerate
+                            </Button>
+                          </div>
+                          <PlatformPreview
+                            content={post.content}
+                            selectedPlatforms={[post.platform]}
+                            imageUrl={post.imageUrl}
+                          />
+                          <div className="text-sm text-muted-foreground">
+                            Scheduled for: {post.time}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex gap-4 pt-4 border-t">
