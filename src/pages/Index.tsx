@@ -39,20 +39,6 @@ const features = [
   }
 ];
 
-// List of background images
-const backgroundImages = [
-  'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
-  'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
-  'https://images.unsplash.com/photo-1518770660439-4636190af475',
-  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6',
-  'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d',
-  'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
-  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
-  'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5',
-  'https://images.unsplash.com/photo-1531297484001-80022131f5a1',
-  'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7'
-];
-
 interface IndexPageProps {
   session: Session | null;
 }
@@ -60,13 +46,6 @@ interface IndexPageProps {
 export default function IndexPage({ session }: IndexPageProps) {
   const [showLogin, setShowLogin] = useState(true);
   const [currentFeature, setCurrentFeature] = useState(0);
-  const [backgroundImage, setBackgroundImage] = useState<string>("");
-
-  useEffect(() => {
-    // Select a random background image
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-    setBackgroundImage(backgroundImages[randomIndex]);
-  }, []); // Run once on component mount
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -150,13 +129,9 @@ export default function IndexPage({ session }: IndexPageProps) {
 
       {/* Right side - 60% */}
       <div 
-        className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)), url(${backgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-accent to-primary animate-gradient-x"
       >
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_50%,transparent_75%,transparent_100%)] bg-[length:20px_20px] animate-pattern"></div>
         <motion.div 
           key={currentFeature}
           initial={{ opacity: 0, y: 20 }}
@@ -165,8 +140,8 @@ export default function IndexPage({ session }: IndexPageProps) {
           className="max-w-2xl text-center space-y-6 relative z-10"
         >
           <div className="text-6xl mb-4">{features[currentFeature].icon}</div>
-          <h2 className="text-3xl font-bold text-primary">{features[currentFeature].title}</h2>
-          <p className="text-xl text-muted-foreground">{features[currentFeature].description}</p>
+          <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
+          <p className="text-xl text-white/90">{features[currentFeature].description}</p>
         </motion.div>
       </div>
     </div>
