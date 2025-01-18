@@ -142,16 +142,34 @@ export default function IndexPage({ session }: IndexPageProps) {
         </div>
       </div>
 
-      <div className="w-[60%] p-8 flex flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/20">
+      <div className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden">
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundColor: '#ff99df',
+            backgroundImage: `
+              radial-gradient(circle at 52% 73%, hsla(310, 85%, 67%, 1) 0px, transparent 50%),
+              radial-gradient(circle at 0% 30%, hsla(197, 90%, 76%, 1) 0px, transparent 50%),
+              radial-gradient(circle at 41% 26%, hsla(234, 79%, 69%, 1) 0px, transparent 50%),
+              radial-gradient(circle at 41% 51%, hsla(41, 70%, 63%, 1) 0px, transparent 50%),
+              radial-gradient(circle at 41% 88%, hsla(36, 83%, 61%, 1) 0px, transparent 50%),
+              radial-gradient(circle at 76% 73%, hsla(346, 69%, 70%, 1) 0px, transparent 50%),
+              radial-gradient(circle at 29% 37%, hsla(272, 96%, 64%, 1) 0px, transparent 50%)
+            `,
+            backgroundSize: '150% 150%',
+            filter: 'blur(80px)',
+            animation: 'moveBackground 10s linear infinite',
+          }}
+        />
         <motion.div 
           key={currentFeature}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-left space-y-6"
+          className="max-w-2xl text-left space-y-6 relative z-10"
         >
-          <h2 className="text-3xl font-bold text-primary">{features[currentFeature].title}</h2>
-          <p className="text-xl text-muted-foreground">
+          <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
+          <p className="text-xl text-white/80">
             {displayText}
             <span className="ml-1 animate-[blink_1s_infinite]">|</span>
           </p>
