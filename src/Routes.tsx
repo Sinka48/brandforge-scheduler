@@ -18,22 +18,26 @@ export default function Routes({ session }: RoutesProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Redirect to calendar page after successful login
-        navigate('/calendar');
-      } else if (event === 'SIGNED_OUT') {
-        // Redirect to home page after logout
-        navigate('/');
-      }
-    });
-
     // Check initial session
     if (session) {
       navigate('/calendar');
     }
 
-    return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session); // Debug log
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log("User signed in, redirecting to calendar"); // Debug log
+        navigate('/calendar', { replace: true });
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out, redirecting to home"); // Debug log
+        navigate('/', { replace: true });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, session]);
 
   // If not authenticated, only show index page which contains login form
