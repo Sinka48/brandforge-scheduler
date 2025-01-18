@@ -1,6 +1,10 @@
 export interface Brand {
   id: string;
+  user_id: string;
+  questionnaire_id: string;
   asset_type: string;
+  url: string;
+  version: number;
   created_at: string;
   metadata: {
     colors: string[];
@@ -9,8 +13,4 @@ export interface Brand {
       bodyFont: string;
     };
   };
-  questionnaire_id: string;
-  url: string;
-  user_id: string;
-  version: number;
 }

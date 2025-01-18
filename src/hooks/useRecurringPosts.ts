@@ -5,7 +5,6 @@ import { useToast } from "./use-toast";
 export function useRecurringPosts() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { data: { session } } = await supabase.auth.getSession();
 
   const createRecurringPost = async (postData: {
     content: string;
@@ -17,6 +16,8 @@ export function useRecurringPosts() {
     recurrence_pattern: string;
     recurrence_end_date: string;
   }) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
     if (!session?.user?.id) {
       toast({
         title: "Error",
