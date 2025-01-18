@@ -1,7 +1,6 @@
 import { Layout } from "@/components/layout/Layout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { ActivityChart } from "@/components/dashboard/ActivityChart";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,29 +36,6 @@ export default function IndexPage({ session }: IndexPageProps) {
         avg_engagement_rate: 0,
         platforms_used: ''
       };
-    },
-    enabled: !!session?.user?.id
-  });
-
-  const { data: activityData } = useQuery({
-    queryKey: ['activity-data', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
-        .limit(7);
-
-      if (error) throw error;
-
-      // Transform the data to match the ActivityChart component's expected format
-      return data.map(post => ({
-        name: new Date(post.scheduled_for).toLocaleDateString('en-US', { weekday: 'short' }),
-        posts: 1
-      }));
     },
     enabled: !!session?.user?.id
   });
@@ -113,7 +89,6 @@ export default function IndexPage({ session }: IndexPageProps) {
       <div className="space-y-8 p-4 md:p-6">
         <StatsCards analytics={analytics} />
         <QuickActions />
-        <ActivityChart data={activityData || []} />
       </div>
     </Layout>
   );
