@@ -3,24 +3,24 @@ import { useEffect, useState } from "react";
 
 const features = [
   {
-    title: "Social Media Calendar",
-    description: "Plan and schedule your content across multiple platforms with our intuitive calendar interface.",
+    title: "AI-Powered Content Engine",
+    description: "Generate engaging posts with our next-gen AI that understands your brand voice.",
   },
   {
-    title: "Brand Identity Management",
-    description: "Create and maintain consistent brand guidelines, color schemes, and visual assets.",
+    title: "Smart Schedule Optimization",
+    description: "Leverage predictive analytics to post at peak engagement times.",
   },
   {
-    title: "Campaign Analytics",
-    description: "Track performance metrics and engagement rates for all your social media campaigns.",
+    title: "Cross-Platform Synergy",
+    description: "Seamlessly manage your digital presence across all social networks.",
   },
   {
-    title: "AI-Powered Content",
-    description: "Generate engaging content ideas and captions with our AI assistant.",
+    title: "Real-Time Analytics",
+    description: "Track performance metrics with instant insights and predictions.",
   },
   {
-    title: "Multi-Platform Support",
-    description: "Manage content for all major social media platforms in one place.",
+    title: "Dynamic Brand Evolution",
+    description: "Adapt your brand identity with AI-driven style recommendations.",
   }
 ];
 
@@ -52,7 +52,7 @@ export function FeaturesAnimation() {
         setIsTyping(false);
         clearInterval(typingInterval);
       }
-    }, 50);
+    }, 30); // Reduced from 50ms to 30ms for smoother typing
 
     return () => clearInterval(typingInterval);
   }, [currentFeature, isTyping]);
@@ -63,11 +63,26 @@ export function FeaturesAnimation() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5, ease: "easeOut" }} // Added smoother transition
       className="max-w-2xl text-left space-y-6 relative z-10"
     >
-      <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
+      <motion.h2 
+        className="text-3xl font-bold text-white"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {features[currentFeature].title}
+      </motion.h2>
       <p className="text-xl text-white/80">
-        <span className="bg-blue-500/30 rounded px-1">{displayText}</span>
+        <motion.span 
+          className="bg-blue-500/30 rounded px-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          {displayText}
+        </motion.span>
         <span className="ml-1 animate-[blink_1s_infinite]">|</span>
       </p>
     </motion.div>
