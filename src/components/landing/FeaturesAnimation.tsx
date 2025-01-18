@@ -67,7 +67,7 @@ export function FeaturesAnimation() {
     >
       <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
       <p className="text-xl text-white/80">
-        {displayText}
+        <span className="bg-blue-500/30 rounded px-1">{displayText}</span>
         <span className="ml-1 animate-[blink_1s_infinite]">|</span>
       </p>
     </motion.div>
