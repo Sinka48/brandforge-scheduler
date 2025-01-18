@@ -53,14 +53,14 @@ export function LoginForm() {
         } else if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Invalid credentials",
-            description: "The email or password you entered is incorrect. Please try again.",
+            description: "The email or password you entered is incorrect.",
             variant: "destructive",
           });
         } else {
           console.error("Auth error:", error);
           toast({
             title: "Error",
-            description: error.message || "An unexpected error occurred. Please try again.",
+            description: "An unexpected error occurred. Please try again.",
             variant: "destructive",
           });
         }
@@ -68,10 +68,13 @@ export function LoginForm() {
       }
 
       // Successful login
-      toast({
-        title: "Success",
-        description: "You have successfully logged in.",
-      });
+      const { data: session } = await supabase.auth.getSession();
+      if (session) {
+        toast({
+          title: "Success",
+          description: "You have successfully logged in.",
+        });
+      }
     } catch (error) {
       const authError = error as AuthError;
       console.error("Login error:", authError);

@@ -46,9 +46,6 @@ export function SignUpForm() {
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-          emailRedirectTo: window.location.origin,
-        },
       });
       
       if (error) {
@@ -59,12 +56,7 @@ export function SignUpForm() {
             variant: "destructive",
           });
         } else {
-          console.error("Signup error:", error);
-          toast({
-            title: "Error",
-            description: error.message || "Something went wrong. Please try again.",
-            variant: "destructive",
-          });
+          throw error;
         }
         return;
       }
@@ -73,12 +65,8 @@ export function SignUpForm() {
         title: "Success",
         description: "Check your email to confirm your account.",
       });
-      
-      // Clear form after successful signup
-      form.reset();
     } catch (error) {
       const authError = error as AuthError;
-      console.error("Signup error:", authError);
       toast({
         title: "Error",
         description: authError.message || "Something went wrong. Please try again.",
