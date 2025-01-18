@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { usePostState } from "@/hooks/usePostState";
 import { usePostManagement } from "@/hooks/usePostManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -11,19 +12,39 @@ export function useCalendarState() {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
   const { toast } = useToast();
-
+  const { newPost, setNewPost, handlePlatformToggle } = usePostState();
   const {
     posts,
     setPosts,
     isLoading: isManagementLoading,
-    newPost,
-    setNewPost,
     handleAddPost,
-    handleSaveAsDraft,
     handleDeletePost,
-    handlePlatformToggle,
     handleUpdatePost,
   } = usePostManagement();
+
+  const handleSaveAsDraft = async () => {
+    if (newPost.platforms.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one platform.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const success = await handleAddPost(selectedDate, { ...newPost, status: 'draft' });
+    if (success) {
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'draft',
+      });
+      setIsDialogOpen(false);
+    }
+    return success;
+  };
 
   const { isLoading: isQueryLoading } = useQuery({
     queryKey: ['posts'],
