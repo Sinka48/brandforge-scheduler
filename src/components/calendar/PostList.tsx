@@ -22,6 +22,11 @@ interface Post {
   recurringEndDate?: Date;
   batch_id?: string;
   parent_post_id?: string;
+  campaign?: {
+    id: string;
+    name: string;
+    description: string;
+  };
 }
 
 interface PostListProps {

@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
-import { Edit, Trash2, MoreVertical } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,11 @@ interface Post {
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
+  campaign?: {
+    id: string;
+    name: string;
+    description: string;
+  };
 }
 
 interface PostItemProps {
@@ -65,6 +71,14 @@ export function PostItem({
                 <p className="text-sm text-muted-foreground">
                   {format(post.date, 'PPP')} at {post.time}
                 </p>
+              )}
+              {post.campaign && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {post.campaign.name}
+                  </Badge>
+                </div>
               )}
             </div>
             

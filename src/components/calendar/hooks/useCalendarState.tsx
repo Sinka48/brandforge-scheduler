@@ -55,9 +55,16 @@ export function useCalendarState() {
           throw new Error('Not authenticated');
         }
 
+        // Fetch posts including campaign information
         const { data, error } = await supabase
           .from('posts')
-          .select('*')
+          .select(`
+            *,
+            campaigns (
+              name,
+              description
+            )
+          `)
           .eq('user_id', session.user.id)
           .order('scheduled_for', { ascending: true });
 
@@ -81,6 +88,11 @@ export function useCalendarState() {
           image: post.image_url,
           status: post.status as 'draft' | 'scheduled',
           time: format(new Date(post.scheduled_for), 'HH:mm'),
+          campaign: post.campaigns ? {
+            id: post.campaign_id,
+            name: post.campaigns.name,
+            description: post.campaigns.description
+          } : undefined
         }));
 
         console.log('Formatted posts:', formattedPosts);
