@@ -15,10 +15,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  remember: z.boolean().default(false),
 });
 
 type LoginFormValues = z.infer<typeof formSchema>;
@@ -32,6 +34,7 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
+      remember: false,
     },
   });
 
@@ -108,6 +111,38 @@ export function LoginForm() {
     }
   }
 
+  const handleResetPassword = async () => {
+    const email = form.getValues("email");
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address to reset your password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a password reset link.",
+      });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send reset password email. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -147,6 +182,31 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+        <div className="flex items-center justify-between">
+          <FormField
+            control={form.control}
+            name="remember"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+              </FormItem>
+            )}
+          />
+          <Button
+            type="button"
+            variant="link"
+            className="px-0 font-normal"
+            onClick={handleResetPassword}
+          >
+            Forgot password?
+          </Button>
+        </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Signing in..." : "Sign in"}
         </Button>
