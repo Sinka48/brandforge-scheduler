@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePostState } from "@/hooks/usePostState";
 import { usePostManagement } from "@/hooks/usePostManagement";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useCalendarState() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());

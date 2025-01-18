@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export async function createBulkPosts(parentPost: any, newPost: any) {
   if (!newPost.bulkDates || newPost.bulkDates.length === 0) return;

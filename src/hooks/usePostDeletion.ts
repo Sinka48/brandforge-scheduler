@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import type { ToastActionElement } from "@/components/ui/toast";
 
 type ToastProps = {

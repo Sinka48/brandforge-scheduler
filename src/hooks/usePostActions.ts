@@ -1,7 +1,7 @@
-import { supabase } from "@/lib/supabase";
 import { useToast } from "./use-toast";
 import { createBulkPosts } from "./useBulkScheduling";
 import { createRecurringPosts } from "./useRecurringPosts";
+import { supabase } from "@/integrations/supabase/client";
 
 export function usePostActions() {
   const { toast } = useToast();

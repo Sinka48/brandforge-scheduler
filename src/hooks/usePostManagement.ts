@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { usePostCreate } from "./post/usePostCreate";
 import { usePostUpdate } from "./post/usePostUpdate";
 import { usePostDelete } from "./post/usePostDelete";

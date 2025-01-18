@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { MobileNav } from "./MobileNav";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { User, LogOut, Settings, PenTool, Library } from "lucide-react";
 
 interface HeaderProps {

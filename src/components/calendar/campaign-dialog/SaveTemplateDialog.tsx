@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
-
+import { supabase } from "@/integrations/supabase/client";
 interface SaveTemplateDialogProps {
   isOpen: boolean;
   onClose: () => void;

@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Loader2, Save, Folder, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { SaveTemplateDialog } from "./campaign-dialog/SaveTemplateDialog";
 import { LoadTemplateDialog } from "./campaign-dialog/LoadTemplateDialog";
 import { useNavigate } from "react-router-dom";
 import { CampaignConfiguration } from "./campaign-dialog/CampaignConfiguration";
 import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
-import { addDays, parse, format } from "date-fns";
+import { addDays, parse } from "date-fns";
 
 interface AICampaignDialogProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export function usePostDelete() {
   const { toast } = useToast();
