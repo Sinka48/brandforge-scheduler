@@ -9,7 +9,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Github, Twitter, Google } from "lucide-react";
+import { Github, Twitter, Mail } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const features = [
@@ -157,8 +157,8 @@ export default function IndexPage({ session }: IndexPageProps) {
                   disabled={isLoading}
                   className="w-full"
                 >
-                  <Google className="h-4 w-4 mr-2" />
-                  Google
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email
                 </Button>
                 <Button
                   variant="outline"
