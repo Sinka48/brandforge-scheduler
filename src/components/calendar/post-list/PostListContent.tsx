@@ -98,7 +98,7 @@ export function PostListContent({
             <PostItem
               post={post}
               platforms={platforms}
-              onEdit={handleEditPost}
+              onEdit={() => handleEditPost(post)}
               onDelete={handleDeletePost}
               isSelected={selectedPosts.includes(post.id)}
               onSelect={onSelectPost}

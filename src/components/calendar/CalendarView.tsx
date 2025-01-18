@@ -73,6 +73,25 @@ export function CalendarView({
   // Sort posts by scheduled time
   const sortedPosts = [...posts].sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  const handleEditPost = async (post: Post) => {
+    if (onPostClick) {
+      onPostClick(post);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
   return (
     <Card className="p-4">
       <div className="space-y-4">
@@ -83,8 +102,8 @@ export function CalendarView({
             selectedDate={selectedDate}
             posts={sortedPosts}
             platforms={platforms}
-            handleDeletePost={() => {}}
-            handleEditPost={() => {}}
+            handleDeletePost={handleDeletePost}
+            handleEditPost={handleEditPost}
             isLoading={isLoading}
           />
         ) : (
