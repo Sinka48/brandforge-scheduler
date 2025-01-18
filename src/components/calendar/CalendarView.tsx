@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { PostList } from "./PostList";
 import { PlatformId } from "@/constants/platforms";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PLATFORMS } from "@/constants/platforms";
 import { usePostFetching } from "@/hooks/usePostFetching";
@@ -42,6 +42,7 @@ export function CalendarView({
   onPostClick
 }: CalendarViewProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Check authentication status
   const { data: session, isLoading: authLoading } = useQuery({
@@ -90,6 +91,9 @@ export function CalendarView({
         .eq('id', postId);
 
       if (error) throw error;
+      
+      // Invalidate and refetch posts query to update UI
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
       
       toast({
         title: "Success",
