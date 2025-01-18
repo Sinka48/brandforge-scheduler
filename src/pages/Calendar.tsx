@@ -67,6 +67,12 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     <Layout session={session}>
       <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
         <div className="flex-none p-4 md:p-6">
+          <div className="space-y-2 mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">Content Calendar</h1>
+            <p className="text-muted-foreground">
+              Schedule and manage your social media content
+            </p>
+          </div>
           <CalendarHeader 
             onNewPost={() => setIsDialogOpen(true)}
             onNewCampaign={() => setIsCampaignDialogOpen(true)}

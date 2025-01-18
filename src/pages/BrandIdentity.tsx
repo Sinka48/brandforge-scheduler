@@ -1,12 +1,9 @@
 import { Layout } from "@/components/layout/Layout";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
 import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
 import { useBrandIdentity } from "@/hooks/useBrandIdentity";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import { Session } from "@supabase/supabase-js";
 
 interface BrandIdentityPageProps {
@@ -14,8 +11,6 @@ interface BrandIdentityPageProps {
 }
 
 export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const {
     loading,
     saving,
@@ -32,15 +27,6 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     fetchBrandIdentity();
   }, []);
 
-  const handleSave = async () => {
-    await saveBrandAssets();
-    toast({
-      title: "Success",
-      description: "Brand saved successfully",
-    });
-    navigate("/brands");
-  };
-
   if (loading) {
     return (
       <Layout session={session}>
@@ -51,37 +37,14 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     );
   }
 
-  const handleDownload = async () => {
-    if (!brandIdentity?.logoUrl) return;
-
-    try {
-      const response = await fetch(brandIdentity.logoUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "logo.png";
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Error downloading logo:", error);
-    }
-  };
-
   return (
     <Layout session={session}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Brand Identity</h1>
+          <p className="text-muted-foreground">
+            Review and customize your brand identity
+          </p>
         </div>
 
         <BrandIdentityHeader
@@ -90,7 +53,7 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
           isSaving={saving}
           isDeleting={deleting}
           onGenerate={generateBrandIdentity}
-          onSave={handleSave}
+          onSave={saveBrandAssets}
           onDelete={deleteBrandIdentity}
         />
 
@@ -99,13 +62,6 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
             colors={brandIdentity.colors}
             typography={brandIdentity.typography}
             logoUrl={brandIdentity.logoUrl}
-            onColorUpdate={(colors) => {
-              if (brandIdentity) {
-                brandIdentity.colors = colors;
-              }
-            }}
-            onLogoCustomize={() => console.log("Customize logo")}
-            onDownload={handleDownload}
           />
         )}
       </div>
