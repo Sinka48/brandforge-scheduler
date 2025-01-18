@@ -78,7 +78,7 @@ export function PostList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       {filteredPosts.map((post) => (
         <PostItem
           key={post.id}
@@ -95,10 +95,10 @@ export function PostList({
         <div className="text-center">
           <Button
             variant="ghost"
-            className="w-full"
+            className="w-full hover:bg-accent transition-colors duration-200"
             onClick={() => setShowAllPosts(!showAllPosts)}
           >
-            <ChevronDown className="mr-2 h-4 w-4" />
+            <ChevronDown className={`mr-2 h-4 w-4 transition-transform duration-200 ${showAllPosts ? 'rotate-180' : ''}`} />
             {showAllPosts ? "Show Less" : `Show ${upcomingPosts.length - 3} More Posts`}
           </Button>
         </div>
