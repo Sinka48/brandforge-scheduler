@@ -24,11 +24,14 @@ export function DayView({ selectedDate, posts = [] }: DayViewProps) {
 
   const dayPosts = posts.filter(
     (post) => post.status === 'scheduled' && isSameDay(post.date, selectedDate)
-  );
+  ).sort((a, b) => {
+    if (!a.time || !b.time) return 0;
+    return a.time.localeCompare(b.time);
+  });
 
   return (
-    <Card className="p-6">
-      <div className="text-xl font-semibold mb-4">
+    <Card className="p-4 md:p-6">
+      <div className="text-lg md:text-xl font-semibold mb-4">
         {format(selectedDate, 'EEEE, MMMM d, yyyy')}
       </div>
       
@@ -41,20 +44,20 @@ export function DayView({ selectedDate, posts = [] }: DayViewProps) {
           ) : (
             dayPosts.map((post) => (
               <Card key={post.id} className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="space-y-2 flex-1">
                     <div className="text-lg font-medium">{post.time}</div>
-                    <div className="text-muted-foreground">
+                    <div className="text-muted-foreground break-words">
                       {post.content}
                     </div>
                     {post.image && (
                       <img 
                         src={post.image} 
                         alt="Post preview" 
-                        className="mt-2 rounded-md max-w-[200px]"
+                        className="mt-2 rounded-md max-w-[200px] w-full object-cover"
                       />
                     )}
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {post.platforms.map((platform) => (
                         <Badge key={platform} variant="outline">
                           {platform}

@@ -6,15 +6,18 @@ import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { PLATFORMS } from "@/constants/platforms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, FileText } from "lucide-react";
+import { CalendarDays, FileText, Plus } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
 import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { useMediaQuery } from "@/hooks/use-mobile";
 
 export default function CalendarPage() {
   useCalendarAuth();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const {
     selectedDate,
@@ -120,6 +123,15 @@ export default function CalendarPage() {
             </ScrollArea>
           </Tabs>
         </div>
+
+        {isMobile && (
+          <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        )}
 
         <PostDialog
           isOpen={isDialogOpen}
