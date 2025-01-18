@@ -37,8 +37,6 @@ export function AICampaignDialog({
   };
 
   const handleGenerate = async () => {
-    console.log('Generating campaign with platforms:', platforms); // Debug log
-
     if (!topic.trim()) {
       toast({
         title: "Missing Information",
@@ -59,15 +57,16 @@ export function AICampaignDialog({
 
     setIsLoading(true);
     try {
-      // Ensure platform values are lowercase to match the constraint
+      // Log the current state before making the request
+      console.log('Starting campaign generation with:', {
+        topic,
+        platforms,
+        duration,
+        tone
+      });
+
+      // Ensure platform values are lowercase
       const normalizedPlatforms = platforms.map(p => p.toLowerCase());
-      
-      console.log('Calling generate-campaign with:', { 
-        topic, 
-        platforms: normalizedPlatforms,
-        duration: parseInt(duration), 
-        tone 
-      }); // Debug log
 
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
@@ -78,43 +77,55 @@ export function AICampaignDialog({
         },
       });
 
+      console.log('Response from generate-campaign:', { data, error });
+
       if (error) {
-        console.error('Error from generate-campaign:', error); // Debug log
+        console.error('Error from generate-campaign:', error);
         throw error;
       }
 
-      console.log('Campaign data received:', data); // Debug log
-
       if (!data?.campaign || !Array.isArray(data.campaign)) {
+        console.error('Invalid campaign data structure:', data);
         throw new Error('Invalid campaign data received');
       }
 
-      // Ensure the campaign posts have the correct platform format
-      const formattedCampaign = data.campaign.map((post: any) => ({
-        ...post,
-        platform: post.platform.toLowerCase()
-      }));
+      // Format and validate each post in the campaign
+      const formattedCampaign = data.campaign.map((post: any) => {
+        if (!post.content || !post.platform || !post.time) {
+          console.error('Invalid post structure:', post);
+          throw new Error('Invalid post data received');
+        }
+        return {
+          ...post,
+          platform: post.platform.toLowerCase(),
+          content: post.content.trim()
+        };
+      });
 
-      console.log('Formatted campaign:', formattedCampaign); // Debug log
+      console.log('Successfully formatted campaign:', formattedCampaign);
 
+      // Pass the formatted campaign to the parent component
       onGenerateCampaign(formattedCampaign);
+      
+      // Close the dialog
       onOpenChange(false);
       
-      // Reset form
+      // Reset the form
       setTopic("");
       setPlatforms([]);
       setDuration("7");
       setTone("professional");
 
+      // Show success message
       toast({
         title: "Campaign Generated",
         description: "Your AI campaign has been created successfully",
       });
     } catch (error) {
-      console.error('Error generating campaign:', error);
+      console.error('Error in handleGenerate:', error);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate campaign. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate campaign. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -139,7 +150,6 @@ export function AICampaignDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Select Platforms</Label>
             <PlatformSelector
               selectedPlatforms={platforms}
               onPlatformToggle={handlePlatformToggle}
