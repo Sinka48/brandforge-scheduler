@@ -46,6 +46,31 @@ interface IndexPageProps {
 export default function IndexPage({ session }: IndexPageProps) {
   const [showLogin, setShowLogin] = useState(true);
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [backgroundImage, setBackgroundImage] = useState<string>("");
+
+  useEffect(() => {
+    // Fetch random 3D render from Unsplash
+    const fetchRandomImage = async () => {
+      try {
+        const response = await fetch(
+          "https://api.unsplash.com/photos/random?query=3d-render&orientation=landscape",
+          {
+            headers: {
+              Authorization: `Client-ID YOUR_UNSPLASH_API_KEY`
+            }
+          }
+        );
+        const data = await response.json();
+        setBackgroundImage(data.urls.regular);
+      } catch (error) {
+        console.error("Failed to fetch background image:", error);
+        // Fallback image if fetch fails
+        setBackgroundImage("https://images.unsplash.com/photo-1633356122544-f134324a6cee");
+      }
+    };
+
+    fetchRandomImage();
+  }, []); // Run once on component mount
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -128,13 +153,20 @@ export default function IndexPage({ session }: IndexPageProps) {
       </div>
 
       {/* Right side - 60% */}
-      <div className="w-[60%] p-8 flex flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/20">
+      <div 
+        className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden"
+        style={{
+          backgroundImage: `linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)), url(${backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <motion.div 
           key={currentFeature}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-center space-y-6"
+          className="max-w-2xl text-center space-y-6 relative z-10"
         >
           <div className="text-6xl mb-4">{features[currentFeature].icon}</div>
           <h2 className="text-3xl font-bold text-primary">{features[currentFeature].title}</h2>
