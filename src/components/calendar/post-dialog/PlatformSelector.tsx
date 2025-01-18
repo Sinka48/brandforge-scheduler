@@ -36,38 +36,35 @@ interface PlatformSelectorProps {
 
 export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: PlatformSelectorProps) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Select Platforms</label>
-      <div className="grid grid-cols-1 gap-2">
-        {platforms.map((platform) => {
-          const isSelected = selectedPlatforms.includes(platform.id);
-          return (
-            <Button
-              key={platform.id}
-              variant={isSelected ? "default" : "outline"}
-              onClick={() => onPlatformToggle(platform.id)}
-              className="justify-start h-auto py-3 group"
-            >
-              <div className="flex items-start gap-3 w-full">
-                <div className="mt-1">{platform.icon}</div>
-                <div className="text-left flex-1">
-                  <div className="font-medium flex items-center justify-between">
-                    {platform.name}
-                    {isSelected && (
-                      <Badge variant="secondary" className="ml-auto animate-fade-in">
-                        Selected
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {platform.description}
-                  </div>
+    <div className="grid grid-cols-1 gap-2">
+      {platforms.map((platform) => {
+        const isSelected = selectedPlatforms.includes(platform.id);
+        return (
+          <Button
+            key={platform.id}
+            variant={isSelected ? "default" : "outline"}
+            onClick={() => onPlatformToggle(platform.id)}
+            className="justify-start h-auto py-3 group"
+          >
+            <div className="flex items-start gap-3 w-full">
+              <div className="mt-1">{platform.icon}</div>
+              <div className="text-left flex-1">
+                <div className="font-medium flex items-center justify-between">
+                  {platform.name}
+                  {isSelected && (
+                    <Badge variant="secondary" className="ml-auto animate-fade-in">
+                      Selected
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {platform.description}
                 </div>
               </div>
-            </Button>
-          );
-        })}
-      </div>
+            </div>
+          </Button>
+        );
+      })}
     </div>
   );
 }
