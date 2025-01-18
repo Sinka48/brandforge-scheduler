@@ -207,7 +207,11 @@ export function LoginForm() {
             Forgot password?
           </Button>
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          className="w-full bg-muted text-black hover:bg-muted/90" 
+          disabled={isLoading}
+        >
           {isLoading ? "Signing in..." : "Sign in"}
         </Button>
       </form>

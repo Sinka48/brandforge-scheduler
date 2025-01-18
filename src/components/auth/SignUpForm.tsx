@@ -146,7 +146,11 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          className="w-full bg-muted text-black hover:bg-muted/90" 
+          disabled={isLoading}
+        >
           {isLoading ? "Creating account..." : "Create account"}
         </Button>
       </form>
