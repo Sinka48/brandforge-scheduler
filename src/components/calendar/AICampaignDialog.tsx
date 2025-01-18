@@ -132,7 +132,7 @@ export function AICampaignDialog({
         .insert({
           name,
           description: topic,
-          platforms,
+          platforms: platforms.map(p => p.toLowerCase()),
           status: 'draft',
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
@@ -152,7 +152,7 @@ export function AICampaignDialog({
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
           topic,
-          platforms,
+          platforms: platforms.map(p => p.toLowerCase()),
           duration: parseInt(duration),
           tone,
           timeSlots,
@@ -173,7 +173,7 @@ export function AICampaignDialog({
         
         return {
           content: post.content,
-          platform: post.platform,
+          platform: post.platform.toLowerCase(),
           scheduled_for: scheduledDate.toISOString(),
           image_url: post.imageUrl,
           status: 'draft',
@@ -214,7 +214,7 @@ export function AICampaignDialog({
 
   const handleLoadTemplate = (template: any) => {
     setTopic(template.topic);
-    setPlatforms(template.platforms);
+    setPlatforms(template.platforms.map((p: string) => p.toLowerCase()));
     setDuration(template.duration.toString());
     setTone(template.tone);
     setTimeSlots(template.time_slots);
@@ -293,7 +293,7 @@ export function AICampaignDialog({
           onClose={() => setIsSaveTemplateOpen(false)}
           campaignData={{
             topic,
-            platforms,
+            platforms: platforms.map(p => p.toLowerCase()),
             duration,
             tone,
             timeSlots,
