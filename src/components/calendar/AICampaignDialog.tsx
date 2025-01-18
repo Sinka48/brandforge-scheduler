@@ -177,10 +177,10 @@ export function AICampaignDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader editMode={false} selectedDate={undefined} />
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 flex-1 overflow-y-auto">
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
@@ -300,30 +300,30 @@ export function AICampaignDialog({
               ))}
             </div>
           )}
+        </div>
 
-          <div className="flex gap-4">
-            <Button
-              onClick={handleGenerate}
-              className="flex-1"
-              disabled={isLoading || !topic.trim() || platforms.length === 0}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Wand2 className="h-4 w-4 mr-2" />
-              )}
-              Generate Campaign
-            </Button>
-            {generatedPosts.length > 0 && (
-              <Button
-                onClick={handleSchedule}
-                className="flex-1"
-                disabled={isLoading}
-              >
-                Schedule All Posts
-              </Button>
+        <div className="flex gap-4 pt-4 border-t">
+          <Button
+            onClick={handleGenerate}
+            className="flex-1"
+            disabled={isLoading || !topic.trim() || platforms.length === 0}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Wand2 className="h-4 w-4 mr-2" />
             )}
-          </div>
+            Generate Campaign
+          </Button>
+          {generatedPosts.length > 0 && (
+            <Button
+              onClick={handleSchedule}
+              className="flex-1"
+              disabled={isLoading}
+            >
+              Schedule All Posts
+            </Button>
+          )}
         </div>
 
         <SaveTemplateDialog
