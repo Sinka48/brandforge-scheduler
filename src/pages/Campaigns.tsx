@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout/Layout";
 import { CampaignManager } from "@/components/campaign/CampaignManager";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CampaignsPageProps {
   session: Session;

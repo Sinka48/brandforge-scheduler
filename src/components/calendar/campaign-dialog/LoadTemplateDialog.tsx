@@ -4,6 +4,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface TimeSlot {
+  time: string;
+  days: string[];
+}
+
 interface Template {
   id: string;
   name: string;
@@ -11,7 +16,7 @@ interface Template {
   platforms: string[];
   duration: number;
   tone: string;
-  time_slots: { time: string; days: string[] }[];
+  time_slots: TimeSlot[];
   hashtags: string[];
 }
 
@@ -35,7 +40,12 @@ export function LoadTemplateDialog({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Template[];
+      
+      // Transform the data to match the Template type
+      return (data as any[]).map(template => ({
+        ...template,
+        time_slots: JSON.parse(template.time_slots as string)
+      })) as Template[];
     },
   });
 

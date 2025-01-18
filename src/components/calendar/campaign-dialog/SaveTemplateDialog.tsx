@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
 interface SaveTemplateDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,6 +35,12 @@ export function SaveTemplateDialog({ isOpen, onClose, campaignData }: SaveTempla
 
     setIsSaving(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { error } = await supabase
         .from('campaign_templates')
         .insert({
@@ -42,8 +49,9 @@ export function SaveTemplateDialog({ isOpen, onClose, campaignData }: SaveTempla
           platforms: campaignData.platforms,
           duration: parseInt(campaignData.duration),
           tone: campaignData.tone,
-          time_slots: campaignData.timeSlots,
+          time_slots: JSON.stringify(campaignData.timeSlots),
           hashtags: campaignData.hashtags,
+          user_id: user.id
         });
 
       if (error) throw error;
