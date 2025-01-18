@@ -19,6 +19,19 @@ const features = [
   "Collaborate with your team seamlessly"
 ];
 
+const placeholderImages = [
+  "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
+  "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+  "https://images.unsplash.com/photo-1518770660439-4636190af475",
+  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
+  "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
+  "https://images.unsplash.com/photo-1531297484001-80022131f5a1",
+  "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7"
+];
+
 interface IndexPageProps {
   session: Session | null;
 }
@@ -52,9 +65,9 @@ export default function IndexPage({ session }: IndexPageProps) {
   });
 
   useEffect(() => {
-    // Use a random number to prevent caching
-    const randomNumber = Math.floor(Math.random() * 30);
-    setBgImage(`https://images.unsplash.com/photo-${randomNumber}?w=1600&h=900&fit=crop&q=80&fm=jpg&crop=entropy&cs=tinysrgb&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`);
+    // Select a random image from the placeholderImages array
+    const randomIndex = Math.floor(Math.random() * placeholderImages.length);
+    setBgImage(placeholderImages[randomIndex]);
 
     // Rotate features every 5 seconds
     const interval = setInterval(() => {
