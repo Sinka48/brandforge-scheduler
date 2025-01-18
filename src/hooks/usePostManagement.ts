@@ -1,188 +1,66 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
-import { usePostCreation } from "./usePostCreation";
-import { usePostDeletion } from "./usePostDeletion";
+import { usePostCreate } from "./post/usePostCreate";
+import { usePostUpdate } from "./post/usePostUpdate";
+import { usePostDelete } from "./post/usePostDelete";
 
 export function usePostManagement() {
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const { newPost, setNewPost, handleAddPost: addPost, handleSaveAsDraft, handlePlatformToggle } = usePostCreation();
-  const { handleDeletePost: deletePost } = usePostDeletion(toast);
+  const { handleAddPost: createPost } = usePostCreate();
+  const { handleUpdatePost: updatePost } = usePostUpdate();
+  const { handleDeletePost: deletePost } = usePostDelete();
 
   const handleAddPost = async (selectedDate: Date | undefined) => {
-    if (!selectedDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date first.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!newPost.platforms || newPost.platforms.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one platform.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
+    setIsLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create posts.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const { data, error } = await supabase
-        .from('posts')
-        .insert({
-          content: newPost.content,
-          platform: newPost.platforms[0],
-          image_url: newPost.image || null,
-          scheduled_for: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate(),
-            parseInt(newPost.time.split(':')[0]),
-            parseInt(newPost.time.split(':')[1])
-          ).toISOString(),
-          status: newPost.status,
-          user_id: session.user.id
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setPosts([...posts, {
-        id: data.id,
-        content: data.content,
-        date: new Date(data.scheduled_for),
-        platforms: [data.platform],
-        image: data.image_url,
-        status: data.status,
-        time: format(new Date(data.scheduled_for), 'HH:mm'),
-      }]);
-
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
-      });
-
-      toast({
-        title: "Success",
-        description: "Your post has been created.",
-      });
-
-      return data;
-    } catch (error) {
-      console.error('Error creating post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
-  const handleUpdatePost = async (postId: string, selectedDate: Date | undefined) => {
-    if (!selectedDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date first.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!newPost.platforms || newPost.platforms.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one platform.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to update posts.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const { data, error } = await supabase
-        .from('posts')
-        .update({
-          content: newPost.content,
-          platform: newPost.platforms[0],
-          image_url: newPost.image || null,
-          scheduled_for: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate(),
-            parseInt(newPost.time.split(':')[0]),
-            parseInt(newPost.time.split(':')[1])
-          ).toISOString(),
-          status: newPost.status
-        })
-        .eq('id', postId)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setPosts(posts.map(post => 
-        post.id === postId ? {
-          ...post,
+      const data = await createPost(selectedDate);
+      if (data) {
+        setPosts([...posts, {
+          id: data.id,
           content: data.content,
           date: new Date(data.scheduled_for),
           platforms: [data.platform],
           image: data.image_url,
           status: data.status,
           time: format(new Date(data.scheduled_for), 'HH:mm'),
-        } : post
-      ));
+        }]);
+      }
+      return !!data;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
-      });
-      
-      toast({
-        title: "Success",
-        description: "Your post has been updated.",
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Error updating post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update post. Please try again.",
-        variant: "destructive",
-      });
-      return false;
+  const handleUpdatePost = async (postId: string, selectedDate: Date | undefined) => {
+    setIsLoading(true);
+    try {
+      const success = await updatePost(postId, selectedDate);
+      if (success) {
+        // Refresh posts list
+        const { data } = await supabase
+          .from('posts')
+          .select()
+          .eq('id', postId)
+          .single();
+        
+        if (data) {
+          setPosts(posts.map(post => 
+            post.id === postId ? {
+              ...post,
+              content: data.content,
+              date: new Date(data.scheduled_for),
+              platforms: [data.platform],
+              image: data.image_url,
+              status: data.status,
+              time: format(new Date(data.scheduled_for), 'HH:mm'),
+            } : post
+          ));
+        }
+      }
+      return success;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -203,12 +81,8 @@ export function usePostManagement() {
     posts,
     setPosts,
     isLoading,
-    newPost,
-    setNewPost,
     handleAddPost,
     handleUpdatePost,
-    handleSaveAsDraft,
     handleDeletePost,
-    handlePlatformToggle,
   };
 }
