@@ -41,7 +41,6 @@ export function usePostManagement() {
         return false;
       }
 
-      // Create the post with the user_id explicitly set
       const { data, error } = await supabase
         .from('posts')
         .insert({
@@ -56,7 +55,7 @@ export function usePostManagement() {
             parseInt(newPost.time.split(':')[1])
           ).toISOString(),
           status: newPost.status,
-          user_id: session.user.id,  // Explicitly set the user_id
+          user_id: session.user.id,
           is_recurring: newPost.isRecurring || false,
           recurrence_pattern: newPost.recurringPattern,
           recurrence_end_date: newPost.recurringEndDate?.toISOString()
@@ -124,7 +123,7 @@ export function usePostManagement() {
           image_url: newPost.image || null,
           scheduled_for: selectedDate ? selectedDate.toISOString() : new Date().toISOString(),
           status: 'draft',
-          user_id: session.user.id  // Explicitly set the user_id
+          user_id: session.user.id
         })
         .select()
         .single();
@@ -197,6 +196,88 @@ export function usePostManagement() {
     }
   };
 
+  const handleUpdatePost = async (postId: string, selectedDate: Date | undefined) => {
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date first.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to update posts.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const { data, error } = await supabase
+        .from('posts')
+        .update({
+          content: newPost.content,
+          platform: newPost.platforms[0],
+          image_url: newPost.image || null,
+          scheduled_for: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            parseInt(newPost.time.split(':')[0]),
+            parseInt(newPost.time.split(':')[1])
+          ).toISOString(),
+          status: newPost.status,
+        })
+        .eq('id', postId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setPosts(posts.map(post => 
+        post.id === postId 
+          ? {
+              id: data.id,
+              content: data.content,
+              date: new Date(data.scheduled_for),
+              platforms: [data.platform],
+              image: data.image_url,
+              status: data.status,
+              time: format(new Date(data.scheduled_for), 'HH:mm'),
+            }
+          : post
+      ));
+
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: format(new Date(), 'HH:mm'),
+        status: 'scheduled',
+      });
+
+      toast({
+        title: "Success",
+        description: "Your post has been updated.",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update post. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   return {
     posts,
     setPosts,
@@ -207,5 +288,6 @@ export function usePostManagement() {
     handleSaveAsDraft,
     handleDeletePost,
     handlePlatformToggle,
+    handleUpdatePost,
   };
 }
