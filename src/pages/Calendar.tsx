@@ -68,7 +68,10 @@ export default function CalendarPage({ session }: CalendarPageProps) {
       <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
         <div className="flex-none p-4 md:p-6">
           <div className="space-y-2 mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
+              <Rocket className="h-8 w-8 text-muted-foreground" />
+            </div>
             <p className="text-muted-foreground">
               View and manage your social media posts
             </p>
