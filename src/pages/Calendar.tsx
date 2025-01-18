@@ -89,16 +89,8 @@ export default function CalendarPage() {
             
             <ScrollArea className="flex-1 p-4 md:p-6">
               <TabsContent value="calendar" className="mt-0 h-full">
-                <div className="grid lg:grid-cols-2 gap-6 h-full">
-                  <div className="min-h-[500px] lg:h-full">
-                    <CalendarView 
-                      selectedDate={selectedDate}
-                      onSelectDate={setSelectedDate}
-                      posts={posts}
-                    />
-                  </div>
-                  
-                  <div className="h-full overflow-y-auto rounded-lg border bg-card p-4">
+                <div className="flex flex-col gap-6">
+                  <div className="min-h-[300px]">
                     <PostList
                       selectedDate={selectedDate}
                       posts={posts}
@@ -106,6 +98,14 @@ export default function CalendarPage() {
                       handleDeletePost={handleDeletePost}
                       handleEditPost={handleEditPost}
                       isLoading={isQueryLoading || isManagementLoading}
+                    />
+                  </div>
+                  
+                  <div className="min-h-[500px]">
+                    <CalendarView 
+                      selectedDate={selectedDate}
+                      onSelectDate={setSelectedDate}
+                      posts={posts}
                     />
                   </div>
                 </div>
