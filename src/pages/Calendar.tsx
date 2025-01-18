@@ -2,8 +2,6 @@ import { Layout } from "@/components/layout/Layout";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
-import { PLATFORMS } from "@/constants/platforms";
-import { Plus } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
@@ -11,6 +9,7 @@ import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHand
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Session } from "@supabase/supabase-js";
+import { Plus } from "lucide-react";
 
 interface CalendarPageProps {
   session: Session;
@@ -74,10 +73,14 @@ export default function CalendarPage({ session }: CalendarPageProps) {
             onNewCampaign={() => setIsCampaignDialogOpen(true)}
           />
           
-          <CalendarView 
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-          />
+          <div className="rounded-lg border bg-card">
+            <div className="p-6">
+              <CalendarView 
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+              />
+            </div>
+          </div>
         </div>
 
         {isMobile && (

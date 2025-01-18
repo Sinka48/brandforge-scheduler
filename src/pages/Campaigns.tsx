@@ -30,11 +30,15 @@ export default function CampaignsPage({ session }: { session: any }) {
             Create and manage your marketing campaigns
           </p>
         </div>
-        {isLoading ? (
-          <div>Loading campaigns...</div>
-        ) : (
-          <CampaignManager campaigns={campaigns || []} />
-        )}
+        <div className="rounded-lg border bg-card">
+          <div className="p-6">
+            {isLoading ? (
+              <div>Loading campaigns...</div>
+            ) : (
+              <CampaignManager campaigns={campaigns || []} />
+            )}
+          </div>
+        </div>
       </div>
     </Layout>
   );
