@@ -47,7 +47,6 @@ export default function IndexPage({ session }: IndexPageProps) {
   const [showLogin, setShowLogin] = useState(true);
   const [currentFeature, setCurrentFeature] = useState(0);
 
-  // Rotate features every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
@@ -78,11 +77,16 @@ export default function IndexPage({ session }: IndexPageProps) {
     enabled: !!session?.user?.id
   });
 
-  // If user is authenticated, show dashboard
   if (session) {
     return (
       <Layout session={session}>
         <div className="space-y-8 p-4 md:p-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome back! Here's an overview of your social media performance.
+            </p>
+          </div>
           <StatsCards analytics={analytics} />
           <QuickActions />
         </div>
