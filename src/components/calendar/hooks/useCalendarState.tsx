@@ -49,13 +49,14 @@ export function useCalendarState() {
   const { isLoading: isQueryLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          throw new Error('Not authenticated');
-        }
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        setPosts([]); // Clear posts if not authenticated
+        return [];
+      }
 
-        // Fetch posts including campaign information
+      try {
         const { data, error } = await supabase
           .from('posts')
           .select(`
@@ -70,15 +71,18 @@ export function useCalendarState() {
 
         if (error) {
           console.error('Error fetching posts:', error);
-          throw error;
+          toast({
+            title: "Error",
+            description: "Failed to fetch posts. Please try again.",
+            variant: "destructive",
+          });
+          return [];
         }
 
         if (!data) {
           console.log('No posts found');
           return [];
         }
-
-        console.log('Fetched posts:', data);
 
         const formattedPosts = data.map(post => ({
           id: post.id,
@@ -95,7 +99,6 @@ export function useCalendarState() {
           } : undefined
         }));
 
-        console.log('Formatted posts:', formattedPosts);
         setPosts(formattedPosts);
         return formattedPosts;
       } catch (error) {
@@ -108,7 +111,8 @@ export function useCalendarState() {
         return [];
       }
     },
-    refetchOnWindowFocus: false,
+    retry: false,
+    refetchOnWindowFocus: true,
   });
 
   return {
