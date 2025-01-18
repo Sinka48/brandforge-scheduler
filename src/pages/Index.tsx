@@ -128,20 +128,17 @@ export default function IndexPage({ session }: IndexPageProps) {
       </div>
 
       {/* Right side - 60% */}
-      <div 
-        className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-accent to-primary animate-gradient-x"
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_50%,transparent_75%,transparent_100%)] bg-[length:20px_20px] animate-pattern"></div>
+      <div className="w-[60%] p-8 flex flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/20">
         <motion.div 
           key={currentFeature}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-center space-y-6 relative z-10"
+          className="max-w-2xl text-center space-y-6"
         >
           <div className="text-6xl mb-4">{features[currentFeature].icon}</div>
-          <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
-          <p className="text-xl text-white/90">{features[currentFeature].description}</p>
+          <h2 className="text-3xl font-bold text-primary">{features[currentFeature].title}</h2>
+          <p className="text-xl text-muted-foreground">{features[currentFeature].description}</p>
         </motion.div>
       </div>
     </div>
