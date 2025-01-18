@@ -22,6 +22,23 @@ interface BrandManagerProps {
   selectedBrandId?: string;
 }
 
+interface BrandAsset {
+  id: string;
+  url: string;
+  metadata: {
+    colors: string[];
+    typography: {
+      headingFont: string;
+      bodyFont: string;
+    };
+  };
+  version: number;
+  created_at: string;
+  asset_type: string;
+  questionnaire_id: string;
+  user_id: string;
+}
+
 export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerProps) {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +89,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
       }
 
       // Transform the data to match the Brand type with proper type checking
-      const transformedBrands: Brand[] = (data || []).map(item => ({
+      const transformedBrands: Brand[] = (data || []).map((item: BrandAsset) => ({
         id: item.id,
         url: item.url,
         metadata: {
