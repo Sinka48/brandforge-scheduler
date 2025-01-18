@@ -4,6 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Session } from "@supabase/supabase-js";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { SignUpForm } from "@/components/auth/SignUpForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Calendar as CalendarIcon, Users, Activity } from "lucide-react";
 import {
   Card,
@@ -81,6 +84,54 @@ export default function IndexPage() {
     }
   };
 
+  if (!isInitialized) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight mb-2">Welcome Back</h1>
+            <p className="text-muted-foreground">
+              Sign in to manage your social media presence
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Access</CardTitle>
+              <CardDescription>
+                Sign in to your account or create a new one
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
+                </TabsList>
+                <TabsContent value="login">
+                  <LoginForm />
+                </TabsContent>
+                <TabsContent value="register">
+                  <SignUpForm />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const stats = [
     {
       name: "Total Posts",
@@ -117,10 +168,6 @@ export default function IndexPage() {
     { name: 'Sat', posts: 4 },
     { name: 'Sun', posts: 3 },
   ];
-
-  if (!isInitialized) {
-    return <Layout>Loading...</Layout>;
-  }
 
   return (
     <Layout>
