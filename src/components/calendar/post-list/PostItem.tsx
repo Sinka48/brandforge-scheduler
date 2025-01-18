@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
-import { Edit, Trash2, MoreVertical, Calendar } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Calendar, Pause, Play } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Platform {
   id: PlatformId;
@@ -24,7 +27,7 @@ interface Post {
   date: Date;
   platforms: PlatformId[];
   image?: string;
-  status: 'draft' | 'scheduled';
+  status: 'draft' | 'scheduled' | 'paused';
   time?: string;
   campaign?: {
     id: string;
@@ -50,7 +53,36 @@ export function PostItem({
   isSelected,
   onSelect
 }: PostItemProps) {
+  const [isPaused, setIsPaused] = useState(post.status === 'paused');
+  const { toast } = useToast();
   const postPlatforms = platforms.filter(p => post.platforms.includes(p.id));
+
+  const handlePauseToggle = async () => {
+    try {
+      const newStatus = isPaused ? 'scheduled' : 'paused';
+      const { error } = await supabase
+        .from('posts')
+        .update({ status: newStatus })
+        .eq('id', post.id);
+
+      if (error) throw error;
+
+      setIsPaused(!isPaused);
+      toast({
+        title: isPaused ? "Post Activated" : "Post Paused",
+        description: isPaused 
+          ? "The post has been activated and will be published as scheduled." 
+          : "The post has been paused and won't be published until activated.",
+      });
+    } catch (error) {
+      console.error('Error toggling post status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update post status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className={`p-4 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
@@ -72,27 +104,38 @@ export function PostItem({
                   {format(post.date, 'PPP')} at {post.time}
                 </p>
               )}
-              {post.campaign && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="secondary" className="flex items-center gap-1">
+              <div className="flex flex-wrap gap-2 mt-2">
+                {/* Platform badges */}
+                {postPlatforms.map((platform) => (
+                  <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
+                    {platform.icon}
+                    {platform.name}
+                  </Badge>
+                ))}
+                
+                {/* Campaign badge if post is part of a campaign */}
+                {post.campaign && (
+                  <Badge variant="outline" className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {post.campaign.name}
                   </Badge>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="flex -space-x-1">
-                {postPlatforms.map((platform) => (
-                  <div
-                    key={platform.id}
-                    className="h-6 w-6 rounded-full bg-background border-2 border-muted flex items-center justify-center"
-                  >
-                    {platform.icon}
-                  </div>
-                ))}
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePauseToggle}
+                className="h-8 w-8"
+              >
+                {isPaused ? (
+                  <Play className="h-4 w-4" />
+                ) : (
+                  <Pause className="h-4 w-4" />
+                )}
+              </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
