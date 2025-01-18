@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { PostList } from "./PostList";
-import { format, isAfter, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { PlatformId } from "@/constants/platforms";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,6 @@ interface Post {
 interface CalendarViewProps {
   selectedDate: Date | undefined;
   onSelectDate: (date: Date | undefined) => void;
-  posts?: Post[];
   onCreatePost?: () => void;
   onPostClick?: (post: Post) => void;
 }
@@ -69,11 +68,8 @@ export function CalendarView({
     }
   });
 
-  // Filter out draft posts, only show scheduled posts
-  const scheduledPosts = posts
-    .filter(post => post.status === 'scheduled')
-    .filter(post => isAfter(post.date, startOfDay(new Date())))
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  // Sort posts by scheduled time, earliest first
+  const sortedPosts = [...posts].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
@@ -88,10 +84,10 @@ export function CalendarView({
           <div className="text-center py-8">
             <p className="text-muted-foreground">Loading posts...</p>
           </div>
-        ) : scheduledPosts.length > 0 ? (
+        ) : sortedPosts.length > 0 ? (
           <PostList
             selectedDate={selectedDate}
-            posts={scheduledPosts}
+            posts={sortedPosts}
             platforms={platforms}
             handleDeletePost={() => {}}
             handleEditPost={() => {}}
