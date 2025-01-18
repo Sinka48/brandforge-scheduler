@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -44,20 +44,40 @@ export function LoginForm() {
       });
       
       if (error) {
-        if (error.message === "Email not confirmed") {
-          toast({
-            title: "Email not verified",
-            description: "Please check your email and verify your account before logging in.",
-            variant: "destructive",
-          });
-        } else if (error.message.includes("Invalid login credentials")) {
-          toast({
-            title: "Invalid credentials",
-            description: "The email or password you entered is incorrect.",
-            variant: "destructive",
-          });
+        console.error("Auth error:", error);
+        
+        if (error instanceof AuthApiError) {
+          switch (error.status) {
+            case 400:
+              if (error.message.includes("Email not confirmed")) {
+                toast({
+                  title: "Email not verified",
+                  description: "Please check your email and verify your account before logging in.",
+                  variant: "destructive",
+                });
+              } else {
+                toast({
+                  title: "Invalid credentials",
+                  description: "The email or password you entered is incorrect. Please try again.",
+                  variant: "destructive",
+                });
+              }
+              break;
+            case 429:
+              toast({
+                title: "Too many attempts",
+                description: "Please wait a moment before trying again.",
+                variant: "destructive",
+              });
+              break;
+            default:
+              toast({
+                title: "Error",
+                description: "An unexpected error occurred. Please try again.",
+                variant: "destructive",
+              });
+          }
         } else {
-          console.error("Auth error:", error);
           toast({
             title: "Error",
             description: "An unexpected error occurred. Please try again.",
@@ -74,10 +94,10 @@ export function LoginForm() {
           title: "Success",
           description: "You have successfully logged in.",
         });
+        form.reset();
       }
     } catch (error) {
-      const authError = error as AuthError;
-      console.error("Login error:", authError);
+      console.error("Login error:", error);
       toast({
         title: "Error",
         description: "Failed to sign in. Please try again.",
