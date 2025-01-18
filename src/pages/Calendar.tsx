@@ -13,11 +13,11 @@ import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
 import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CalendarPage() {
   useCalendarAuth();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   const {
     selectedDate,
