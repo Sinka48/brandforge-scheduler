@@ -325,6 +325,42 @@ export type Database = {
         }
         Relationships: []
       }
+      post_time_analytics: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          engagement_score: number | null
+          hour_of_day: number
+          id: string
+          platform: string
+          post_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          engagement_score?: number | null
+          hour_of_day: number
+          id?: string
+          platform: string
+          post_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          engagement_score?: number | null
+          hour_of_day?: number
+          id?: string
+          platform?: string
+          post_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           batch_id: string | null

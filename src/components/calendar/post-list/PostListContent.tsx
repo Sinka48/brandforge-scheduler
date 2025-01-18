@@ -2,8 +2,18 @@ import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Filter } from "lucide-react";
 import { filterPostsByDate } from "../utils/dateUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { PlatformId } from "@/constants/platforms";
 
 interface PostListContentProps {
   selectedDate: Date | undefined;
@@ -28,7 +38,24 @@ export function PostListContent({
   selectedPosts = [],
   onSelectPost
 }: PostListContentProps) {
-  const filteredPosts = filterPostsByDate(posts, selectedDate);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+
+  // Get unique campaigns from posts
+  const campaigns = Array.from(new Set(posts
+    .filter(post => post.campaign)
+    .map(post => post.campaign)))
+    .map(campaign => ({
+      id: campaign.id,
+      name: campaign.name
+    }));
+
+  const filteredPosts = filterPostsByDate(posts, selectedDate)
+    .filter(post => 
+      (selectedPlatforms.length === 0 || post.platforms.some(p => selectedPlatforms.includes(p))) &&
+      (selectedCampaigns.length === 0 || (post.campaign && selectedCampaigns.includes(post.campaign.id)))
+    );
+
   const displayPosts = selectedDate
     ? filteredPosts
     : showAllPosts 
@@ -41,6 +68,57 @@ export function PostListContent({
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Platforms</DropdownMenuLabel>
+            {platforms.map((platform) => (
+              <DropdownMenuCheckboxItem
+                key={platform.id}
+                checked={selectedPlatforms.includes(platform.id)}
+                onCheckedChange={(checked) => {
+                  setSelectedPlatforms(prev =>
+                    checked
+                      ? [...prev, platform.id]
+                      : prev.filter(p => p !== platform.id)
+                  );
+                }}
+              >
+                <platform.icon className="h-4 w-4 mr-2" />
+                {platform.name}
+              </DropdownMenuCheckboxItem>
+            ))}
+            {campaigns.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Campaigns</DropdownMenuLabel>
+                {campaigns.map((campaign) => (
+                  <DropdownMenuCheckboxItem
+                    key={campaign.id}
+                    checked={selectedCampaigns.includes(campaign.id)}
+                    onCheckedChange={(checked) => {
+                      setSelectedCampaigns(prev =>
+                        checked
+                          ? [...prev, campaign.id]
+                          : prev.filter(id => id !== campaign.id)
+                      );
+                    }}
+                  >
+                    {campaign.name}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div className="space-y-4">
         {displayPosts.map((post, index) => (
           <div
