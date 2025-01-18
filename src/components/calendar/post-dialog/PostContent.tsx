@@ -30,35 +30,12 @@ export function PostContent({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label htmlFor="content" className="text-sm font-medium">
-          Post Content
-        </label>
-        <Badge 
-          variant={isExceeded ? "destructive" : "secondary"}
-          className="text-xs"
-        >
-          {remainingChars} characters remaining
-        </Badge>
-      </div>
-      
-      <div className="grid grid-cols-1 gap-4">
-        <Textarea
-          id="content"
-          placeholder="What's on your mind?"
-          value={content}
-          onChange={(e) => onContentChange(e.target.value)}
-          className={`min-h-[100px] resize-none ${isExceeded ? 'border-destructive' : ''}`}
-        />
-        
-        {selectedPlatforms.length > 0 && (
-          <PlatformPreview 
-            content={content}
-            selectedPlatforms={selectedPlatforms}
-            imageUrl={imageUrl}
-          />
-        )}
-      </div>
+      <Textarea
+        placeholder="What's on your mind?"
+        value={content}
+        onChange={(e) => onContentChange(e.target.value)}
+        className={`min-h-[100px] resize-none ${isExceeded ? 'border-destructive' : ''}`}
+      />
 
       {isExceeded && (
         <Alert variant="destructive" className="mt-2">

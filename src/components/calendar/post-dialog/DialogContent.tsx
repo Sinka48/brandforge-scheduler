@@ -26,6 +26,13 @@ export function DialogContent({
 }: DialogContentProps) {
   const isMobile = useIsMobile();
 
+  // Set Facebook as default platform if no platforms are selected
+  React.useEffect(() => {
+    if (newPost.platforms.length === 0) {
+      handlePlatformToggle('facebook');
+    }
+  }, []);
+
   return (
     <div className="space-y-4 py-4">
       <div className="flex items-center gap-2 mb-4">
@@ -42,8 +49,7 @@ export function DialogContent({
 
       <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-2 gap-8'}`}>
         {/* Left Column - Preview */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Preview</h3>
+        <div>
           {newPost.platforms.length > 0 ? (
             <PlatformPreview 
               content={newPost.content}
