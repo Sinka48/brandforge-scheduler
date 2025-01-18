@@ -3,7 +3,7 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Facebook } from "lucide-react";
+import { Mail, Facebook, Smartphone } from "lucide-react";
 import { useState } from "react";
 
 export function AuthSection() {
@@ -35,7 +35,7 @@ export function AuthSection() {
           
           <div className="mt-6">
             <Separator className="my-4" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Button
                 variant="outline"
                 onClick={() => handleSocialLogin('email')}
@@ -53,6 +53,15 @@ export function AuthSection() {
               >
                 <Facebook className="h-4 w-4 mr-2" />
                 Meta
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('mobile')}
+                disabled={isLoading}
+                className="w-full"
+              >
+                <Smartphone className="h-4 w-4 mr-2" />
+                Mobile
               </Button>
             </div>
           </div>
