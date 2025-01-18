@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes } from "./Routes";
 import { useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
-import { supabase } from "./lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
