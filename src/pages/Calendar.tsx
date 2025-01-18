@@ -21,6 +21,7 @@ export default function CalendarPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
+  const { toast } = useToast();
   
   useCalendarAuth();
 
@@ -68,20 +69,7 @@ export default function CalendarPage() {
     },
   });
 
-  const handleEditPost = (post: any) => {
-    setEditingPost(post);
-    setNewPost({
-      content: post.content,
-      platforms: post.platforms,
-      image: post.image || '',
-      time: post.time,
-      status: post.status,
-    });
-    setIsDialogOpen(true);
-  };
-
   const handleGenerateCampaign = async (campaignPosts: any[]) => {
-    const { toast } = useToast();
     let successCount = 0;
     
     try {
@@ -112,6 +100,18 @@ export default function CalendarPage() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditPost = (post: any) => {
+    setEditingPost(post);
+    setNewPost({
+      content: post.content,
+      platforms: post.platforms,
+      image: post.image || '',
+      time: post.time,
+      status: post.status,
+    });
+    setIsDialogOpen(true);
   };
 
   const onAddPost = async () => {
