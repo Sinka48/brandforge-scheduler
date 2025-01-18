@@ -1,34 +1,33 @@
-import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { format } from "date-fns";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { PostList } from "@/components/calendar/PostList";
 import { DraftManager } from "@/components/calendar/DraftManager";
-import { usePostManagement } from "@/hooks/usePostManagement";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { PLATFORMS } from "@/constants/platforms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, FileText } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
-import { useToast } from "@/hooks/use-toast";
+import { useCalendarAuth } from "@/hooks/useCalendarAuth";
+import { useCalendarState } from "./hooks/useCalendarState";
+import { useCalendarHandlers } from "./hooks/useCalendarHandlers";
 
 export default function CalendarPage() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<any>(null);
-  const { toast } = useToast();
-  
   useCalendarAuth();
 
   const {
+    selectedDate,
+    setSelectedDate,
+    isDialogOpen,
+    setIsDialogOpen,
+    isCampaignDialogOpen,
+    setIsCampaignDialogOpen,
+    editingPost,
+    setEditingPost,
+    toast,
     posts,
-    setPosts,
-    isLoading: isManagementLoading,
+    isManagementLoading,
+    isQueryLoading,
     newPost,
     setNewPost,
     handleAddPost,
@@ -36,118 +35,23 @@ export default function CalendarPage() {
     handleDeletePost,
     handlePlatformToggle,
     handleUpdatePost,
-  } = usePostManagement();
+  } = useCalendarState();
 
-  const { isLoading: isQueryLoading } = useQuery({
-    queryKey: ['posts'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
-
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('scheduled_for', { ascending: true });
-
-      if (error) throw error;
-
-      const formattedPosts = data.map(post => ({
-        id: post.id,
-        content: post.content,
-        date: new Date(post.scheduled_for),
-        platforms: [post.platform],
-        image: post.image_url,
-        status: post.status as 'draft' | 'scheduled',
-        time: format(new Date(post.scheduled_for), 'HH:mm'),
-      }));
-
-      setPosts(formattedPosts);
-      return formattedPosts;
-    },
+  const {
+    handleGenerateCampaign,
+    handleEditPost,
+    onAddPost,
+    onSaveAsDraft,
+    onDialogClose,
+  } = useCalendarHandlers({
+    setEditingPost,
+    setNewPost,
+    setIsDialogOpen,
+    handleAddPost,
+    handleUpdatePost,
+    toast,
+    selectedDate,
   });
-
-  const handleGenerateCampaign = async (campaignPosts: any[]) => {
-    let successCount = 0;
-    
-    try {
-      for (const post of campaignPosts) {
-        setNewPost({
-          content: post.content,
-          platforms: [post.platform],
-          image: '',
-          time: post.time,
-          status: 'scheduled',
-        });
-        
-        const success = await handleAddPost(selectedDate);
-        if (success) {
-          successCount++;
-        }
-      }
-
-      toast({
-        title: "Campaign Scheduled",
-        description: `Successfully scheduled ${successCount} out of ${campaignPosts.length} posts`,
-      });
-    } catch (error) {
-      console.error('Error scheduling campaign:', error);
-      toast({
-        title: "Error",
-        description: "There was an error scheduling some posts. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEditPost = (post: any) => {
-    setEditingPost(post);
-    setNewPost({
-      content: post.content,
-      platforms: post.platforms,
-      image: post.image || '',
-      time: post.time,
-      status: post.status,
-    });
-    setIsDialogOpen(true);
-  };
-
-  const onAddPost = async () => {
-    let success;
-    if (editingPost) {
-      success = await handleUpdatePost(editingPost.id, selectedDate);
-    } else {
-      success = await handleAddPost(selectedDate);
-    }
-    if (success) {
-      setIsDialogOpen(false);
-      setEditingPost(null);
-    }
-  };
-
-  const onSaveAsDraft = async () => {
-    const success = await handleSaveAsDraft(selectedDate);
-    if (success) {
-      setIsDialogOpen(false);
-      setEditingPost(null);
-    }
-  };
-
-  const onDialogClose = (open: boolean) => {
-    if (!open) {
-      setEditingPost(null);
-      setNewPost({
-        content: '',
-        platforms: [],
-        image: '',
-        time: format(new Date(), 'HH:mm'),
-        status: 'scheduled',
-      });
-    }
-    setIsDialogOpen(open);
-  };
 
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
@@ -205,11 +109,11 @@ export default function CalendarPage() {
 
         <PostDialog
           isOpen={isDialogOpen}
-          onOpenChange={onDialogClose}
+          onOpenChange={(open) => onDialogClose(open, setNewPost)}
           newPost={newPost}
           setNewPost={setNewPost}
-          handleAddPost={onAddPost}
-          handleSaveAsDraft={onSaveAsDraft}
+          handleAddPost={() => onAddPost(editingPost, selectedDate)}
+          handleSaveAsDraft={() => onSaveAsDraft(handleSaveAsDraft)}
           handlePlatformToggle={handlePlatformToggle}
           selectedDate={selectedDate}
           editMode={!!editingPost}
