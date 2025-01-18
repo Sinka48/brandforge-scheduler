@@ -11,9 +11,11 @@ import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
 import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CalendarPage() {
   useCalendarAuth();
+  const queryClient = useQueryClient();
 
   const {
     selectedDate,
@@ -38,7 +40,7 @@ export default function CalendarPage() {
   } = useCalendarState();
 
   const {
-    handleGenerateCampaign,
+    handleGenerateCampaign: baseHandleGenerateCampaign,
     handleEditPost,
     onAddPost,
     onSaveAsDraft,
@@ -52,6 +54,16 @@ export default function CalendarPage() {
     toast,
     selectedDate,
   });
+
+  // Wrap handleGenerateCampaign to invalidate queries after successful campaign creation
+  const handleGenerateCampaign = async (campaignPosts: any[]) => {
+    const result = await baseHandleGenerateCampaign(campaignPosts);
+    if (result !== false) {
+      // Invalidate and refetch posts query
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
+    }
+    return result;
+  };
 
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
