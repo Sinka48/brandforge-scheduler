@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
 const features = [
@@ -114,13 +113,13 @@ export default function IndexPage({ session }: IndexPageProps) {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <div className="w-[40%] p-8 flex flex-col items-center justify-center border-r">
+      <div className="w-[40%] p-8 flex flex-col items-center justify-center">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-primary mb-2"></h1>
           </div>
           
-          <Card className="p-6">
+          <div className="p-6">
             <div className="flex gap-4 mb-6">
               <Button 
                 variant={showLogin ? "default" : "outline"}
@@ -138,7 +137,7 @@ export default function IndexPage({ session }: IndexPageProps) {
               </Button>
             </div>
             {showLogin ? <LoginForm /> : <SignUpForm />}
-          </Card>
+          </div>
         </div>
       </div>
 
