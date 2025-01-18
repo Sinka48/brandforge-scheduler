@@ -79,7 +79,10 @@ export function CalendarView({
   return (
     <Card className="p-4">
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Upcoming Posts</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold">Next post in {timeLeft}</h2>
+          <Clock className="h-4 w-4 text-muted-foreground" />
+        </div>
         {isLoading ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Loading posts...</p>
