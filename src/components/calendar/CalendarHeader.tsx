@@ -14,11 +14,7 @@ interface CalendarHeaderProps {
 
 export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Feed</h1>
-      </div>
-
+    <div className="flex items-center justify-end gap-4 flex-wrap">
       <div className="flex items-center gap-2">
         <div className="hidden sm:block">
           <Button
