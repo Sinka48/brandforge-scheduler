@@ -15,20 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface Brand {
-  id: string;
-  url: string;
-  metadata: {
-    colors: string[];
-    typography: {
-      headingFont: string;
-      bodyFont: string;
-    };
-  };
-  version: number;
-  created_at: string;
-}
+import { Brand } from "@/types/brand";
 
 interface BrandManagerProps {
   onSelectBrand?: (brand: Brand) => void;
@@ -84,7 +71,25 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
         throw error;
       }
 
-      setBrands(data || []);
+      // Transform the data to match the Brand type
+      const transformedBrands: Brand[] = (data || []).map(item => ({
+        id: item.id,
+        url: item.url,
+        metadata: {
+          colors: item.metadata?.colors || [],
+          typography: {
+            headingFont: item.metadata?.typography?.headingFont || "",
+            bodyFont: item.metadata?.typography?.bodyFont || "",
+          }
+        },
+        version: item.version || 1,
+        created_at: item.created_at,
+        asset_type: item.asset_type,
+        questionnaire_id: item.questionnaire_id,
+        user_id: item.user_id
+      }));
+
+      setBrands(transformedBrands);
     } catch (error) {
       console.error("Error fetching brands:", error);
       toast({
