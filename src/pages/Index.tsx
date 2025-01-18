@@ -4,47 +4,15 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { LoginForm } from "@/components/auth/LoginForm";
-import { SignUpForm } from "@/components/auth/SignUpForm";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Github, Twitter, Mail } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const features = [
-  {
-    title: "Social Media Calendar",
-    description: "Plan and schedule your content across multiple platforms with our intuitive calendar interface.",
-  },
-  {
-    title: "Brand Identity Management",
-    description: "Create and maintain consistent brand guidelines, color schemes, and visual assets.",
-  },
-  {
-    title: "Campaign Analytics",
-    description: "Track performance metrics and engagement rates for all your social media campaigns.",
-  },
-  {
-    title: "AI-Powered Content",
-    description: "Generate engaging content ideas and captions with our AI assistant.",
-  },
-  {
-    title: "Multi-Platform Support",
-    description: "Manage content for all major social media platforms in one place.",
-  }
-];
+import { AuthSection } from "@/components/landing/AuthSection";
+import { FeaturesAnimation } from "@/components/landing/FeaturesAnimation";
+import { GradientBackground } from "@/components/landing/GradientBackground";
 
 interface IndexPageProps {
   session: Session | null;
 }
 
 export default function IndexPage({ session }: IndexPageProps) {
-  const [currentFeature, setCurrentFeature] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
   const { data: analytics } = useQuery({
     queryKey: ['dashboard-analytics', session?.user?.id],
     queryFn: async () => {
@@ -68,41 +36,6 @@ export default function IndexPage({ session }: IndexPageProps) {
     enabled: !!session?.user?.id
   });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentFeature((prev) => (prev + 1) % features.length);
-      setDisplayText("");
-      setIsTyping(true);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (!isTyping) return;
-
-    const text = features[currentFeature].description;
-    let currentIndex = 0;
-
-    const typingInterval = setInterval(() => {
-      if (currentIndex < text.length) {
-        setDisplayText(prev => prev + text[currentIndex]);
-        currentIndex++;
-      } else {
-        setIsTyping(false);
-        clearInterval(typingInterval);
-      }
-    }, 50);
-
-    return () => clearInterval(typingInterval);
-  }, [currentFeature, isTyping]);
-
-  const handleSocialLogin = async (provider: string) => {
-    setIsLoading(true);
-    // Dummy function - will be replaced with actual implementation
-    console.log(`Logging in with ${provider}`);
-    setTimeout(() => setIsLoading(false), 1000);
-  };
-
   if (session) {
     return (
       <Layout session={session}>
@@ -122,94 +55,10 @@ export default function IndexPage({ session }: IndexPageProps) {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <div className="w-[40%] p-8 flex flex-col items-center justify-center">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary mb-2">Welcome</h1>
-          </div>
-          
-          <div className="p-6">
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
-                <LoginForm />
-              </TabsContent>
-              <TabsContent value="signup">
-                <SignUpForm />
-              </TabsContent>
-            </Tabs>
-            
-            <div className="mt-6">
-              <Separator className="my-4" />
-              <div className="grid grid-cols-3 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => handleSocialLogin('email')}
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Email
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleSocialLogin('github')}
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  <Github className="h-4 w-4 mr-2" />
-                  GitHub
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleSocialLogin('twitter')}
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  <Twitter className="h-4 w-4 mr-2" />
-                  Twitter
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <AuthSection />
       <div className="w-[60%] p-8 flex flex-col items-center justify-center relative overflow-hidden">
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundColor: '#ff99df',
-            backgroundImage: `
-              radial-gradient(circle at 52% 73%, hsla(310, 85%, 67%, 1) 0px, transparent 50%),
-              radial-gradient(circle at 0% 30%, hsla(197, 90%, 76%, 1) 0px, transparent 50%),
-              radial-gradient(circle at 41% 26%, hsla(234, 79%, 69%, 1) 0px, transparent 50%),
-              radial-gradient(circle at 41% 51%, hsla(41, 70%, 63%, 1) 0px, transparent 50%),
-              radial-gradient(circle at 41% 88%, hsla(36, 83%, 61%, 1) 0px, transparent 50%),
-              radial-gradient(circle at 76% 73%, hsla(346, 69%, 70%, 1) 0px, transparent 50%),
-              radial-gradient(circle at 29% 37%, hsla(272, 96%, 64%, 1) 0px, transparent 50%)
-            `,
-            backgroundSize: '150% 150%',
-            filter: 'blur(80px)',
-            animation: 'moveBackground 10s linear infinite',
-          }}
-        />
-        <motion.div 
-          key={currentFeature}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="max-w-2xl text-left space-y-6 relative z-10"
-        >
-          <h2 className="text-3xl font-bold text-white">{features[currentFeature].title}</h2>
-          <p className="text-xl text-white/80">
-            {displayText}
-            <span className="ml-1 animate-[blink_1s_infinite]">|</span>
-          </p>
-        </motion.div>
+        <GradientBackground />
+        <FeaturesAnimation />
       </div>
     </div>
   );
