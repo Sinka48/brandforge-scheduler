@@ -2,10 +2,10 @@ import { Home, PenTool, Library, Calendar, Settings, Rocket } from "lucide-react
 import { Link } from "react-router-dom";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Brand Generator", href: "/brand", icon: PenTool },
   { name: "Saved Brands", href: "/brands", icon: Library },
-  { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Calendar", href: "/", icon: Calendar },
   { name: "Campaigns", href: "/campaigns", icon: Rocket },
   { name: "Settings", href: "/settings", icon: Settings },
 ];

@@ -10,7 +10,8 @@ import CampaignsPage from "@/pages/Campaigns";
 export function Routes() {
   return (
     <RouterRoutes>
-      <Route path="/" element={<IndexPage />} />
+      <Route path="/dashboard" element={<IndexPage />} />
+      <Route path="/" element={<CalendarPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/brand" element={<BrandPage />} />
       <Route path="/brand/identity" element={<BrandIdentityPage />} />

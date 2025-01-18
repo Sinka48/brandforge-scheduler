@@ -211,6 +211,36 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_analytics: {
+        Row: {
+          active_campaigns: number | null
+          avg_engagement_rate: number | null
+          last_updated: string | null
+          platforms_used: string | null
+          posts_this_week: number | null
+          total_posts: number | null
+          user_id: string
+        }
+        Insert: {
+          active_campaigns?: number | null
+          avg_engagement_rate?: number | null
+          last_updated?: string | null
+          platforms_used?: string | null
+          posts_this_week?: number | null
+          total_posts?: number | null
+          user_id: string
+        }
+        Update: {
+          active_campaigns?: number | null
+          avg_engagement_rate?: number | null
+          last_updated?: string | null
+          platforms_used?: string | null
+          posts_this_week?: number | null
+          total_posts?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_analytics: {
         Row: {
           clicks: number | null
