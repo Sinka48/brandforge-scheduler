@@ -130,6 +130,45 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_templates: {
+        Row: {
+          created_at: string
+          duration: number
+          hashtags: string[]
+          id: string
+          name: string
+          platforms: string[]
+          time_slots: Json
+          tone: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration: number
+          hashtags?: string[]
+          id?: string
+          name: string
+          platforms?: string[]
+          time_slots?: Json
+          tone: string
+          topic: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          hashtags?: string[]
+          id?: string
+          name?: string
+          platforms?: string[]
+          time_slots?: Json
+          tone?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_analytics: {
         Row: {
           clicks: number | null

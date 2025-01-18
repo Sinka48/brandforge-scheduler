@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, platforms, duration, tone } = await req.json();
+    const { topic, platforms, duration, tone, timeSlots, hashtags } = await req.json();
 
-    console.log('Generating campaign for:', { topic, platforms, duration, tone });
+    console.log('Generating campaign for:', { topic, platforms, duration, tone, timeSlots, hashtags });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -32,12 +32,18 @@ serve(async (req) => {
             - content: the post text
             - platform: the social media platform
             - time: time in HH:mm format
-            Return an array of these post objects.`
+            - imageUrl: a description for an image that would complement the post
+            - hashtags: relevant hashtags for the post
+            Return an object with two properties:
+            - campaign: array of post objects
+            - suggestedHashtags: array of relevant hashtags for the campaign`
           },
           {
             role: 'user',
             content: `Generate a ${duration}-day social media campaign about ${topic} for ${platforms.join(', ')}. 
-            Use a ${tone} tone. Each post should be platform-appropriate.`
+            Use a ${tone} tone. Each post should be platform-appropriate.
+            Time slots to use: ${JSON.stringify(timeSlots)}
+            Include these hashtags: ${hashtags.join(', ')}`
           }
         ],
         temperature: 0.7,
@@ -48,25 +54,23 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI response:', data);
 
-    let campaign;
+    let result;
     try {
-      // Try to parse the response content as JSON
-      campaign = JSON.parse(data.choices[0].message.content);
+      result = JSON.parse(data.choices[0].message.content);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
-      // If parsing fails, try to extract JSON from markdown code blocks
       const content = data.choices[0].message.content;
       const jsonMatch = content.match(/```(?:json)?\n([\s\S]*?)\n```/);
       if (jsonMatch) {
-        campaign = JSON.parse(jsonMatch[1]);
+        result = JSON.parse(jsonMatch[1]);
       } else {
         throw new Error('Could not parse campaign data from OpenAI response');
       }
     }
 
-    console.log('Parsed campaign:', campaign);
+    console.log('Parsed result:', result);
 
-    return new Response(JSON.stringify({ campaign }), {
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

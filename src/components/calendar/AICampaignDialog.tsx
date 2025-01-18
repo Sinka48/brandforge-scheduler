@@ -5,14 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { Loader2, RefreshCw, Wand2 } from "lucide-react";
+import { Loader2, RefreshCw, Save, Folder, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { PlatformSelector } from "./post-dialog/PlatformSelector";
-import { PlatformPreview } from "./post-dialog/PlatformPreview";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TimeSlotSelector } from "./campaign-dialog/TimeSlotSelector";
+import { HashtagSelector } from "./campaign-dialog/HashtagSelector";
+import { SaveTemplateDialog } from "./campaign-dialog/SaveTemplateDialog";
+import { LoadTemplateDialog } from "./campaign-dialog/LoadTemplateDialog";
+import { PlatformPreview } from "./post-dialog/PlatformPreview";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -20,18 +24,10 @@ interface AICampaignDialogProps {
   onGenerateCampaign: (posts: any[]) => void;
 }
 
-interface GeneratedPost {
-  content: string;
-  platform: string;
+interface TimeSlot {
   time: string;
+  days: string[];
 }
-
-const PLATFORM_LIMITS = {
-  twitter: 280,
-  facebook: 63206,
-  instagram: 2200,
-  linkedin: 3000,
-};
 
 export function AICampaignDialog({
   isOpen,
@@ -42,9 +38,14 @@ export function AICampaignDialog({
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
   const [tone, setTone] = useState("professional");
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [generatedPosts, setGeneratedPosts] = useState<GeneratedPost[]>([]);
+  const [generatedPosts, setGeneratedPosts] = useState<any[]>([]);
+  const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
+  const [isLoadTemplateOpen, setIsLoadTemplateOpen] = useState(false);
   const { toast } = useToast();
 
   const handlePlatformToggle = (platformId: string) => {
@@ -65,7 +66,9 @@ export function AICampaignDialog({
           topic,
           platforms: [generatedPosts[index].platform],
           duration: 1,
-          tone 
+          tone,
+          timeSlots,
+          hashtags 
         },
       });
 
@@ -73,11 +76,7 @@ export function AICampaignDialog({
 
       const newPost = data.campaign[0];
       const updatedPosts = [...generatedPosts];
-      updatedPosts[index] = {
-        content: newPost.content,
-        platform: newPost.platform,
-        time: newPost.time,
-      };
+      updatedPosts[index] = newPost;
       setGeneratedPosts(updatedPosts);
 
       toast({
@@ -85,6 +84,7 @@ export function AICampaignDialog({
         description: "The post has been regenerated successfully",
       });
     } catch (error) {
+      console.error('Error regenerating post:', error);
       toast({
         title: "Regeneration Failed",
         description: error instanceof Error ? error.message : "Failed to regenerate post",
@@ -119,30 +119,21 @@ export function AICampaignDialog({
     setGeneratedPosts([]);
     
     try {
-      const normalizedPlatforms = platforms.map(p => p.toLowerCase());
-      
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
-          topic, 
-          platforms: normalizedPlatforms,
-          duration: parseInt(duration), 
-          tone 
+          topic,
+          platforms,
+          duration: parseInt(duration),
+          tone,
+          timeSlots,
+          hashtags
         },
       });
 
       if (error) throw error;
 
-      if (!data?.campaign || !Array.isArray(data.campaign)) {
-        throw new Error('Invalid campaign data received');
-      }
-
-      const formattedPosts = data.campaign.map((post: any) => ({
-        content: post.content.trim(),
-        platform: post.platform.toLowerCase(),
-        time: post.time,
-      }));
-
-      setGeneratedPosts(formattedPosts);
+      setGeneratedPosts(data.campaign);
+      setSuggestedHashtags(data.suggestedHashtags || []);
       setProgress(100);
 
       toast({
@@ -150,7 +141,7 @@ export function AICampaignDialog({
         description: "Review your posts before scheduling",
       });
     } catch (error) {
-      console.error('Error in handleGenerate:', error);
+      console.error('Error generating campaign:', error);
       toast({
         title: "Generation Failed",
         description: error instanceof Error ? error.message : "Failed to generate campaign",
@@ -162,6 +153,15 @@ export function AICampaignDialog({
     }
   };
 
+  const handleLoadTemplate = (template: any) => {
+    setTopic(template.topic);
+    setPlatforms(template.platforms);
+    setDuration(template.duration.toString());
+    setTone(template.tone);
+    setTimeSlots(template.time_slots);
+    setHashtags(template.hashtags);
+  };
+
   const handleSchedule = () => {
     onGenerateCampaign(generatedPosts);
     onOpenChange(false);
@@ -169,6 +169,8 @@ export function AICampaignDialog({
     setPlatforms([]);
     setDuration("7");
     setTone("professional");
+    setTimeSlots([]);
+    setHashtags([]);
     setGeneratedPosts([]);
     setProgress(0);
   };
@@ -179,54 +181,83 @@ export function AICampaignDialog({
         <DialogHeader editMode={false} selectedDate={undefined} />
         
         <div className="space-y-6 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="topic">Campaign Topic</Label>
-            <Textarea
-              id="topic"
-              placeholder="What is your campaign about?"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-            />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setLoadTemplateOpen(true)}
+            >
+              <Folder className="h-4 w-4 mr-2" />
+              Load Template
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsSaveTemplateOpen(true)}
+              disabled={!topic.trim()}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save as Template
+            </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="topic">Campaign Topic</Label>
+              <Textarea
+                id="topic"
+                placeholder="What is your campaign about?"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              />
+            </div>
+
             <PlatformSelector
               selectedPlatforms={platforms}
               onPlatformToggle={handlePlatformToggle}
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="duration">Campaign Duration (days)</Label>
-              <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3 days</SelectItem>
-                  <SelectItem value="7">1 week</SelectItem>
-                  <SelectItem value="14">2 weeks</SelectItem>
-                  <SelectItem value="30">1 month</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Campaign Duration (days)</Label>
+                <Select value={duration} onValueChange={setDuration}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="7">1 week</SelectItem>
+                    <SelectItem value="14">2 weeks</SelectItem>
+                    <SelectItem value="30">1 month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tone">Campaign Tone</Label>
+                <Select value={tone} onValueChange={setTone}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="casual">Casual</SelectItem>
+                    <SelectItem value="friendly">Friendly</SelectItem>
+                    <SelectItem value="humorous">Humorous</SelectItem>
+                    <SelectItem value="formal">Formal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="tone">Campaign Tone</Label>
-              <Select value={tone} onValueChange={setTone}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select tone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="humorous">Humorous</SelectItem>
-                  <SelectItem value="formal">Formal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <TimeSlotSelector
+              timeSlots={timeSlots}
+              onTimeSlotsChange={setTimeSlots}
+            />
+
+            <HashtagSelector
+              hashtags={hashtags}
+              onHashtagsChange={setHashtags}
+              suggestedHashtags={suggestedHashtags}
+            />
           </div>
 
           {isLoading && (
@@ -259,12 +290,10 @@ export function AICampaignDialog({
                     <PlatformPreview
                       content={post.content}
                       selectedPlatforms={[post.platform]}
+                      imageUrl={post.imageUrl}
                     />
                     <div className="text-sm text-muted-foreground">
                       Scheduled for: {post.time}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Characters: {post.content.length} / {PLATFORM_LIMITS[post.platform as keyof typeof PLATFORM_LIMITS]}
                     </div>
                   </CardContent>
                 </Card>
@@ -296,6 +325,25 @@ export function AICampaignDialog({
             )}
           </div>
         </div>
+
+        <SaveTemplateDialog
+          isOpen={isSaveTemplateOpen}
+          onClose={() => setIsSaveTemplateOpen(false)}
+          campaignData={{
+            topic,
+            platforms,
+            duration,
+            tone,
+            timeSlots,
+            hashtags,
+          }}
+        />
+
+        <LoadTemplateDialog
+          isOpen={isLoadTemplateOpen}
+          onClose={() => setIsLoadTemplateOpen(false)}
+          onSelectTemplate={handleLoadTemplate}
+        />
       </DialogContent>
     </Dialog>
   );
