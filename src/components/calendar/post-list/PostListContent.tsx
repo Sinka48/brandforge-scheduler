@@ -2,7 +2,7 @@ import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown, Filter, Clock } from "lucide-react";
 import { filterPostsByDate } from "../utils/dateUtils";
 import {
   DropdownMenu,
@@ -12,8 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlatformId } from "@/constants/platforms";
+import { formatDistanceToNow } from "date-fns";
 
 interface PostListContentProps {
   selectedDate: Date | undefined;
@@ -40,6 +41,8 @@ export function PostListContent({
 }: PostListContentProps) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+  const [nextPost, setNextPost] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState<string>("");
 
   // Get unique campaigns from posts
   const campaigns = Array.from(new Set(posts
@@ -62,13 +65,36 @@ export function PostListContent({
       ? filteredPosts
       : filteredPosts.slice(0, 3);
 
+  useEffect(() => {
+    // Find the next upcoming post
+    const now = new Date();
+    const upcomingPosts = posts
+      .filter(post => new Date(post.date) > now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    if (upcomingPosts.length > 0) {
+      setNextPost(upcomingPosts[0]);
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    if (!nextPost) return;
+
+    const timer = setInterval(() => {
+      const timeUntilPost = formatDistanceToNow(new Date(nextPost.date), { addSuffix: true });
+      setTimeLeft(timeUntilPost);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [nextPost]);
+
   if (filteredPosts.length === 0) {
     return <EmptyState />;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
@@ -76,7 +102,7 @@ export function PostListContent({
               Filter
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuLabel>Platforms</DropdownMenuLabel>
             {platforms.map((platform) => (
               <DropdownMenuCheckboxItem
@@ -90,7 +116,6 @@ export function PostListContent({
                   );
                 }}
               >
-                {/* Render the icon component directly */}
                 <div className="h-4 w-4 mr-2">
                   {platform.icon}
                 </div>
@@ -120,6 +145,15 @@ export function PostListContent({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {nextPost && (
+          <div className="flex items-center gap-2 bg-muted p-2 rounded-md">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Next post {timeLeft}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
