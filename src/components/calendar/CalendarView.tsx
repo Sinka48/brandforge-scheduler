@@ -88,9 +88,13 @@ export function CalendarView({
       const { error } = await supabase
         .from('posts')
         .delete()
-        .eq('id', postId);
+        .eq('id', postId)
+        .eq('user_id', session.user.id); // Add user_id check
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting post:', error);
+        throw error;
+      }
       
       // Invalidate and refetch posts query to update UI
       await queryClient.invalidateQueries({ queryKey: ['posts'] });

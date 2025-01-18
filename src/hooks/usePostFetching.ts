@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
+import { PlatformId } from "@/constants/platforms";
 
 interface Post {
   id: string;
   content: string;
   date: Date;
-  platforms: string[];
+  platforms: PlatformId[];
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
@@ -70,7 +71,7 @@ export function usePostFetching(session: Session | null) {
         id: post.id,
         content: post.content,
         date: new Date(post.scheduled_for),
-        platforms: [post.platform],
+        platforms: [post.platform as PlatformId], // Cast to PlatformId
         image: post.image_url,
         status: post.status as 'draft' | 'scheduled',
         time: format(new Date(post.scheduled_for), 'HH:mm'),
