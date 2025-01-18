@@ -44,17 +44,22 @@ export function CalendarView({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Check authentication status
   const { data: session, isLoading: authLoading } = useQuery({
     queryKey: ['auth-session'],
     queryFn: async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Authentication Error",
+          description: "Failed to check authentication status. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
       return session;
     },
   });
 
-  // Fetch posts using the custom hook
   const { data: posts = [], isLoading, error } = usePostFetching(session);
 
   if (authLoading) {
@@ -74,7 +79,6 @@ export function CalendarView({
     icon: <platform.icon className="h-4 w-4" />
   }));
 
-  // Sort posts by scheduled time
   const sortedPosts = [...posts].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const handleEditPost = async (post: Post) => {
@@ -89,14 +93,18 @@ export function CalendarView({
         .from('posts')
         .delete()
         .eq('id', postId)
-        .eq('user_id', session.user.id); // Add user_id check
+        .eq('user_id', session.user.id);
 
       if (error) {
         console.error('Error deleting post:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete post. Please try again.",
+          variant: "destructive",
+        });
         throw error;
       }
       
-      // Invalidate and refetch posts query to update UI
       await queryClient.invalidateQueries({ queryKey: ['posts'] });
       
       toast({
@@ -115,7 +123,7 @@ export function CalendarView({
   };
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 md:p-6">
       <div className="space-y-4">
         {isLoading ? (
           <LoadingState />
