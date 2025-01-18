@@ -23,8 +23,13 @@ serve(async (req) => {
       throw new Error('Questionnaire data is required')
     }
 
-    console.log('Generating color palette...')
+    console.log('Starting brand identity generation process...')
+    console.log('Questionnaire data:', JSON.stringify(questionnaire, null, 2))
+
     // Generate color palette
+    console.log('Generating color palette...')
+    const colorPrompt = `Generate a color palette for a ${questionnaire.industry} business with these traits: ${questionnaire.brand_personality.join(', ')}. They prefer these colors: ${questionnaire.color_preferences.join(', ')}. Return exactly 5 hex color codes in a JSON array format.`
+    
     const colorResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -36,11 +41,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a brand identity expert. Generate a color palette based on the brand questionnaire data. Return only a JSON array of exactly 5 hex color codes.'
+            content: 'You are a brand identity expert. Generate a color palette. Return only a JSON array of exactly 5 hex color codes.'
           },
           {
             role: 'user',
-            content: `Generate a color palette for a ${questionnaire.industry} business with these traits: ${questionnaire.brand_personality.join(', ')}. They prefer these colors: ${questionnaire.color_preferences.join(', ')}`
+            content: colorPrompt
           }
         ],
       }),
@@ -53,6 +58,8 @@ serve(async (req) => {
     }
 
     const colorData = await colorResponse.json()
+    console.log('Color API response:', JSON.stringify(colorData, null, 2))
+    
     if (!colorData.choices?.[0]?.message?.content) {
       throw new Error('Invalid color response from OpenAI')
     }
@@ -60,8 +67,10 @@ serve(async (req) => {
     const colors = JSON.parse(colorData.choices[0].message.content)
     console.log('Generated colors:', colors)
 
-    console.log('Generating typography recommendations...')
     // Generate typography recommendations
+    console.log('Generating typography recommendations...')
+    const typographyPrompt = `Recommend fonts for a ${questionnaire.industry} business with these traits: ${questionnaire.brand_personality.join(', ')}. Return a JSON object with headingFont and bodyFont properties.`
+    
     const typographyResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -77,7 +86,7 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Recommend fonts for a ${questionnaire.industry} business with these traits: ${questionnaire.brand_personality.join(', ')}`
+            content: typographyPrompt
           }
         ],
       }),
@@ -90,6 +99,8 @@ serve(async (req) => {
     }
 
     const typographyData = await typographyResponse.json()
+    console.log('Typography API response:', JSON.stringify(typographyData, null, 2))
+    
     if (!typographyData.choices?.[0]?.message?.content) {
       throw new Error('Invalid typography response from OpenAI')
     }
@@ -97,8 +108,10 @@ serve(async (req) => {
     const typography = JSON.parse(typographyData.choices[0].message.content)
     console.log('Generated typography:', typography)
 
+    // Generate logo concept
     console.log('Generating logo concept...')
-    // Generate logo concepts using DALL-E
+    const logoPrompt = `Create a modern, professional logo for ${questionnaire.business_name}, a ${questionnaire.industry} business. The brand personality is ${questionnaire.brand_personality.join(', ')}. Use these colors: ${questionnaire.color_preferences.join(', ')}. The logo should be minimal and versatile.`
+    
     const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -107,7 +120,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: `Create a modern, professional logo for ${questionnaire.business_name}, a ${questionnaire.industry} business. The brand personality is ${questionnaire.brand_personality.join(', ')}. Use these colors: ${questionnaire.color_preferences.join(', ')}. The logo should be minimal and versatile.`,
+        prompt: logoPrompt,
         n: 1,
         size: "1024x1024",
         quality: "standard",
@@ -122,6 +135,8 @@ serve(async (req) => {
     }
 
     const logoData = await logoResponse.json()
+    console.log('Logo API response:', JSON.stringify(logoData, null, 2))
+    
     if (!logoData.data?.[0]?.url) {
       throw new Error('Invalid logo response from DALL-E')
     }
@@ -139,8 +154,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-brand-identity function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 },
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      },
     )
   }
 })
