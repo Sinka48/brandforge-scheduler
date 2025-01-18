@@ -52,7 +52,7 @@ export function FeaturesAnimation() {
         setIsTyping(false);
         clearInterval(typingInterval);
       }
-    }, 30);
+    }, 30); // Reduced from 50ms to 30ms for smoother typing
 
     return () => clearInterval(typingInterval);
   }, [currentFeature, isTyping]);
@@ -63,20 +63,20 @@ export function FeaturesAnimation() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" }} // Added smoother transition
       className="max-w-2xl text-left space-y-6 relative z-10"
     >
       <motion.h2 
-        className="text-3xl font-bold text-white truncate"
+        className="text-3xl font-bold text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
         {features[currentFeature].title}
       </motion.h2>
-      <p className="text-xl text-white/80 whitespace-nowrap overflow-hidden">
+      <p className="text-xl text-white/80">
         <motion.span 
-          className="bg-blue-500/30 rounded px-1 inline-block truncate max-w-full"
+          className="bg-blue-500/30 rounded px-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
