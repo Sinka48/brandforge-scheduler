@@ -89,7 +89,7 @@ export default function CalendarPage() {
           </TabsList>
           
           <TabsContent value="calendar" className="mt-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <CalendarView 
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
