@@ -90,7 +90,10 @@ export function PostListContent({
                   );
                 }}
               >
-                <platform.icon className="h-4 w-4 mr-2" />
+                {/* Render the icon component directly */}
+                <div className="h-4 w-4 mr-2">
+                  {platform.icon}
+                </div>
                 {platform.name}
               </DropdownMenuCheckboxItem>
             ))}
