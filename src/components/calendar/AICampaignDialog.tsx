@@ -184,7 +184,7 @@ export function AICampaignDialog({
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
-              onClick={() => setLoadTemplateOpen(true)}
+              onClick={() => setIsLoadTemplateOpen(true)}
             >
               <Folder className="h-4 w-4 mr-2" />
               Load Template
