@@ -117,8 +117,7 @@ export default function IndexPage({ session }: IndexPageProps) {
       <div className="w-[40%] p-8 flex flex-col items-center justify-center border-r">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary mb-2">Brand Management</h1>
-            <p className="text-muted-foreground">Streamline your social media presence</p>
+            <h1 className="text-4xl font-bold text-primary mb-2"></h1>
           </div>
           
           <Card className="p-6">
