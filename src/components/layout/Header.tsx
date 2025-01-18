@@ -16,7 +16,17 @@ export function Header() {
 
   return (
     <div className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-x-4 border-b bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-      <MobileNav />
+      <div className="flex items-center gap-x-4">
+        <MobileNav />
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=32&h=32&fit=crop&auto=format"
+            alt="Brand AI Logo"
+            className="h-8 w-8 rounded-md"
+          />
+          <span className="hidden text-xl font-bold sm:block">Brand AI</span>
+        </Link>
+      </div>
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         <nav className="flex flex-1">
           <ul className="flex flex-1 items-center justify-center gap-6">
