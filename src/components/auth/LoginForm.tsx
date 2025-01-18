@@ -187,21 +187,21 @@ export function LoginForm() {
             control={form.control}
             name="remember"
             render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
+              <FormItem className="flex items-center space-x-2 m-0">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-                <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+                <FormLabel className="text-sm font-normal leading-none m-0">Remember me</FormLabel>
               </FormItem>
             )}
           />
           <Button
             type="button"
             variant="link"
-            className="px-0 font-normal"
+            className="px-0 font-normal h-auto p-0"
             onClick={handleResetPassword}
           >
             Forgot password?
