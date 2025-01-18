@@ -76,14 +76,14 @@ export function FeaturesAnimation() {
       </motion.h2>
       <p className="text-sm font-normal text-white/80 whitespace-nowrap overflow-hidden">
         <motion.span 
-          className="bg-blue-500/30 rounded px-1 truncate max-w-full"
+          className="bg-blue-500/30 rounded px-1 truncate inline-flex items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
         >
           {displayText}
+          <span className="animate-[blink_0.7s_infinite] ml-0.5">|</span>
         </motion.span>
-        <span className="ml-1 animate-[blink_1s_infinite]">|</span>
       </p>
     </motion.div>
   );
