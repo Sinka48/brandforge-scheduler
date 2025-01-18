@@ -9,6 +9,85 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brand_assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          questionnaire_id: string
+          url: string
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          questionnaire_id: string
+          url: string
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          questionnaire_id?: string
+          url?: string
+          user_id?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_assets_questionnaire_id_fkey"
+            columns: ["questionnaire_id"]
+            isOneToOne: false
+            referencedRelation: "brand_questionnaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brand_guidelines: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          questionnaire_id: string
+          updated_at: string
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          questionnaire_id: string
+          updated_at?: string
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          questionnaire_id?: string
+          updated_at?: string
+          user_id?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_guidelines_questionnaire_id_fkey"
+            columns: ["questionnaire_id"]
+            isOneToOne: false
+            referencedRelation: "brand_questionnaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_questionnaires: {
         Row: {
           brand_personality: string[]
@@ -21,6 +100,7 @@ export type Database = {
           target_audience: Json
           updated_at: string
           user_id: string
+          version: number | null
         }
         Insert: {
           brand_personality?: string[]
@@ -33,6 +113,7 @@ export type Database = {
           target_audience?: Json
           updated_at?: string
           user_id: string
+          version?: number | null
         }
         Update: {
           brand_personality?: string[]
@@ -45,6 +126,7 @@ export type Database = {
           target_audience?: Json
           updated_at?: string
           user_id?: string
+          version?: number | null
         }
         Relationships: []
       }

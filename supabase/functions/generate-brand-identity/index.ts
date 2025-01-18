@@ -1,7 +1,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,27 +14,21 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Starting brand identity generation process...');
     const { questionnaire } = await req.json();
-
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key is not configured');
-    }
-
+    
     if (!questionnaire) {
       throw new Error('Questionnaire data is required');
     }
 
-    console.log('Generating color palette...');
-    const colorPrompt = `Generate a color palette for a ${questionnaire.industry} business with these traits: ${questionnaire.brand_personality.join(', ')}. They prefer these colors: ${questionnaire.color_preferences.join(', ')}. Return exactly 5 hex color codes in a simple array format, like this: ["#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF"]. Do not include any markdown formatting or additional text.`;
-    
-    const colorResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Generating brand identity for questionnaire:', questionnaire);
+
+    // Generate brand identity using OpenAI
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -40,131 +39,69 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a brand identity expert. Generate a color palette. Return only a JSON array of exactly 5 hex color codes, without any markdown formatting.'
+            content: 'You are a brand identity expert. Generate brand identity suggestions based on the questionnaire data. Return a JSON object with color palette (array of hex codes), typography (object with headingFont and bodyFont), and logo description.'
           },
           {
             role: 'user',
-            content: colorPrompt
+            content: `Generate brand identity for: ${JSON.stringify(questionnaire)}`
           }
         ],
+        response_format: { type: "json_object" }
       }),
     });
 
-    if (!colorResponse.ok) {
-      const errorData = await colorResponse.text();
-      console.error('OpenAI Color API Error:', errorData);
-      throw new Error(`OpenAI Color API Error: ${colorResponse.status}`);
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to generate brand identity');
     }
 
-    const colorData = await colorResponse.json();
-    console.log('Color API response:', JSON.stringify(colorData, null, 2));
-    
-    if (!colorData.choices?.[0]?.message?.content) {
-      throw new Error('Invalid color response from OpenAI');
+    const data = await response.json();
+    const suggestions = JSON.parse(data.choices[0].message.content);
+
+    // Store the generated assets
+    const { data: asset, error: assetError } = await supabase
+      .from('brand_assets')
+      .insert([
+        {
+          user_id: questionnaire.user_id,
+          questionnaire_id: questionnaire.id,
+          asset_type: 'brand_identity',
+          url: '', // This would be updated once we implement actual asset generation
+          metadata: suggestions
+        }
+      ])
+      .select()
+      .single();
+
+    if (assetError) {
+      console.error('Error storing brand assets:', assetError);
+      throw assetError;
     }
-    
-    // Clean the response string and parse it
-    const cleanColorResponse = colorData.choices[0].message.content.replace(/```json\n|\n```/g, '').trim();
-    const colors = JSON.parse(cleanColorResponse);
-    console.log('Generated colors:', colors);
-
-    // Generate typography recommendations
-    console.log('Generating typography recommendations...');
-    const typographyPrompt = `Recommend fonts for a ${questionnaire.industry} business with these traits: ${questionnaire.brand_personality.join(', ')}. Return a JSON object with headingFont and bodyFont properties, like this: {"headingFont": "Montserrat", "bodyFont": "Open Sans"}. Only include Google Fonts. Do not include any markdown formatting or additional text.`;
-    
-    const typographyResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a typography expert. Recommend font pairings based on brand personality. Return only a JSON object with headingFont and bodyFont properties, without any markdown formatting.'
-          },
-          {
-            role: 'user',
-            content: typographyPrompt
-          }
-        ],
-      }),
-    });
-
-    if (!typographyResponse.ok) {
-      const errorData = await typographyResponse.text();
-      console.error('OpenAI Typography API Error:', errorData);
-      throw new Error(`OpenAI Typography API Error: ${typographyResponse.status}`);
-    }
-
-    const typographyData = await typographyResponse.json();
-    console.log('Typography API response:', JSON.stringify(typographyData, null, 2));
-    
-    if (!typographyData.choices?.[0]?.message?.content) {
-      throw new Error('Invalid typography response from OpenAI');
-    }
-
-    // Clean the response string and parse it
-    const cleanTypographyResponse = typographyData.choices[0].message.content.replace(/```json\n|\n```/g, '').trim();
-    const typography = JSON.parse(cleanTypographyResponse);
-    console.log('Generated typography:', typography);
-
-    // Generate logo concept
-    console.log('Generating logo concept...');
-    const logoPrompt = `Create a modern, professional logo for ${questionnaire.business_name}, a ${questionnaire.industry} business. The brand personality is ${questionnaire.brand_personality.join(', ')}. Use these colors: ${questionnaire.color_preferences.join(', ')}. The logo should be minimal and versatile.`;
-    
-    const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: logoPrompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-        style: "natural"
-      }),
-    });
-
-    if (!logoResponse.ok) {
-      const errorData = await logoResponse.text();
-      console.error('DALL-E API Error:', errorData);
-      throw new Error(`DALL-E API Error: ${logoResponse.status}`);
-    }
-
-    const logoData = await logoResponse.json();
-    console.log('Logo API response:', JSON.stringify(logoData, null, 2));
-    
-    if (!logoData.data?.[0]?.url) {
-      throw new Error('Invalid logo response from DALL-E');
-    }
-
-    console.log('Brand identity generation completed successfully');
 
     return new Response(
-      JSON.stringify({
-        colors,
-        typography,
-        logoUrl: logoData.data[0].url,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      JSON.stringify(suggestions),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      }
     );
   } catch (error) {
     console.error('Error in generate-brand-identity function:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack
+        details: error.toString()
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      },
+        status: 500,
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      }
     );
   }
 });
