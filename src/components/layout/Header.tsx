@@ -25,7 +25,7 @@ export function Header({ session }: HeaderProps) {
   if (!session) {
     return (
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
+        <div className="container flex h-14 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-1 items-center justify-end space-x-4">
             <Link to="/">
               <Button variant="ghost" size="sm">
@@ -40,7 +40,7 @@ export function Header({ session }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
+      <div className="container flex h-14 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link to="/feed" className="mr-4">
           <div className="relative w-8 h-8 rounded-full overflow-hidden">
             <div 
