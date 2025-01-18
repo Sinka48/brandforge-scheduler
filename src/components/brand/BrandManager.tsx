@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Trash2 } from "lucide-react";
+import { BrandReviewSection } from "./identity/BrandReviewSection";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +40,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [brandToDelete, setBrandToDelete] = useState<string | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,6 +80,9 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
       if (error) throw error;
 
       setBrands(brands.filter((brand) => brand.id !== brandId));
+      if (selectedBrand?.id === brandId) {
+        setSelectedBrand(null);
+      }
       toast({
         title: "Success",
         description: "Brand deleted successfully",
@@ -94,6 +99,11 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
     setBrandToDelete(null);
   };
 
+  const handleBrandSelect = (brand: Brand) => {
+    setSelectedBrand(brand);
+    onSelectBrand?.(brand);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -103,7 +113,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       {brands.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -111,52 +121,69 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {brands.map((brand) => (
-            <Card
-              key={brand.id}
-              className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary ${
-                selectedBrandId === brand.id ? "ring-2 ring-primary" : ""
-              }`}
-              onClick={() => onSelectBrand?.(brand)}
-            >
-              <CardHeader className="space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Brand v{brand.version}
-                </CardTitle>
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {brands.map((brand) => (
+              <Card
+                key={brand.id}
+                className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary ${
+                  selectedBrand?.id === brand.id ? "ring-2 ring-primary" : ""
+                }`}
+                onClick={() => handleBrandSelect(brand)}
+              >
+                <CardHeader className="space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Brand v{brand.version}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <img
+                    src={brand.url}
+                    alt={`Brand v${brand.version}`}
+                    className="w-full rounded-lg border"
+                  />
+                  <div className="grid grid-cols-5 gap-1">
+                    {brand.metadata.colors.map((color, index) => (
+                      <div
+                        key={index}
+                        className="aspect-square rounded-full border"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBrandToDelete(brand.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {selectedBrand && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Brand Identity Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <img
-                  src={brand.url}
-                  alt={`Brand v${brand.version}`}
-                  className="w-full rounded-lg border"
+              <CardContent>
+                <BrandReviewSection
+                  colors={selectedBrand.metadata.colors}
+                  typography={selectedBrand.metadata.typography}
+                  logoUrl={selectedBrand.url}
                 />
-                <div className="grid grid-cols-5 gap-1">
-                  {brand.metadata.colors.map((color, index) => (
-                    <div
-                      key={index}
-                      className="aspect-square rounded-full border"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setBrandToDelete(brand.id);
-                      setDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
