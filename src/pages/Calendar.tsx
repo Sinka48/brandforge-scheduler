@@ -57,12 +57,9 @@ export default function CalendarPage() {
 
   // Wrap handleGenerateCampaign to invalidate queries after successful campaign creation
   const handleGenerateCampaign = async (campaignPosts: any[]) => {
-    const result = await baseHandleGenerateCampaign(campaignPosts);
-    if (result !== false) {
-      // Invalidate and refetch posts query
-      await queryClient.invalidateQueries({ queryKey: ['posts'] });
-    }
-    return result;
+    await baseHandleGenerateCampaign(campaignPosts);
+    // Always invalidate the query to ensure we have the latest data
+    await queryClient.invalidateQueries({ queryKey: ['posts'] });
   };
 
   const platforms = PLATFORMS.map(platform => ({
