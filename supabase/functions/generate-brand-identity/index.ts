@@ -35,7 +35,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -59,14 +59,14 @@ serve(async (req) => {
     const data = await response.json();
     const suggestions = JSON.parse(data.choices[0].message.content);
 
-    // Store the generated assets
+    // Store the generated assets with the correct asset_type
     const { data: asset, error: assetError } = await supabase
       .from('brand_assets')
       .insert([
         {
           user_id: questionnaire.user_id,
           questionnaire_id: questionnaire.id,
-          asset_type: 'brand_identity',
+          asset_type: 'brand_identity',  // Using the correct asset type as per the constraint
           url: '', // This would be updated once we implement actual asset generation
           version: version,
           metadata: suggestions
