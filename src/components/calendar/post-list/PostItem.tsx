@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
-import { Edit, Trash2, Calendar, Pause, Play } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Calendar, Pause, Play } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +26,7 @@ interface Post {
   content: string;
   date: Date;
   platforms: PlatformId[];
+  image?: string;
   status: 'draft' | 'scheduled' | 'paused';
   time?: string;
   campaign?: {
@@ -89,67 +96,77 @@ export function PostItem({
         )}
         
         <div className="flex-1 space-y-2">
-          {/* Date and Time */}
-          {post.time && (
-            <p className="text-sm text-muted-foreground">
-              {format(post.date, 'PPP')} at {post.time}
-            </p>
-          )}
-
-          {/* Post Content */}
-          <p className="font-medium break-words">{post.content}</p>
-
-          <div className="flex flex-wrap gap-2">
-            {/* Platform badges */}
-            {postPlatforms.map((platform) => (
-              <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
-                {platform.icon}
-                {platform.name}
-              </Badge>
-            ))}
-            
-            {/* Campaign badge if post is part of a campaign */}
-            {post.campaign && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {post.campaign.name}
-              </Badge>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 mt-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePauseToggle}
-              className="h-8 w-8"
-            >
-              {isPaused ? (
-                <Play className="h-4 w-4" />
-              ) : (
-                <Pause className="h-4 w-4" />
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="font-medium break-words">{post.content}</p>
+              {post.time && (
+                <p className="text-sm text-muted-foreground">
+                  {format(post.date, 'PPP')} at {post.time}
+                </p>
               )}
-            </Button>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {/* Platform badges */}
+                {postPlatforms.map((platform) => (
+                  <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
+                    {platform.icon}
+                    {platform.name}
+                  </Badge>
+                ))}
+                
+                {/* Campaign badge if post is part of a campaign */}
+                {post.campaign && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {post.campaign.name}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePauseToggle}
+                className="h-8 w-8"
+              >
+                {isPaused ? (
+                  <Play className="h-4 w-4" />
+                ) : (
+                  <Pause className="h-4 w-4" />
+                )}
+              </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(post)}
-              className="h-8 w-8"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(post.id)}
-              className="h-8 w-8 text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(post)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onDelete(post.id)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
+
+          {post.image && (
+            <img
+              src={post.image}
+              alt="Post preview"
+              className="rounded-md max-h-32 object-cover"
+            />
+          )}
         </div>
       </div>
     </Card>
