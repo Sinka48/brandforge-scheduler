@@ -35,13 +35,7 @@ export function usePostFetching(session: Session | null) {
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          id,
-          content,
-          scheduled_for,
-          platform,
-          image_url,
-          status,
-          campaign_id,
+          *,
           campaigns (
             id,
             name,
