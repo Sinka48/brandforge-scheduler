@@ -19,7 +19,7 @@ interface Post {
   date: Date;
   platforms: PlatformId[];
   image?: string;
-  status: 'draft' | 'scheduled';
+  status: 'draft' | 'scheduled' | 'published' | 'paused';
   time?: string;
   campaign?: {
     id: string;
