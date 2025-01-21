@@ -55,10 +55,18 @@ export function LoginForm() {
                   description: "Please check your email and verify your account before logging in.",
                   variant: "destructive",
                 });
-              } else {
+              } else if (error.message.includes("Invalid login credentials")) {
                 toast({
                   title: "Invalid credentials",
                   description: "The email or password you entered is incorrect. Please try again.",
+                  variant: "destructive",
+                });
+                // Clear only the password field on invalid credentials
+                form.setValue("password", "");
+              } else {
+                toast({
+                  title: "Login failed",
+                  description: "Please check your credentials and try again.",
                   variant: "destructive",
                 });
               }
