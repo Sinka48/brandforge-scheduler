@@ -48,7 +48,6 @@ export function usePostFetching(session: Session | null) {
             description
           )
         `)
-        .eq('user_id', session.user.id)
         .order('scheduled_for', { ascending: true });
 
       if (error) {
