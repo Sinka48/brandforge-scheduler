@@ -25,6 +25,7 @@ type LoginFormValues = z.infer<typeof formSchema>;
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<LoginFormValues>({
@@ -61,7 +62,6 @@ export function LoginForm() {
                   description: "The email or password you entered is incorrect. Please try again.",
                   variant: "destructive",
                 });
-                // Clear only the password field on invalid credentials
                 form.setValue("password", "");
               } else {
                 toast({
@@ -117,6 +117,7 @@ export function LoginForm() {
   }
 
   const handleResetPassword = async () => {
+    setIsResettingPassword(true);
     const email = form.getValues("email");
     if (!email) {
       toast({
@@ -124,6 +125,7 @@ export function LoginForm() {
         description: "Please enter your email address to reset your password.",
         variant: "destructive",
       });
+      setIsResettingPassword(false);
       return;
     }
 
@@ -132,12 +134,18 @@ export function LoginForm() {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Reset password error:", error);
+        throw error;
+      }
 
       toast({
         title: "Check your email",
-        description: "We've sent you a password reset link.",
+        description: "We've sent you a password reset link. Please check your spam folder if you don't see it.",
       });
+      
+      // Clear the password field after sending reset email
+      form.setValue("password", "");
     } catch (error) {
       console.error("Reset password error:", error);
       toast({
@@ -145,6 +153,8 @@ export function LoginForm() {
         description: "Failed to send reset password email. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -193,8 +203,9 @@ export function LoginForm() {
             variant="link"
             className="px-0 font-normal h-auto p-0"
             onClick={handleResetPassword}
+            disabled={isResettingPassword}
           >
-            Forgot password?
+            {isResettingPassword ? "Sending..." : "Forgot password?"}
           </Button>
         </div>
         <Button 
