@@ -483,7 +483,7 @@ export type Database = {
     Functions: {
       ensure_dashboard_analytics_exists: {
         Args: {
-          user_id: string
+          input_user_id: string
         }
         Returns: undefined
       }

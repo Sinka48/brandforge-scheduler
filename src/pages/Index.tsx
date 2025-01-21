@@ -24,11 +24,16 @@ export default function IndexPage({ session }: IndexPageProps) {
       // First ensure analytics exists for user
       const { error: initError } = await supabase
         .rpc('ensure_dashboard_analytics_exists', {
-          user_id: session.user.id as string
+          input_user_id: session.user.id
         });
 
       if (initError) {
         console.error('Error initializing analytics:', initError);
+        toast({
+          title: "Error initializing dashboard",
+          description: "There was a problem setting up your analytics data.",
+          variant: "destructive",
+        });
       }
 
       // Then fetch the analytics
