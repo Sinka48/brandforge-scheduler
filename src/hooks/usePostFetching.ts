@@ -36,13 +36,7 @@ export function usePostFetching(session: Session | null) {
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          id,
-          content,
-          scheduled_for,
-          platform,
-          image_url,
-          status,
-          campaign_id,
+          *,
           campaigns (
             id,
             name,
@@ -66,7 +60,7 @@ export function usePostFetching(session: Session | null) {
         return [];
       }
 
-      console.log('Posts fetched successfully:', data);
+      console.log('Posts fetched successfully:', data.length, 'posts found');
       
       return data.map(post => ({
         id: post.id,
