@@ -7,13 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthSection } from "@/components/landing/AuthSection";
 import { FeaturesAnimation } from "@/components/landing/FeaturesAnimation";
 import { GradientBackground } from "@/components/landing/GradientBackground";
+import { useToast } from "@/hooks/use-toast";
 
 interface IndexPageProps {
   session: Session | null;
 }
 
 export default function IndexPage({ session }: IndexPageProps) {
-  const { data: analytics } = useQuery({
+  const { toast } = useToast();
+
+  const { data: analytics, error } = useQuery({
     queryKey: ['dashboard-analytics', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
@@ -21,10 +24,18 @@ export default function IndexPage({ session }: IndexPageProps) {
       const { data, error } = await supabase
         .from('dashboard_analytics')
         .select('*')
-        .eq('user_id', session.user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching analytics:', error);
+        toast({
+          title: "Error loading dashboard",
+          description: "There was a problem loading your analytics data.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
       return data || {
         total_posts: 0,
         posts_this_week: 0,
@@ -33,7 +44,8 @@ export default function IndexPage({ session }: IndexPageProps) {
         platforms_used: ''
       };
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id,
+    retry: 3,
   });
 
   if (session) {
