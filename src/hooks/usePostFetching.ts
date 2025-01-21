@@ -31,65 +31,57 @@ export function usePostFetching(session: Session | null) {
         return [];
       }
 
-      console.log('Fetching posts for user:', session.user.id);
-      try {
-        const { data, error } = await supabase
-          .from('posts')
-          .select(`
+      console.log('Fetching posts...');
+      
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          content,
+          scheduled_for,
+          platform,
+          image_url,
+          status,
+          campaign_id,
+          campaigns (
             id,
-            content,
-            scheduled_for,
-            platform,
-            image_url,
-            status,
-            campaign_id,
-            campaigns (
-              id,
-              name,
-              description
-            )
-          `)
-          .order('scheduled_for', { ascending: true });
+            name,
+            description
+          )
+        `)
+        .order('scheduled_for', { ascending: true });
 
-        if (error) {
-          console.error('Error fetching posts:', error);
-          toast({
-            title: "Error loading posts",
-            description: "There was a problem loading your posts. Please try again.",
-            variant: "destructive",
-          });
-          throw error;
-        }
-
-        if (!data) {
-          console.log('No posts found');
-          return [];
-        }
-
-        console.log('Posts fetched successfully:', data);
-        return data.map(post => ({
-          id: post.id,
-          content: post.content,
-          date: new Date(post.scheduled_for),
-          platforms: [post.platform as PlatformId],
-          image: post.image_url,
-          status: post.status as 'draft' | 'scheduled',
-          time: format(new Date(post.scheduled_for), 'HH:mm'),
-          campaign: post.campaigns ? {
-            id: post.campaign_id,
-            name: post.campaigns.name,
-            description: post.campaigns.description
-          } : undefined
-        }));
-      } catch (error) {
-        console.error('Unexpected error in queryFn:', error);
+      if (error) {
+        console.error('Error fetching posts:', error);
         toast({
           title: "Error loading posts",
-          description: "There was an unexpected problem loading your posts. Please try again.",
+          description: "There was a problem loading your posts. Please try again.",
           variant: "destructive",
         });
         throw error;
       }
+
+      if (!data) {
+        console.log('No posts found');
+        return [];
+      }
+
+      console.log('Posts fetched successfully:', data);
+      
+      return data.map(post => ({
+        id: post.id,
+        content: post.content,
+        date: new Date(post.scheduled_for),
+        platforms: [post.platform as PlatformId],
+        image: post.image_url,
+        status: post.status as 'draft' | 'scheduled',
+        time: format(new Date(post.scheduled_for), 'HH:mm'),
+        campaign: post.campaigns ? {
+          id: post.campaign_id,
+          name: post.campaigns.name,
+          description: post.campaigns.description
+        } : undefined
+      }));
     },
     enabled: !!session?.user,
     staleTime: 1000 * 60,
