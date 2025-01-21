@@ -31,18 +31,24 @@ export function usePostFetching(session: Session | null) {
         return [];
       }
 
-      console.log('Fetching posts...');
-      
+      console.log('Fetching posts for user:', session.user.id);
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          *,
+          id,
+          content,
+          scheduled_for,
+          platform,
+          image_url,
+          status,
+          campaign_id,
           campaigns (
             id,
             name,
             description
           )
         `)
+        .eq('user_id', session.user.id)
         .order('scheduled_for', { ascending: true });
 
       if (error) {
@@ -60,13 +66,12 @@ export function usePostFetching(session: Session | null) {
         return [];
       }
 
-      console.log('Posts fetched successfully:', data.length, 'posts found');
-      
+      console.log('Posts fetched:', data);
       return data.map(post => ({
         id: post.id,
         content: post.content,
         date: new Date(post.scheduled_for),
-        platforms: [post.platform as PlatformId],
+        platforms: [post.platform as PlatformId], // Cast to PlatformId
         image: post.image_url,
         status: post.status as 'draft' | 'scheduled',
         time: format(new Date(post.scheduled_for), 'HH:mm'),
