@@ -2,8 +2,6 @@ import { Layout } from "@/components/layout/Layout";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { CalendarHeader } from "@/components/calendar/CalendarHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
-import { PLATFORMS } from "@/constants/platforms";
-import { Plus } from "lucide-react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
@@ -11,6 +9,7 @@ import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHand
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Session } from "@supabase/supabase-js";
+import { Plus } from "lucide-react";
 
 interface CalendarPageProps {
   session: Session;
@@ -61,7 +60,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
   return (
     <Layout session={session}>
       <div className="space-y-6">
-        <div>
+        <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
           <p className="text-muted-foreground">
             View and manage your social media posts

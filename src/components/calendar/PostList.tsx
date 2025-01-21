@@ -15,7 +15,7 @@ interface Post {
   date: Date;
   platforms: PlatformId[];
   image?: string;
-  status: 'draft' | 'scheduled' | 'published' | 'paused';
+  status: 'draft' | 'scheduled';
   time?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
