@@ -24,7 +24,7 @@ export default function IndexPage({ session }: IndexPageProps) {
       // First ensure analytics exists for user
       const { error: initError } = await supabase
         .rpc('ensure_dashboard_analytics_exists', {
-          user_id: session.user.id
+          user_id: session.user.id as string
         });
 
       if (initError) {
