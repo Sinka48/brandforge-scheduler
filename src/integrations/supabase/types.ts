@@ -372,7 +372,6 @@ export type Database = {
           is_recurring: boolean | null
           parent_post_id: string | null
           platform: string
-          published_at: string | null
           recurrence_end_date: string | null
           recurrence_pattern: string | null
           scheduled_for: string
@@ -389,7 +388,6 @@ export type Database = {
           is_recurring?: boolean | null
           parent_post_id?: string | null
           platform: string
-          published_at?: string | null
           recurrence_end_date?: string | null
           recurrence_pattern?: string | null
           scheduled_for: string
@@ -406,7 +404,6 @@ export type Database = {
           is_recurring?: boolean | null
           parent_post_id?: string | null
           platform?: string
-          published_at?: string | null
           recurrence_end_date?: string | null
           recurrence_pattern?: string | null
           scheduled_for?: string
@@ -481,12 +478,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      ensure_dashboard_analytics_exists: {
-        Args: {
-          input_user_id: string
-        }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

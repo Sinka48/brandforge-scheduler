@@ -35,13 +35,20 @@ export function usePostFetching(session: Session | null) {
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          *,
+          id,
+          content,
+          scheduled_for,
+          platform,
+          image_url,
+          status,
+          campaign_id,
           campaigns (
             id,
             name,
             description
           )
         `)
+        .eq('user_id', session.user.id)
         .order('scheduled_for', { ascending: true });
 
       if (error) {
@@ -64,7 +71,7 @@ export function usePostFetching(session: Session | null) {
         id: post.id,
         content: post.content,
         date: new Date(post.scheduled_for),
-        platforms: [post.platform as PlatformId],
+        platforms: [post.platform as PlatformId], // Cast to PlatformId
         image: post.image_url,
         status: post.status as 'draft' | 'scheduled',
         time: format(new Date(post.scheduled_for), 'HH:mm'),
