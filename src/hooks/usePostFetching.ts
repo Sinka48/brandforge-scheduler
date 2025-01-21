@@ -71,7 +71,7 @@ export function usePostFetching(session: Session | null) {
         id: post.id,
         content: post.content,
         date: new Date(post.scheduled_for),
-        platforms: [post.platform as PlatformId], // Cast to PlatformId
+        platforms: [post.platform as PlatformId],
         image: post.image_url,
         status: post.status as 'draft' | 'scheduled',
         time: format(new Date(post.scheduled_for), 'HH:mm'),
