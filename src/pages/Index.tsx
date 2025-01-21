@@ -21,6 +21,17 @@ export default function IndexPage({ session }: IndexPageProps) {
     queryFn: async () => {
       if (!session?.user?.id) return null;
       
+      // First ensure analytics exists for user
+      const { error: initError } = await supabase
+        .rpc('ensure_dashboard_analytics_exists', {
+          user_id: session.user.id
+        });
+
+      if (initError) {
+        console.error('Error initializing analytics:', initError);
+      }
+
+      // Then fetch the analytics
       const { data, error } = await supabase
         .from('dashboard_analytics')
         .select('*')
