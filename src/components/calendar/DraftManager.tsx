@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { DraftFilters } from "./draft-manager/DraftFilters";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Platform {
   id: PlatformId;
@@ -97,6 +98,32 @@ export function DraftManager({
     });
   };
 
+  const handlePublishPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ 
+          status: 'scheduled',
+          published_at: new Date().toISOString()
+        })
+        .eq('id', postId);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Post scheduled for publishing",
+      });
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -151,6 +178,7 @@ export function DraftManager({
         platforms={platforms}
         handleDeletePost={handleDeletePost}
         handleEditPost={handleEditPost}
+        handlePublishPost={handlePublishPost}
         isLoading={isLoading}
         selectedPosts={selectedDrafts}
         onSelectPost={handleSelectDraft}

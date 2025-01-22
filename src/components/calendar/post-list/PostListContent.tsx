@@ -1,6 +1,5 @@
 import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
-import { LoadingState } from "./LoadingState";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { filterPostsByDate } from "../utils/dateUtils";
@@ -14,6 +13,7 @@ interface PostListContentProps {
   platforms: any[];
   handleDeletePost: (postId: string) => void;
   handleEditPost: (post: any) => void;
+  handlePublishPost: (postId: string) => void;
   showAllPosts: boolean;
   setShowAllPosts: (show: boolean) => void;
   selectedPosts?: string[];
@@ -26,6 +26,7 @@ export function PostListContent({
   platforms,
   handleDeletePost,
   handleEditPost,
+  handlePublishPost,
   showAllPosts,
   setShowAllPosts,
   selectedPosts = [],
@@ -100,6 +101,7 @@ export function PostListContent({
               platforms={platforms}
               onEdit={() => handleEditPost(post)}
               onDelete={handleDeletePost}
+              onPublish={handlePublishPost}
               isSelected={selectedPosts.includes(post.id)}
               onSelect={onSelectPost}
             />
