@@ -17,7 +17,13 @@ serve(async (req) => {
     const { platforms, topic } = await req.json()
 
     if (!platforms || platforms.length === 0) {
-      throw new Error('At least one platform must be specified')
+      return new Response(
+        JSON.stringify({ error: 'At least one platform must be specified' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     const openai = new OpenAI({
@@ -26,6 +32,8 @@ serve(async (req) => {
 
     const platformStr = platforms.join(', ')
     const prompt = `Generate a social media post for ${platformStr}. Topic: ${topic || 'general'}. The post should be engaging and follow best practices for these platforms.`
+
+    console.log('Generating post with prompt:', prompt)
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -42,6 +50,8 @@ serve(async (req) => {
     })
 
     const generatedContent = response.choices[0].message.content
+
+    console.log('Generated content:', generatedContent)
 
     return new Response(
       JSON.stringify({ content: generatedContent }),

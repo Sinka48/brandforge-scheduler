@@ -72,6 +72,16 @@ export function PostDialog({
 
   const handleQuickPost = async () => {
     try {
+      // Check if platforms are selected
+      if (!newPost.platforms || newPost.platforms.length === 0) {
+        toast({
+          title: "Platform Required",
+          description: "Please select at least one platform before generating content.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setIsGenerating(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -83,6 +93,8 @@ export function PostDialog({
         return;
       }
 
+      console.log('Generating post for platforms:', newPost.platforms);
+
       const { data, error } = await supabase.functions.invoke('generate-post', {
         body: {
           platforms: newPost.platforms,
@@ -90,7 +102,10 @@ export function PostDialog({
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error generating post:', error);
+        throw error;
+      }
 
       setNewPost({ ...newPost, content: data.content });
       
