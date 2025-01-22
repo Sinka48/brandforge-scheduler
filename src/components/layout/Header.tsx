@@ -100,7 +100,7 @@ export function Header({ session }: HeaderProps) {
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-between">
+        <div className="flex flex-1 items-center justify-end gap-4">
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
@@ -146,30 +146,18 @@ export function Header({ session }: HeaderProps) {
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link to="/how-it-works">
-                  <NavigationMenuLink
-                    className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-                  >
-                    How it Works
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
 
-          <div className="flex items-center gap-2">
-            <Link to="/settings">
-              <Button variant="ghost" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
+          <Link to="/settings">
+            <Button variant="ghost" size="icon">
+              <Settings className="h-4 w-4" />
             </Button>
-          </div>
+          </Link>
+
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="lg:hidden">
