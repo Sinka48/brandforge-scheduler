@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { CampaignConfiguration } from "./campaign-dialog/CampaignConfiguration";
 import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
-import { addDays } from "date-fns";
+import { addDays, set } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -182,14 +182,28 @@ export function AICampaignDialog({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
+      const startDate = new Date();
+
       // Save generated posts as drafts
       for (const post of generatedPosts) {
+        // Create a proper timestamp by combining the current date with the post's time
+        const [hours, minutes] = post.time.split(':').map(Number);
+        const scheduledDate = set(startDate, {
+          hours,
+          minutes,
+          seconds: 0,
+          milliseconds: 0
+        });
+
+        // Add days offset based on post index to spread posts over time
+        const finalDate = addDays(scheduledDate, generatedPosts.indexOf(post));
+
         await supabase.from('posts').insert({
           content: post.content,
           platform: post.platform,
           status: 'draft',
           campaign_id: campaignId,
-          scheduled_for: post.time || new Date().toISOString(),
+          scheduled_for: finalDate.toISOString(),
           user_id: session.user.id
         });
       }
