@@ -38,7 +38,7 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .eq('status', 'scheduled')
+          .or('status.eq.scheduled,and(campaign_id.not.is.null,campaigns.status.eq.active)')
           .order('scheduled_for', { ascending: true });
 
         if (error) {
