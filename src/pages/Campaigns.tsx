@@ -56,13 +56,14 @@ export default function CampaignsPage({ session }: { session: any }) {
         </div>
 
         {!isLoading && (!campaigns || campaigns.length === 0) ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px] border rounded-lg bg-muted/50">
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
             <h3 className="text-xl font-semibold mb-2">No campaigns yet</h3>
             <p className="text-muted-foreground mb-4">
               Create your first AI-powered campaign to get started
             </p>
             <Button
               onClick={() => setIsCampaignDialogOpen(true)}
+              variant="secondary"
               className="flex items-center gap-2"
             >
               <Wand2 className="h-4 w-4" />
