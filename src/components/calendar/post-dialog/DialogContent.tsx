@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Image, ImagePlus, Sparkles } from "lucide-react";
+import { Image, ImagePlus, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { MediaLibrary } from "./MediaLibrary";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -147,7 +147,7 @@ export function DialogContent({
       {/* Image Section */}
       <div className="space-y-2">
         {newPost.image && (
-          <div className="relative w-full h-16 rounded-lg overflow-hidden">
+          <div className="relative w-full h-12 rounded-lg overflow-hidden">
             <img
               src={newPost.image}
               alt="Post preview"
@@ -174,7 +174,7 @@ export function DialogContent({
                 disabled={isGeneratingImage}
                 className="h-8 text-xs whitespace-nowrap"
               >
-                <Sparkles className="h-3 w-3 mr-1" />
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                 Generate Image
               </Button>
               
@@ -184,7 +184,7 @@ export function DialogContent({
                 onClick={() => setShowImageUrl(true)}
                 className="h-8 text-xs whitespace-nowrap"
               >
-                <ImagePlus className="h-3 w-3 mr-1" />
+                <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
                 Add URL
               </Button>
               
@@ -194,7 +194,7 @@ export function DialogContent({
                 onClick={() => setIsMediaLibraryOpen(true)}
                 className="h-8 text-xs whitespace-nowrap"
               >
-                <Image className="h-3 w-3 mr-1" />
+                <Image className="h-3.5 w-3.5 mr-1.5" />
                 Gallery
               </Button>
 
@@ -241,11 +241,9 @@ export function DialogContent({
               <Button
                 variant="outline"
                 size="sm"
-                className={cn(
-                  "justify-start text-left font-normal h-8 text-xs",
-                  !newPost.date && "text-muted-foreground"
-                )}
+                className="h-8 text-xs whitespace-nowrap"
               >
+                <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
                 {newPost.date ? format(newPost.date, "PPP") : format(new Date(), "PPP")}
               </Button>
             </PopoverTrigger>

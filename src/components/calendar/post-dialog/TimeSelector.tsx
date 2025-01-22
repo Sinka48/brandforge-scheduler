@@ -54,9 +54,9 @@ export function TimeSelector({ time, onTimeChange, selectedPlatforms }: TimeSele
         <Button 
           variant="outline" 
           size="sm"
-          className={`flex items-center gap-2 ${error ? "border-destructive" : ""}`}
+          className={`h-8 text-xs whitespace-nowrap ${error ? "border-destructive" : ""}`}
         >
-          <Clock className="h-4 w-4" />
+          <Clock className="h-3.5 w-3.5 mr-1.5" />
           {time ? format(new Date(`2000-01-01T${time}`), 'h:mm a') : "Select time"}
         </Button>
       </PopoverTrigger>
