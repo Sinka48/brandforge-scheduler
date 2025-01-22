@@ -1,16 +1,14 @@
-import { useState } from "react";
-import { Post } from "@/components/calendar/types";
-import { PostList } from "@/components/calendar/post-list/PostList";
+import { PostList } from "@/components/calendar/PostList";
 import { Button } from "@/components/ui/button";
 import { Plus, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CalendarContentProps {
   selectedDate: Date | undefined;
-  posts: Post[];
+  posts: any[];
   platforms: any[];
   handleDeletePost: (postId: string) => void;
-  handleEditPost: (post: Post) => void;
+  handleEditPost: (post: any) => void;
   handlePublishPost: (postId: string) => void;
   isLoading: boolean;
   onNewPost: () => void;
