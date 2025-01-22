@@ -1,11 +1,13 @@
 import { EmptyState as BaseEmptyState } from "@/components/ui/empty-state";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, Sparkles, HelpCircle } from "lucide-react";
 
 interface PostEmptyStateProps {
   onCreatePost?: () => void;
+  onCreateCampaign?: () => void;
+  onHowItWorks?: () => void;
 }
 
-export function EmptyState({ onCreatePost }: PostEmptyStateProps) {
+export function EmptyState({ onCreatePost, onCreateCampaign, onHowItWorks }: PostEmptyStateProps) {
   return (
     <BaseEmptyState
       icon={FileText}
@@ -14,8 +16,23 @@ export function EmptyState({ onCreatePost }: PostEmptyStateProps) {
       action={onCreatePost ? {
         label: "Create Post",
         onClick: onCreatePost,
-        icon: Plus
+        icon: Plus,
+        variant: "secondary"
       } : undefined}
+      additionalActions={[
+        {
+          label: "AI Campaign",
+          onClick: onCreateCampaign,
+          icon: Sparkles,
+          variant: "default"  // Changed from outline to default (primary)
+        },
+        {
+          label: "How it Works",
+          onClick: onHowItWorks,
+          icon: HelpCircle,
+          variant: "outline"
+        }
+      ]}
     />
   );
 }
