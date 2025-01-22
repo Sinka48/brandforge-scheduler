@@ -1,6 +1,5 @@
 import { Layout } from "@/components/layout/Layout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
-import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +17,9 @@ export default function IndexPage({ session }: IndexPageProps) {
     queryFn: async () => {
       if (!session?.user?.id) return null;
       
+      // Force refresh analytics before fetching
+      await supabase.rpc('update_dashboard_analytics');
+      
       const { data, error } = await supabase
         .from('dashboard_analytics')
         .select('*')
@@ -25,15 +27,10 @@ export default function IndexPage({ session }: IndexPageProps) {
         .maybeSingle();
 
       if (error) throw error;
-      return data || {
-        total_posts: 0,
-        posts_this_week: 0,
-        active_campaigns: 0,
-        avg_engagement_rate: 0,
-        platforms_used: ''
-      };
+      return data;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   if (session) {
