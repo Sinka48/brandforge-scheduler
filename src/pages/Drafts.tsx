@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
+import { format } from "date-fns";
 
 interface DraftsPageProps {
   session: Session | null;
@@ -28,7 +29,8 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     content: "",
     platforms: [],
     status: "draft",
-    time: "",
+    time: format(new Date(), 'HH:mm'),
+    date: new Date(), // Add default date
   });
 
   if (!session) {
@@ -48,13 +50,14 @@ export default function DraftsPage({ session }: DraftsPageProps) {
   };
 
   const handleSaveAsDraft = () => {
-    handleAddPost(undefined, { ...newPost, status: 'draft' });
+    handleAddPost(newPost.date, { ...newPost, status: 'draft' });
     setIsPostDialogOpen(false);
     setNewPost({
       content: "",
       platforms: [],
       status: "draft",
-      time: "",
+      time: format(new Date(), 'HH:mm'),
+      date: new Date(),
     });
   };
 
@@ -114,6 +117,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           handleAddPost={handleSaveAsDraft}
           handleSaveAsDraft={handleSaveAsDraft}
           handlePlatformToggle={handlePlatformToggle}
+          selectedDate={newPost.date}
         />
       </div>
     </Layout>
