@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TimeSelector } from "./post-dialog/TimeSelector";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -37,8 +38,9 @@ export function PostDialog({
   editMode = false,
 }: PostDialogProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (newPost.platforms.length === 0) {
       toast({
         title: "Platform Required",
@@ -57,19 +59,11 @@ export function PostDialog({
       return;
     }
 
-    if (!newPost.time) {
+    // For scheduling, both date and time are required
+    if (newPost.status === 'scheduled' && (!selectedDate || !newPost.time)) {
       toast({
-        title: "Time Required",
-        description: "Please select a posting time for your content.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedDate) {
-      toast({
-        title: "Date Required",
-        description: "Please select a date for your post.",
+        title: "Date and Time Required",
+        description: "Please select both a date and time for scheduling your post.",
         variant: "destructive",
       });
       return;
@@ -92,6 +86,16 @@ export function PostDialog({
 
   const handleQuickPost = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to generate posts.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-post', {
         body: {
           platforms: newPost.platforms,
@@ -107,6 +111,9 @@ export function PostDialog({
         title: "Content Generated",
         description: "AI has generated content for your post. Feel free to edit it!",
       });
+
+      // Refresh posts list
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
     } catch (error) {
       console.error('Failed to generate post:', error);
       toast({
