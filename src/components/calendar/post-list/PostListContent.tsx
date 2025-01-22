@@ -20,6 +20,8 @@ interface PostListContentProps {
   handlePublishPost: (postId: string) => void;
   showAllPosts: boolean;
   setShowAllPosts: (show: boolean) => void;
+  selectedPosts?: string[];
+  onSelectPost?: (postId: string) => void;
 }
 
 export function PostListContent({
@@ -31,6 +33,8 @@ export function PostListContent({
   handlePublishPost,
   showAllPosts,
   setShowAllPosts,
+  selectedPosts = [],
+  onSelectPost,
 }: PostListContentProps) {
   console.log('PostListContent - All posts:', posts);
   console.log('PostListContent - selectedDate:', selectedDate);

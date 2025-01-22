@@ -54,7 +54,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
   };
 
   const handleSaveAsDraft = () => {
-    handleAddPost(newPost.date, { ...newPost, status: 'draft' });
+    handleAddPost(newPost.date, { ...newPost, status: 'draft' as const });
     setIsPostDialogOpen(false);
     setNewPost({
       content: "",
