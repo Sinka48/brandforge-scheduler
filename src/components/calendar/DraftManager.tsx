@@ -85,11 +85,23 @@ export function DraftManager({
 
   const handlePublishPost = async (postId: string) => {
     try {
+      // Find the post to get its platform
+      const post = posts.find(p => p.id === postId);
+      if (!post || !post.platforms || post.platforms.length === 0) {
+        toast({
+          title: "Error",
+          description: "No platform selected for this post.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('posts')
         .update({ 
           status: 'scheduled',
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
+          platform: post.platforms[0] // Use the first selected platform
         })
         .eq('id', postId);
 
