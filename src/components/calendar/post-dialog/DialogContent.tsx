@@ -85,7 +85,7 @@ export function DialogContent({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Platform Selector */}
       <div className="border-b pb-2">
         <PlatformSelector
@@ -117,7 +117,7 @@ export function DialogContent({
       {/* Image Section - Compact Layout */}
       <div className="space-y-2">
         {newPost.image && (
-          <div className="relative w-full h-24 rounded-lg overflow-hidden">
+          <div className="relative w-full h-20 rounded-lg overflow-hidden">
             <img
               src={newPost.image}
               alt="Post preview"
@@ -140,23 +140,22 @@ export function DialogContent({
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             className="flex-1 h-8 text-xs"
-            size="sm"
           />
           <Button
             variant="outline"
             size="sm"
             onClick={handleImageUrlSubmit}
             disabled={!imageUrl.trim()}
-            className="h-8 text-xs"
+            className="h-8 text-xs whitespace-nowrap"
           >
             <ImagePlus className="h-3 w-3 mr-1" />
-            Add
+            Add URL
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsMediaLibraryOpen(true)}
-            className="h-8 text-xs"
+            className="h-8 text-xs whitespace-nowrap"
           >
             <Image className="h-3 w-3 mr-1" />
             Gallery
@@ -173,7 +172,7 @@ export function DialogContent({
             className="h-8 text-xs whitespace-nowrap"
           >
             <Sparkles className="h-3 w-3 mr-1" />
-            {isGeneratingImage ? "Generating..." : "Generate Image"}
+            Generate
           </Button>
         </div>
       </div>
