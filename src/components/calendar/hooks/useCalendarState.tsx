@@ -19,9 +19,46 @@ export function useCalendarState() {
     setPosts,
     isLoading: isManagementLoading,
     handleAddPost,
-    handleDeletePost,
+    handleDeletePost: baseHandleDeletePost,
     handleUpdatePost,
   } = usePostManagement();
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      console.log('Attempting to delete post:', postId);
+      
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) {
+        console.error('Error deleting post:', error);
+        throw error;
+      }
+
+      // Invalidate and refetch posts query
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
+      
+      // Update local state
+      setPosts(posts.filter(post => post.id !== postId));
+
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error in handleDeletePost:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
   const handlePublishPost = async (postId: string) => {
     try {

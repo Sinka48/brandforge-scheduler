@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +16,14 @@ interface HeaderProps {
 }
 
 export function Header({ session }: HeaderProps) {
+  const navigate = useNavigate();
+  
   const handleLogout = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleLogoClick = () => {
+    navigate('/');
   };
 
   if (!session) {
@@ -39,7 +45,10 @@ export function Header({ session }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
-        <Link to="/feed" className="mr-4">
+        <div 
+          onClick={handleLogoClick}
+          className="mr-4 cursor-pointer"
+        >
           <div className="relative w-8 h-8 rounded-full overflow-hidden">
             <div 
               className="absolute inset-0"
@@ -56,7 +65,7 @@ export function Header({ session }: HeaderProps) {
             />
             <Rocket className="relative z-10 w-5 h-5 text-white m-1.5" />
           </div>
-        </Link>
+        </div>
 
         <div className="flex flex-1 items-center justify-end gap-4">
           <NavigationMenu className="hidden lg:flex">
