@@ -26,6 +26,24 @@ serve(async (req) => {
 
     console.log('Generating campaign for:', { goal, platforms, duration, tone });
 
+    const systemPrompt = `You are a social media campaign generator. Generate a campaign of ${duration} posts for the specified platforms.
+    Each post should be formatted as a JSON object within a campaign array like this:
+    {
+      "campaign": [
+        {
+          "content": "The post text content",
+          "platform": "platform name",
+          "time": "HH:mm",
+          "imageUrl": "description of image that would complement the post"
+        }
+      ]
+    }
+    Important: Return ONLY valid JSON, no additional text or markdown.`;
+
+    const userPrompt = `Generate a ${duration}-day social media campaign about "${goal}" for ${platforms.join(', ')}. 
+    Use a ${tone || 'professional'} tone. Each post should be platform-appropriate.
+    Spread the posts throughout the day between 9:00 and 20:00.`;
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -33,23 +51,10 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
-          {
-            role: 'system',
-            content: `You are a social media campaign generator. Generate a campaign of posts for the specified platforms.
-            Each post should be formatted as a JSON object with these properties:
-            - content: the post text
-            - platform: the social media platform
-            - time: time in HH:mm format
-            - imageUrl: a description for an image that would complement the post
-            Return an object with a campaign property containing an array of post objects.`
-          },
-          {
-            role: 'user',
-            content: `Generate a ${duration}-day social media campaign about "${goal}" for ${platforms.join(', ')}. 
-            Use a ${tone || 'professional'} tone. Each post should be platform-appropriate.`
-          }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
         max_tokens: 2000,
@@ -67,15 +72,41 @@ serve(async (req) => {
 
     let result;
     try {
+      // First try to parse the content directly
       result = JSON.parse(data.choices[0].message.content);
+      
+      // Validate the expected structure
+      if (!result.campaign || !Array.isArray(result.campaign)) {
+        throw new Error('Invalid response structure');
+      }
+
+      // Validate each post in the campaign
+      result.campaign.forEach((post: any, index: number) => {
+        if (!post.content || !post.platform || !post.time || !post.imageUrl) {
+          throw new Error(`Invalid post structure at index ${index}`);
+        }
+      });
+
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
+      console.log('Raw content:', data.choices[0].message.content);
+      
+      // Try to extract JSON from markdown code blocks if direct parsing fails
       const content = data.choices[0].message.content;
-      const jsonMatch = content.match(/```(?:json)?\n([\s\S]*?)\n```/);
+      const jsonMatch = content.match(/```(?:json)?\n?([\s\S]*?)\n?```/);
+      
       if (jsonMatch) {
-        result = JSON.parse(jsonMatch[1]);
+        try {
+          result = JSON.parse(jsonMatch[1].trim());
+          if (!result.campaign || !Array.isArray(result.campaign)) {
+            throw new Error('Invalid response structure in code block');
+          }
+        } catch (error) {
+          console.error('Failed to parse JSON from code block:', error);
+          throw new Error('Could not parse campaign data from OpenAI response');
+        }
       } else {
-        throw new Error('Could not parse campaign data from OpenAI response');
+        throw new Error('Could not find valid JSON in OpenAI response');
       }
     }
 
