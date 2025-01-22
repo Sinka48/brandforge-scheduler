@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { AuthError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
@@ -48,63 +48,29 @@ export function LoginForm() {
       if (error) {
         console.error("Auth error:", error);
         
-        if (error instanceof AuthApiError) {
-          switch (error.status) {
-            case 400:
-              if (error.message.includes("Email not confirmed")) {
-                toast({
-                  title: "Email not verified",
-                  description: "Please check your email and verify your account before logging in.",
-                  variant: "destructive",
-                });
-              } else if (error.message.includes("Invalid login credentials")) {
-                toast({
-                  title: "Invalid credentials",
-                  description: "The email or password you entered is incorrect. Please try again.",
-                  variant: "destructive",
-                });
-                form.setValue("password", "");
-              } else {
-                toast({
-                  title: "Login failed",
-                  description: error.message || "Please check your credentials and try again.",
-                  variant: "destructive",
-                });
-              }
-              break;
-            case 429:
-              toast({
-                title: "Too many attempts",
-                description: "Please wait a moment before trying again.",
-                variant: "destructive",
-              });
-              break;
-            default:
-              toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-              });
-          }
-        } else {
+        if (error.message.includes("Email not confirmed")) {
           toast({
-            title: "Error",
-            description: "An unexpected error occurred. Please try again.",
+            title: "Email not verified",
+            description: "Please check your email and verify your account before logging in.",
             variant: "destructive",
           });
+        } else {
+          toast({
+            title: "Invalid credentials",
+            description: "The email or password you entered is incorrect. Please try again.",
+            variant: "destructive",
+          });
+          form.setValue("password", "");
         }
         return;
       }
 
       // Successful login
-      const { data: session } = await supabase.auth.getSession();
-      if (session) {
-        toast({
-          title: "Success",
-          description: "You have successfully logged in.",
-        });
-        form.reset();
-      }
+      toast({
+        title: "Success",
+        description: "You have successfully logged in.",
+      });
+      form.reset();
     } catch (error) {
       console.error("Login error:", error);
       toast({
