@@ -10,8 +10,6 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Session } from "@supabase/supabase-js";
 import { Plus } from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 interface CalendarPageProps {
   session: Session;
@@ -20,9 +18,6 @@ interface CalendarPageProps {
 export default function CalendarPage({ session }: CalendarPageProps) {
   useCalendarAuth();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
-  const [isSelectMode, setIsSelectMode] = useState(false);
-  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
 
   const {
     selectedDate,
@@ -33,6 +28,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     setIsCampaignDialogOpen,
     editingPost,
     setEditingPost,
+    toast,
     posts,
     isManagementLoading,
     isQueryLoading,
@@ -61,42 +57,6 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     selectedDate,
   });
 
-  const handleToggleSelectMode = () => {
-    setIsSelectMode(!isSelectMode);
-    setSelectedPosts([]);
-  };
-
-  const handleSelectPost = (postId: string) => {
-    setSelectedPosts(prev => 
-      prev.includes(postId) 
-        ? prev.filter(id => id !== postId)
-        : [...prev, postId]
-    );
-  };
-
-  const handleExport = () => {
-    toast({
-      title: "Export",
-      description: "Export functionality coming soon!",
-    });
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedPosts.length === 0) return;
-    
-    for (const postId of selectedPosts) {
-      await handleDeletePost(postId);
-    }
-    
-    toast({
-      title: "Success",
-      description: `Deleted ${selectedPosts.length} posts`,
-    });
-    
-    setSelectedPosts([]);
-    setIsSelectMode(false);
-  };
-
   return (
     <Layout session={session}>
       <div className="space-y-6">
@@ -108,36 +68,14 @@ export default function CalendarPage({ session }: CalendarPageProps) {
         </div>
 
         <div className="space-y-6">
-          <div className="flex flex-col gap-4">
-            <CalendarHeader 
-              onNewPost={() => setIsDialogOpen(true)}
-              onNewCampaign={() => setIsCampaignDialogOpen(true)}
-              onToggleSelectMode={handleToggleSelectMode}
-              isSelectMode={isSelectMode}
-              onExport={handleExport}
-            />
-            
-            {isSelectMode && selectedPosts.length > 0 && (
-              <div className="flex items-center justify-between bg-muted p-4 rounded-lg">
-                <p className="text-sm">
-                  {selectedPosts.length} post{selectedPosts.length !== 1 ? 's' : ''} selected
-                </p>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  Delete Selected
-                </Button>
-              </div>
-            )}
-          </div>
+          <CalendarHeader 
+            onNewPost={() => setIsDialogOpen(true)}
+            onNewCampaign={() => setIsCampaignDialogOpen(true)}
+          />
           
           <CalendarView 
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            selectedPosts={isSelectMode ? selectedPosts : []}
-            onSelectPost={isSelectMode ? handleSelectPost : undefined}
           />
         </div>
 
