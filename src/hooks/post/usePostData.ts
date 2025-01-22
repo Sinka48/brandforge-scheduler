@@ -1,12 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
-import { PlatformId } from "@/constants/platforms";
+import { Post } from "@/components/calendar/types";
 
 export function usePostData(session: Session | null) {
-  const { toast } = useToast();
-
   return useQuery({
     queryKey: ['posts', session?.user?.id],
     queryFn: async () => {
@@ -19,7 +16,6 @@ export function usePostData(session: Session | null) {
       try {
         console.log('Fetching scheduled posts...');
         
-        // Fetch all scheduled posts (both manual and campaign posts)
         const { data: posts, error } = await supabase
           .from('posts')
           .select(`
@@ -38,8 +34,7 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('status.eq.scheduled,campaign_id.not.is.null')
-          .filter('campaigns.status', 'eq', 'active')
+          .or('status.eq.scheduled,and(campaign_id.not.is.null,campaigns.status.eq.active)')
           .order('scheduled_for', { ascending: true });
 
         if (error) {
@@ -52,7 +47,7 @@ export function usePostData(session: Session | null) {
           id: post.id,
           content: post.content,
           date: new Date(post.scheduled_for),
-          platforms: [post.platform as PlatformId],
+          platforms: [post.platform],
           image: post.image_url,
           status: post.status as 'draft' | 'scheduled',
           time: new Date(post.scheduled_for).toLocaleTimeString([], { 
