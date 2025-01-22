@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 import { encode as encodeBase64 } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
@@ -17,6 +17,8 @@ function validateEnvironmentVariables() {
   if (!API_SECRET) throw new Error("Missing TWITTER_CONSUMER_SECRET");
   if (!ACCESS_TOKEN) throw new Error("Missing TWITTER_ACCESS_TOKEN");
   if (!ACCESS_TOKEN_SECRET) throw new Error("Missing TWITTER_ACCESS_TOKEN_SECRET");
+
+  console.log("Environment variables validated successfully");
 }
 
 function generateOAuthSignature(
@@ -38,6 +40,8 @@ function generateOAuthSignature(
   const encoder = new TextEncoder();
   const key = encoder.encode(signingKey);
   const message = encoder.encode(signatureBaseString);
+  
+  console.log("Generating OAuth signature with base string:", signatureBaseString);
   
   const hmacKey = crypto.subtle.importKey(
     "raw",
@@ -74,6 +78,8 @@ async function generateOAuthHeader(method: string, url: string): Promise<string>
     API_SECRET!,
     ACCESS_TOKEN_SECRET!
   );
+
+  console.log("Generated OAuth signature:", signature);
 
   return 'OAuth ' + Object.entries({
     ...oauthParams,
@@ -122,6 +128,7 @@ async function getTwitterUsername(): Promise<string> {
 async function publishTweet(content: string): Promise<any> {
   const url = "https://api.twitter.com/2/tweets";
   const method = "POST";
+  const params = { text: content };
 
   const oauthHeader = await generateOAuthHeader(method, url);
   console.log("Publishing tweet with OAuth Header:", oauthHeader);
@@ -132,20 +139,17 @@ async function publishTweet(content: string): Promise<any> {
       'Authorization': oauthHeader,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ text: content })
+    body: JSON.stringify(params),
   });
 
+  const responseText = await response.text();
+  console.log("Response Body:", responseText);
+
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Twitter API Error:", {
-      status: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
-      body: errorText
-    });
-    throw new Error(`Failed to publish tweet: ${response.status} - ${errorText}`);
+    throw new Error(`Failed to publish tweet: ${response.status} - ${responseText}`);
   }
 
-  return await response.json();
+  return JSON.parse(responseText);
 }
 
 serve(async (req) => {
@@ -156,7 +160,7 @@ serve(async (req) => {
 
   try {
     validateEnvironmentVariables();
-    console.log("Environment variables validated");
+    console.log("Starting request processing");
 
     const { content, test = false } = await req.json();
     
@@ -173,10 +177,6 @@ serve(async (req) => {
       throw new Error("Tweet content is required");
     }
 
-    if (content.length > 280) {
-      throw new Error("Tweet content exceeds 280 characters");
-    }
-
     console.log("Publishing tweet:", { content });
     const result = await publishTweet(content);
     
@@ -187,7 +187,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in Edge Function:", error);
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to publish tweet" }),
+      JSON.stringify({ error: error.message || "Failed to process request" }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
