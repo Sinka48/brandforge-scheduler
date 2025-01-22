@@ -61,27 +61,27 @@ export default function DraftsPage({ session }: DraftsPageProps) {
   return (
     <Layout session={session}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Posts</h1>
-          <p className="text-muted-foreground">
-            Manage your posts and drafts.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Posts</h1>
+            <p className="text-muted-foreground">
+              Manage your posts and drafts.
+            </p>
+          </div>
+          <Button 
+            onClick={() => setIsPostDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Create Post
+          </Button>
         </div>
 
         <Tabs defaultValue="drafts" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <TabsList>
-              <TabsTrigger value="posts">Posts</TabsTrigger>
-              <TabsTrigger value="drafts">Drafts</TabsTrigger>
-            </TabsList>
-            <Button 
-              onClick={() => setIsPostDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Create Post
-            </Button>
-          </div>
+          <TabsList>
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="drafts">Drafts</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="posts" className="space-y-4">
             <PostList
