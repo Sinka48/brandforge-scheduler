@@ -1,47 +1,42 @@
-import { Card } from "@/components/ui/card";
-
-interface CalendarStateProps {
-  children: React.ReactNode;
-}
-
-export function CalendarState({ children }: CalendarStateProps) {
-  return (
-    <Card className="p-4">
-      <div className="text-center py-8">
-        {children}
-      </div>
-    </Card>
-  );
-}
+import { EmptyState } from "@/components/ui/empty-state";
+import { AlertCircle, Loader2, Lock } from "lucide-react";
 
 export function LoadingState() {
   return (
-    <CalendarState>
-      <p className="text-muted-foreground">Loading posts...</p>
-    </CalendarState>
+    <EmptyState
+      icon={Loader2}
+      title="Loading posts..."
+      description="Please wait while we fetch your posts"
+    />
   );
 }
 
 export function AuthCheckingState() {
   return (
-    <CalendarState>
-      <p className="text-muted-foreground">Checking authentication...</p>
-    </CalendarState>
+    <EmptyState
+      icon={Loader2}
+      title="Checking authentication..."
+      description="Please wait while we verify your credentials"
+    />
   );
 }
 
 export function UnauthenticatedState() {
   return (
-    <CalendarState>
-      <p className="text-muted-foreground">Please sign in to view your posts</p>
-    </CalendarState>
+    <EmptyState
+      icon={Lock}
+      title="Sign in required"
+      description="Please sign in to view your posts"
+    />
   );
 }
 
 export function ErrorState() {
   return (
-    <CalendarState>
-      <p className="text-destructive">Error loading posts. Please try again.</p>
-    </CalendarState>
+    <EmptyState
+      icon={AlertCircle}
+      title="Error loading posts"
+      description="There was a problem loading your posts. Please try again."
+    />
   );
 }
