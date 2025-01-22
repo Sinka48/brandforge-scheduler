@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function useNextPostTimer() {
   const [timeLeft, setTimeLeft] = useState<string>("No upcoming posts");
+  const [hasUpcomingPosts, setHasUpcomingPosts] = useState(false);
 
   const { data: posts = [] } = useQuery({
     queryKey: ['posts'],
@@ -44,8 +45,10 @@ export function useNextPostTimer() {
       if (nextPost) {
         const timeUntilPost = formatDistanceToNow(nextPost.date, { addSuffix: true });
         setTimeLeft(timeUntilPost);
+        setHasUpcomingPosts(true);
       } else {
         setTimeLeft("No upcoming posts");
+        setHasUpcomingPosts(false);
       }
     };
 
@@ -55,5 +58,5 @@ export function useNextPostTimer() {
     return () => clearInterval(timer);
   }, [sortedPosts]);
 
-  return timeLeft;
+  return { timeLeft, hasUpcomingPosts };
 }
