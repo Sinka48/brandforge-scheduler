@@ -31,9 +31,6 @@ export function AICampaignDialog({
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
   const [tone, setTone] = useState("professional");
-  const [timeSlots, setTimeSlots] = useState<any[]>([]);
-  const [hashtags, setHashtags] = useState<string[]>([]);
-  const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedPosts, setGeneratedPosts] = useState<any[]>([]);
@@ -58,8 +55,6 @@ export function AICampaignDialog({
           platforms: [generatedPosts[index].platform],
           duration: 1,
           tone,
-          timeSlots,
-          hashtags 
         },
       });
 
@@ -139,8 +134,6 @@ export function AICampaignDialog({
           settings: {
             duration,
             tone,
-            timeSlots,
-            hashtags
           },
           user_id: session.user.id
         })
@@ -155,20 +148,29 @@ export function AICampaignDialog({
           platforms: platforms.map(p => p.toLowerCase()),
           duration: parseInt(duration),
           tone,
-          timeSlots,
-          hashtags
         },
       });
 
       if (error) throw error;
 
       setGeneratedPosts(data.campaign);
-      setSuggestedHashtags(data.suggestedHashtags || []);
       setProgress(100);
+
+      // Save generated posts as drafts
+      for (const post of data.campaign) {
+        await supabase.from('posts').insert({
+          content: post.content,
+          platform: post.platform,
+          status: 'draft',
+          campaign_id: campaignData.id,
+          scheduled_for: post.time || new Date().toISOString(),
+          user_id: session.user.id
+        });
+      }
 
       toast({
         title: "Campaign Created",
-        description: "Campaign has been created successfully",
+        description: "Campaign and posts have been created successfully",
       });
 
       navigate('/campaigns');
@@ -187,12 +189,11 @@ export function AICampaignDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={`sm:max-w-[850px] h-[85vh] max-h-[700px] p-0 ${generatedPosts.length > 0 ? 'grid grid-cols-2 gap-4' : ''}`}>
+      <DialogContent className={`sm:max-w-[850px] h-[85vh] p-0 overflow-hidden ${generatedPosts.length > 0 ? 'grid grid-cols-2 gap-4' : ''}`}>
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
             <DialogHeader editMode={false} />
             <div className="mt-2">
-              <h2 className="text-lg font-semibold">AI Campaign Generator</h2>
               <p className="text-sm text-muted-foreground">
                 Create a complete social media campaign with AI-generated posts optimized for each platform.
               </p>
@@ -235,11 +236,6 @@ export function AICampaignDialog({
                 setDuration={setDuration}
                 tone={tone}
                 setTone={setTone}
-                timeSlots={timeSlots}
-                onTimeSlotsChange={setTimeSlots}
-                hashtags={hashtags}
-                onHashtagsChange={setHashtags}
-                suggestedHashtags={suggestedHashtags}
               />
             </div>
           </div>
@@ -265,7 +261,7 @@ export function AICampaignDialog({
             <div className="p-4 border-b">
               <h3 className="font-semibold">Generated Posts</h3>
               <p className="text-sm text-muted-foreground">
-                Review and customize your AI-generated campaign posts
+                Review your AI-generated campaign posts
               </p>
             </div>
             <div className="p-4 h-[calc(100%-5rem)] overflow-y-auto">
