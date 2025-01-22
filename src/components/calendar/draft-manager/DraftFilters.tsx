@@ -1,6 +1,14 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
+import { PlatformId } from "@/constants/platforms";
+import { LucideIcon } from "lucide-react";
+
+interface Platform {
+  id: PlatformId;
+  name: string;
+  icon: LucideIcon;
+}
 
 interface DraftFiltersProps {
   searchQuery: string;
@@ -9,7 +17,7 @@ interface DraftFiltersProps {
   setSelectedPlatform: (platform: string) => void;
   sortBy: "date" | "content";
   setSortBy: (sort: "date" | "content") => void;
-  platforms: any[];
+  platforms: readonly Platform[];
 }
 
 export function DraftFilters({
@@ -42,7 +50,7 @@ export function DraftFilters({
           {platforms.map((platform) => (
             <SelectItem key={platform.id} value={platform.id}>
               <div className="flex items-center gap-2">
-                {platform.icon}
+                <platform.icon className="h-4 w-4" />
                 {platform.name}
               </div>
             </SelectItem>
