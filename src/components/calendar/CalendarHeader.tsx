@@ -5,9 +5,9 @@ export function CalendarHeader() {
 
   return (
     <div>
-      <p className="text-sm text-muted-foreground">
+      <h1 className="text-sm text-muted-foreground">
         {nextPostTime}
-      </p>
+      </h1>
     </div>
   );
 }
