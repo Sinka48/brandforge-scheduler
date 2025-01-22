@@ -58,16 +58,38 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     setIsDialogOpen(true);
   };
 
+  const handleCreateCampaign = () => {
+    setIsCampaignDialogOpen(true);
+  };
+
   return (
     <Layout session={session}>
       <div className="space-y-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
-          <p className="text-muted-foreground">Schedule and manage your social media posts in one place</p>
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
+            <p className="text-muted-foreground">Schedule and manage your social media posts in one place</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCreateCampaign}
+              className="flex items-center gap-2"
+            >
+              AI Campaign
+            </Button>
+            <Button
+              onClick={handleCreatePost}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Post
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">
-          <CalendarHeader onCreatePost={handleCreatePost} />
+          <CalendarHeader />
           
           <CalendarView 
             selectedDate={selectedDate}
