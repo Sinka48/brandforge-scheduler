@@ -18,17 +18,10 @@ export function usePostData(session: Session | null) {
       try {
         console.log('Fetching posts...');
         
-        // Get both scheduled and draft posts
         const { data: allPosts, error: postsError } = await supabase
           .from('posts')
           .select(`
-            id,
-            content,
-            scheduled_for,
-            platform,
-            image_url,
-            status,
-            campaign_id,
+            *,
             campaigns (
               id,
               name,
@@ -36,7 +29,6 @@ export function usePostData(session: Session | null) {
               status
             )
           `)
-          .eq('user_id', session.user.id)
           .in('status', ['scheduled', 'draft'])
           .order('scheduled_for', { ascending: true });
 
