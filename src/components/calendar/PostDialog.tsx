@@ -129,7 +129,7 @@ export function PostDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90vw] max-w-[500px] h-[85vh] max-h-[700px] p-0">
+      <DialogContent className="w-[95vw] max-w-[550px] h-[85vh] max-h-[700px] p-0">
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
             <DialogHeader editMode={editMode} />
@@ -139,7 +139,7 @@ export function PostDialog({
             <LoadingState />
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto">
                 <PostDialogContent
                   newPost={newPost}
                   setNewPost={setNewPost}

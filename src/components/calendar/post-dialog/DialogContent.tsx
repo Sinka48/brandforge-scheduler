@@ -163,7 +163,7 @@ export function DialogContent({
           </div>
         )}
         
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex items-center gap-1">
           {!showImageUrl ? (
             <>
               <Button
@@ -171,29 +171,29 @@ export function DialogContent({
                 size="sm"
                 onClick={handleGenerateImage}
                 disabled={isGeneratingImage}
-                className="h-8 text-xs whitespace-nowrap"
+                className="h-7 text-[11px] px-2"
               >
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                Generate Image
+                <Sparkles className="h-3 w-3 mr-1" />
+                Generate
               </Button>
               
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowImageUrl(true)}
-                className="h-8 text-xs whitespace-nowrap"
+                className="h-7 text-[11px] px-2"
               >
-                <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
-                Add URL
+                <ImagePlus className="h-3 w-3 mr-1" />
+                URL
               </Button>
               
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsMediaLibraryOpen(true)}
-                className="h-8 text-xs whitespace-nowrap"
+                className="h-7 text-[11px] px-2"
               >
-                <Image className="h-3.5 w-3.5 mr-1.5" />
+                <Image className="h-3 w-3 mr-1" />
                 Gallery
               </Button>
 
@@ -203,19 +203,19 @@ export function DialogContent({
               />
             </>
           ) : (
-            <div className="flex-1 flex gap-1.5">
+            <div className="flex-1 flex gap-1">
               <Input
                 placeholder="Enter image URL"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                className="h-8 text-xs flex-1"
+                className="h-7 text-xs flex-1"
               />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleImageUrlSubmit}
                 disabled={!imageUrl.trim()}
-                className="h-8 text-xs whitespace-nowrap"
+                className="h-7 text-[11px] px-2"
               >
                 Add
               </Button>
@@ -223,7 +223,7 @@ export function DialogContent({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowImageUrl(false)}
-                className="h-8 text-xs"
+                className="h-7 text-[11px] px-2"
               >
                 Cancel
               </Button>
