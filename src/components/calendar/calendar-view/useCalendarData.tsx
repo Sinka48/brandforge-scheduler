@@ -35,7 +35,7 @@ export function useCalendarData() {
       }
 
       try {
-        const { data, error } = await supabase
+        const query = supabase
           .from('posts')
           .select(`
             id,
@@ -53,8 +53,10 @@ export function useCalendarData() {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('campaign_id.is.null,campaigns.status.eq.active')
+          .or('campaign_id.is.null,campaign_id.eq.null')
           .order('scheduled_for', { ascending: true });
+
+        const { data, error } = await query;
 
         if (error) {
           console.error('Supabase error fetching posts:', error);
