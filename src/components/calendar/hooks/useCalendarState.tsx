@@ -37,10 +37,7 @@ export function useCalendarState() {
         throw error;
       }
 
-      // Invalidate and refetch posts query
       await queryClient.invalidateQueries({ queryKey: ['posts'] });
-      
-      // Update local state
       setPosts(posts.filter(post => post.id !== postId));
 
       toast({
@@ -119,7 +116,7 @@ export function useCalendarState() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user) {
-        setPosts([]); // Clear posts if not authenticated
+        setPosts([]);
         return [];
       }
 
@@ -134,6 +131,7 @@ export function useCalendarState() {
             )
           `)
           .eq('user_id', session.user.id)
+          .eq('status', 'scheduled')
           .order('scheduled_for', { ascending: true });
 
         if (error) {
