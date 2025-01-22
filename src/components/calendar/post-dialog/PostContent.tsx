@@ -35,7 +35,7 @@ export function PostContent({
   return (
     <div className="space-y-4">
       <Textarea
-        placeholder="Write your post..."
+        placeholder="What's on your mind?"
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
         className={`min-h-[100px] resize-none ${isExceeded ? 'border-destructive' : ''}`}
@@ -55,7 +55,7 @@ export function PostContent({
         <Alert variant="destructive" className="mt-2">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Content exceeds character limit
+            Your content exceeds the character limit for one or more platforms
           </AlertDescription>
         </Alert>
       )}
