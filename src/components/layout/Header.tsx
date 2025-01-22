@@ -7,7 +7,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import { Rocket, Settings, LogOut, PenSquare, Palette } from "lucide-react";
+import { Rocket, Settings, LogOut, PenSquare, Wand2, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileNav } from "./MobileNav";
 
@@ -20,6 +20,7 @@ export function Header({ session }: HeaderProps) {
   
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    navigate('/');
   };
 
   const handleLogoClick = () => {
@@ -30,9 +31,41 @@ export function Header({ session }: HeaderProps) {
     return (
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
+          <div 
+            onClick={handleLogoClick}
+            className="mr-4 cursor-pointer"
+          >
+            <div className="relative w-8 h-8 rounded-full overflow-hidden">
+              <div 
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: '#ff99df',
+                  backgroundImage: `
+                    radial-gradient(circle at 52% 73%, hsla(310, 85%, 67%, 1) 0px, transparent 50%),
+                    radial-gradient(circle at 0% 30%, hsla(197, 90%, 76%, 1) 0px, transparent 50%),
+                    radial-gradient(circle at 41% 26%, hsla(234, 79%, 69%, 1) 0px, transparent 50%)
+                  `,
+                  backgroundSize: '150% 150%',
+                  animation: 'moveBackground 10s linear infinite',
+                }}
+              />
+              <Rocket className="relative z-10 w-5 h-5 text-white m-1.5" />
+            </div>
+          </div>
+
           <div className="flex flex-1 items-center justify-end space-x-4">
-            <Link to="/">
+            <Link to="/how-it-works">
               <Button variant="ghost" size="sm">
+                How it Works
+              </Button>
+            </Link>
+            <Link to="/roadmap">
+              <Button variant="ghost" size="sm">
+                Roadmap
+              </Button>
+            </Link>
+            <Link to="/">
+              <Button variant="default" size="sm">
                 Login
               </Button>
             </Link>
@@ -82,12 +115,12 @@ export function Header({ session }: HeaderProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <Link to="/brands">
+                <Link to="/posts">
                   <NavigationMenuLink
                     className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                   >
-                    <Palette className="mr-2 h-4 w-4" />
-                    Brands
+                    <PenSquare className="mr-2 h-4 w-4" />
+                    Posts
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -97,8 +130,19 @@ export function Header({ session }: HeaderProps) {
                   <NavigationMenuLink
                     className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                   >
-                    <PenSquare className="mr-2 h-4 w-4" />
+                    <Wand2 className="mr-2 h-4 w-4" />
                     Campaigns
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link to="/brands">
+                  <NavigationMenuLink
+                    className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                  >
+                    <Palette className="mr-2 h-4 w-4" />
+                    Brands
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>

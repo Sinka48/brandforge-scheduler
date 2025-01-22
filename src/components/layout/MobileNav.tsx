@@ -1,12 +1,20 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, PenTool, Library } from "lucide-react";
+import { Menu, Rocket, PenSquare, Wand2, Palette, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+    setOpen(false);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -19,45 +27,24 @@ export function MobileNav() {
       <SheetContent side="left" className="w-[300px] sm:w-[400px]">
         <nav className="flex flex-col gap-4">
           <Link
-            to="/"
+            to="/feed"
             className={cn(
               "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
             onClick={() => setOpen(false)}
           >
-            Dashboard
+            <Rocket className="h-4 w-4" />
+            Feed
           </Link>
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Brand</span>
-            <Link
-              to="/brand"
-              className={cn(
-                "flex items-center gap-2 pl-4 text-sm font-medium transition-colors hover:text-primary"
-              )}
-              onClick={() => setOpen(false)}
-            >
-              <PenTool className="h-4 w-4" />
-              Create Brand
-            </Link>
-            <Link
-              to="/brands"
-              className={cn(
-                "flex items-center gap-2 pl-4 text-sm font-medium transition-colors hover:text-primary"
-              )}
-              onClick={() => setOpen(false)}
-            >
-              <Library className="h-4 w-4" />
-              My Brands
-            </Link>
-          </div>
           <Link
-            to="/calendar"
+            to="/posts"
             className={cn(
               "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
             onClick={() => setOpen(false)}
           >
-            Calendar
+            <PenSquare className="h-4 w-4" />
+            Posts
           </Link>
           <Link
             to="/campaigns"
@@ -66,8 +53,37 @@ export function MobileNav() {
             )}
             onClick={() => setOpen(false)}
           >
+            <Wand2 className="h-4 w-4" />
             Campaigns
           </Link>
+          <Link
+            to="/brands"
+            className={cn(
+              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
+            )}
+            onClick={() => setOpen(false)}
+          >
+            <Palette className="h-4 w-4" />
+            Brands
+          </Link>
+          <Link
+            to="/settings"
+            className={cn(
+              "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
+            )}
+            onClick={() => setOpen(false)}
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </Link>
+          <Button
+            variant="ghost"
+            className="justify-start px-0"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
         </nav>
       </SheetContent>
     </Sheet>
