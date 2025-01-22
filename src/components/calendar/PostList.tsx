@@ -2,31 +2,12 @@ import { PlatformId } from "@/constants/platforms";
 import { PostListContent } from "./post-list/PostListContent";
 import { LoadingState } from "./post-list/LoadingState";
 import { useState } from "react";
+import { Post } from "./types";
 
 interface Platform {
   id: PlatformId;
   name: string;
   icon: React.ReactNode;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  date: Date;
-  platforms: PlatformId[];
-  image?: string;
-  status: 'draft' | 'scheduled';
-  time?: string;
-  isRecurring?: boolean;
-  recurringPattern?: string;
-  recurringEndDate?: Date;
-  batch_id?: string;
-  parent_post_id?: string;
-  campaign?: {
-    id: string;
-    name: string;
-    description: string;
-  };
 }
 
 interface PostListProps {
@@ -53,6 +34,9 @@ export function PostList({
   onSelectPost
 }: PostListProps) {
   const [showAllPosts, setShowAllPosts] = useState(false);
+  
+  console.log('PostList - Received posts:', posts);
+  console.log('PostList - Selected date:', selectedDate);
   
   if (isLoading) {
     return <LoadingState />;

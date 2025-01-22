@@ -20,6 +20,8 @@ export function CalendarContent({
   handlePublishPost,
   isLoading
 }: CalendarContentProps) {
+  console.log('CalendarContent - Received posts:', posts);
+  
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
     icon: <platform.icon className="h-4 w-4" />
