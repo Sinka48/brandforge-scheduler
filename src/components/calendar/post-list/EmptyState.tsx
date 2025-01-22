@@ -31,7 +31,7 @@ export function EmptyState({ onCreatePost, onCreateCampaign, onHowItWorks }: Pos
           label: "How it Works",
           onClick: onHowItWorks,
           icon: HelpCircle,
-          variant: "outline"
+          variant: "default"  // Changed from outline to default
         }
       ]}
     />
