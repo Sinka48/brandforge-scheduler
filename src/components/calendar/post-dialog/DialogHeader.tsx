@@ -1,11 +1,12 @@
-import { Smartphone, Laptop } from "lucide-react";
-import { DialogHeader as Header } from "@/components/ui/dialog";
+import { Smartphone, Laptop, X } from "lucide-react";
+import { DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface DialogHeaderProps {
   editMode?: boolean;
-  previewMode: 'mobile' | 'desktop';
-  onPreviewModeChange: (mode: 'mobile' | 'desktop') => void;
+  previewMode: "mobile" | "desktop";
+  onPreviewModeChange: (mode: "mobile" | "desktop") => void;
 }
 
 export function DialogHeader({ 
@@ -14,38 +15,26 @@ export function DialogHeader({
   onPreviewModeChange
 }: DialogHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <Header className="flex-1">
-        <h2 className="text-lg font-semibold leading-none tracking-tight">
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex-1">
+        <DialogTitle className="text-xl font-semibold">
           {editMode ? "Edit Post" : "Create New Post"}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {editMode 
-            ? "Make changes to your existing post" 
-            : "Create a new post for your social media platforms"
-          }
-        </p>
-      </Header>
+        </DialogTitle>
+      </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 border rounded-lg p-1">
-          <Button
-            variant={previewMode === 'desktop' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onPreviewModeChange('desktop')}
-            className="h-8"
-          >
-            <Laptop className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={previewMode === 'mobile' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onPreviewModeChange('mobile')}
-            className="h-8"
-          >
+        <ToggleGroup 
+          type="single" 
+          value={previewMode}
+          onValueChange={(value) => value && onPreviewModeChange(value as "mobile" | "desktop")}
+        >
+          <ToggleGroupItem value="mobile" aria-label="Mobile preview">
             <Smartphone className="h-4 w-4" />
-          </Button>
-        </div>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="desktop" aria-label="Desktop preview">
+            <Laptop className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
     </div>
   );

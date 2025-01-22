@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Wand2 } from "lucide-react";
 
 interface DialogActionsProps {
   onSaveAsDraft: () => void;
   onAddPost: () => void;
   onPublish: () => void;
-  onGenerateContent: () => void;
   isDisabled: boolean;
   editMode: boolean;
+  onGenerateContent: () => void;
   isGenerating: boolean;
 }
 
@@ -15,24 +15,25 @@ export function DialogActions({
   onSaveAsDraft, 
   onAddPost,
   onPublish,
-  onGenerateContent,
   isDisabled,
   editMode,
+  onGenerateContent,
   isGenerating
 }: DialogActionsProps) {
   return (
     <div className="flex justify-between items-center">
-      <Button 
-        variant="outline" 
-        onClick={onGenerateContent}
-        disabled={isGenerating}
-        className="flex items-center gap-2"
-      >
-        <Sparkles className="h-4 w-4" />
-        {isGenerating ? "Generating..." : "Generate with AI"}
-      </Button>
-
-      <div className="flex gap-2">
+      <div>
+        <Button
+          variant="outline"
+          onClick={onGenerateContent}
+          disabled={isGenerating}
+          className="flex items-center gap-2"
+        >
+          <Wand2 className="h-4 w-4" />
+          {isGenerating ? "Generating..." : "Generate with AI"}
+        </Button>
+      </div>
+      <div className="flex items-center gap-2">
         <Button variant="outline" onClick={onSaveAsDraft}>
           Save as Draft
         </Button>
