@@ -26,23 +26,34 @@ serve(async (req) => {
 
     console.log('Generating campaign for:', { goal, platforms, duration, tone });
 
-    const systemPrompt = `You are a social media campaign generator. Generate a campaign of ${duration} posts for the specified platforms.
-    Each post should be formatted as a JSON object within a campaign array like this:
+    // Create a more structured example to guide the model
+    const examplePost = {
+      content: "Exciting news! We're launching our new product line today. Check out our website for exclusive deals! #launch #newproduct",
+      platform: "twitter",
+      time: "09:30",
+      imageUrl: "Product showcase on a clean white background"
+    };
+
+    const systemPrompt = `You are a social media campaign generator. Generate exactly ${duration} posts for the specified platforms.
+    Return ONLY a JSON object with this exact structure (no markdown, no additional text):
     {
       "campaign": [
-        {
-          "content": "The post text content",
-          "platform": "platform name",
-          "time": "HH:mm",
-          "imageUrl": "description of image that would complement the post"
-        }
+        ${JSON.stringify(examplePost, null, 2)}
       ]
     }
-    Important: Return ONLY valid JSON, no additional text or markdown.`;
+    Each post must have exactly these fields: content, platform, time (HH:mm format), and imageUrl.`;
 
-    const userPrompt = `Generate a ${duration}-day social media campaign about "${goal}" for ${platforms.join(', ')}. 
-    Use a ${tone || 'professional'} tone. Each post should be platform-appropriate.
-    Spread the posts throughout the day between 9:00 and 20:00.`;
+    const userPrompt = `Create a ${duration}-day social media campaign about "${goal}" for ${platforms.join(', ')}. 
+    Use a ${tone || 'professional'} tone.
+    Requirements:
+    - Each post must be appropriate for its platform
+    - Schedule posts between 9:00 and 20:00
+    - Keep Twitter posts under 280 characters
+    - Include relevant hashtags where appropriate
+    - Provide clear image descriptions
+    Return only the JSON object, no explanations or markdown.`;
+
+    console.log('Sending request to OpenAI with prompts:', { systemPrompt, userPrompt });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -68,28 +79,39 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI response:', data);
+    console.log('OpenAI raw response:', data.choices[0].message.content);
 
     let result;
     try {
       // First try to parse the content directly
-      result = JSON.parse(data.choices[0].message.content);
+      const content = data.choices[0].message.content.trim();
+      result = JSON.parse(content);
       
       // Validate the expected structure
       if (!result.campaign || !Array.isArray(result.campaign)) {
-        throw new Error('Invalid response structure');
+        console.error('Invalid response structure:', result);
+        throw new Error('Response missing campaign array');
       }
 
       // Validate each post in the campaign
       result.campaign.forEach((post: any, index: number) => {
-        if (!post.content || !post.platform || !post.time || !post.imageUrl) {
-          throw new Error(`Invalid post structure at index ${index}`);
+        const requiredFields = ['content', 'platform', 'time', 'imageUrl'];
+        const missingFields = requiredFields.filter(field => !post[field]);
+        
+        if (missingFields.length > 0) {
+          console.error(`Post ${index} missing fields:`, missingFields);
+          throw new Error(`Post ${index} missing required fields: ${missingFields.join(', ')}`);
+        }
+
+        // Validate time format
+        if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(post.time)) {
+          console.error(`Invalid time format in post ${index}:`, post.time);
+          throw new Error(`Invalid time format in post ${index}`);
         }
       });
 
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
-      console.log('Raw content:', data.choices[0].message.content);
       
       // Try to extract JSON from markdown code blocks if direct parsing fails
       const content = data.choices[0].message.content;
@@ -97,20 +119,24 @@ serve(async (req) => {
       
       if (jsonMatch) {
         try {
-          result = JSON.parse(jsonMatch[1].trim());
+          const extractedJson = jsonMatch[1].trim();
+          console.log('Extracted JSON from code block:', extractedJson);
+          
+          result = JSON.parse(extractedJson);
           if (!result.campaign || !Array.isArray(result.campaign)) {
             throw new Error('Invalid response structure in code block');
           }
         } catch (error) {
           console.error('Failed to parse JSON from code block:', error);
-          throw new Error('Could not parse campaign data from OpenAI response');
+          throw new Error('Could not parse campaign data from code block');
         }
       } else {
+        console.error('No JSON or code block found in response');
         throw new Error('Could not find valid JSON in OpenAI response');
       }
     }
 
-    console.log('Parsed result:', result);
+    console.log('Successfully parsed result:', result);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
