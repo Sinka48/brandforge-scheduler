@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PostList } from "./PostList";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { FileText, Trash2 } from "lucide-react";
@@ -113,12 +112,6 @@ export function DraftManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">Drafts</h2>
-          <Badge variant="secondary">{posts.length}</Badge>
-        </div>
-        
         {selectedDrafts.length > 0 && (
           <Button
             variant="destructive"
