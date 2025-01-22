@@ -13,10 +13,11 @@ import { useState } from "react";
 import { CampaignPosts } from "./CampaignPosts";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, PauseCircle, Trash2, FileUp } from "lucide-react";
+import { PlayCircle, PauseCircle, Trash2, FileUp, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface CampaignManagerProps {
   campaigns: Campaign[];
@@ -29,7 +30,7 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
   const [localCampaigns, setLocalCampaigns] = useState(initialCampaigns);
 
   // Fetch post counts for each campaign
-  const { data: postCounts } = useQuery({
+  const { data: postCounts, isLoading } = useQuery({
     queryKey: ['campaign-post-counts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -138,6 +139,23 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
       description: "Export feature coming soon",
     });
   };
+
+  if (!isLoading && (!localCampaigns || localCampaigns.length === 0)) {
+    return (
+      <EmptyState
+        icon={Wand2}
+        title="No campaigns yet"
+        description="Create your first AI-powered campaign to get started"
+        action={{
+          label: "Create AI Campaign",
+          onClick: () => setSelectedCampaignId(null),
+          variant: "secondary",
+          icon: Wand2,
+          badge: "BETA"
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
