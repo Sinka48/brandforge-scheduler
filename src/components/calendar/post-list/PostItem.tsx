@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { useState } from "react";
+import { LucideIcon } from "lucide-react";
 
 interface Platform {
   id: PlatformId;
   name: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;  // Updated to use LucideIcon type
 }
 
 interface Post {
@@ -36,7 +37,7 @@ interface Post {
 
 interface PostItemProps {
   post: Post;
-  platforms: readonly Platform[];  // Updated to accept readonly platforms
+  platforms: readonly Platform[];
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
   onPublish: (postId: string) => void;
@@ -96,12 +97,15 @@ export function PostItem({
           </div>
 
           <div className="flex flex-wrap gap-2 mt-2">
-            {postPlatforms.map((platform) => (
-              <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
-                {platform.icon}
-                {platform.name}
-              </Badge>
-            ))}
+            {postPlatforms.map((platform) => {
+              const Icon = platform.icon;
+              return (
+                <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
+                  <Icon className="h-3 w-3" />
+                  {platform.name}
+                </Badge>
+              );
+            })}
             
             {post.campaign && (
               <Badge variant="outline" className="flex items-center gap-1">
