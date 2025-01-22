@@ -45,7 +45,6 @@ export function PostDialog({
       return;
     }
 
-    // For scheduling, both date and time are required
     if (newPost.status === 'scheduled' && !newPost.time) {
       toast({
         title: "Time Required",
@@ -87,7 +86,7 @@ export function PostDialog({
       const { data, error } = await supabase.functions.invoke('generate-post', {
         body: {
           platforms: newPost.platforms,
-          topic: 'general', // You might want to make this configurable
+          topic: 'general',
         },
       });
 
@@ -100,7 +99,6 @@ export function PostDialog({
         description: "AI has generated content for your post. Feel free to edit it!",
       });
 
-      // Refresh posts list
       await queryClient.invalidateQueries({ queryKey: ['posts'] });
     } catch (error) {
       console.error('Failed to generate post:', error);
@@ -118,7 +116,7 @@ export function PostDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] max-h-[90vh] p-0">
         <div className="h-full flex flex-col">
-          <div className="p-6 space-y-4">
+          <div className="p-6 border-b">
             <DialogHeader editMode={editMode} />
           </div>
           
@@ -126,7 +124,7 @@ export function PostDialog({
             <LoadingState />
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto px-6">
+              <div className="flex-1 overflow-y-auto p-6">
                 <PostDialogContent
                   newPost={newPost}
                   setNewPost={setNewPost}
