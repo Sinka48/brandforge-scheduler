@@ -8,13 +8,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./hooks/use-toast";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false, // Disable retries by default
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -22,42 +16,28 @@ function App() {
 
   useEffect(() => {
     // Get initial session
-    const initializeSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
-          toast({
-            title: "Authentication Error",
-            description: "There was a problem with your session. Please try logging in again.",
-            variant: "destructive",
-          });
-          // Clear any stale session data
-          await supabase.auth.signOut();
-          setSession(null);
-          return;
-        }
-        setSession(session);
-      } catch (error) {
-        console.error('Session initialization error:', error);
-        setSession(null);
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+        toast({
+          title: "Authentication Error",
+          description: "There was a problem with your session. Please try logging in again.",
+          variant: "destructive",
+        });
+        return;
       }
-    };
-
-    initializeSession();
+      setSession(session);
+    });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'SIGNED_OUT') {
         // Clear any cached data when user signs out
         queryClient.clear();
-        setSession(null);
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setSession(session);
       }
+      setSession(session);
     });
 
     return () => {
