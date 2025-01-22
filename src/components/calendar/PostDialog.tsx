@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "./post-dialog/LoadingState";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Sparkles } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -43,15 +43,6 @@ export function PostDialog({
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSubmit = async () => {
-    if (newPost.platforms.length === 0) {
-      toast({
-        title: "Platform Required",
-        description: "Please select at least one social media platform for your post.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!newPost.content.trim()) {
       toast({
         title: "Content Required",

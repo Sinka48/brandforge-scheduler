@@ -1,13 +1,7 @@
 import * as React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
 import { PostContent } from "./PostContent";
 import { PlatformSelector } from "./PlatformSelector";
 import { ImageUploader } from "./ImageUploader";
-import { TimeSelector } from "./TimeSelector";
-import { RecurringOptions } from "./RecurringOptions";
-import { BulkScheduling } from "./BulkScheduling";
 import { PlatformPreview } from "./PlatformPreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -79,40 +73,6 @@ export function DialogContent({
               onPlatformToggle={handlePlatformToggle}
             />
           </div>
-
-          {!newPost.isQuickPost && (
-            <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ChevronDown className="h-4 w-4" />
-                Advanced Options
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-4">
-                {!editMode && !newPost.isRecurring && (
-                  <BulkScheduling
-                    selectedDates={newPost.bulkDates || []}
-                    onDatesChange={(dates) => setNewPost({ ...newPost, bulkDates: dates })}
-                  />
-                )}
-
-                {!editMode && (
-                  <RecurringOptions
-                    isRecurring={newPost.isRecurring || false}
-                    onIsRecurringChange={(isRecurring) => {
-                      setNewPost({ 
-                        ...newPost, 
-                        isRecurring,
-                        bulkDates: isRecurring ? undefined : newPost.bulkDates 
-                      });
-                    }}
-                    pattern={newPost.recurringPattern || 'daily'}
-                    onPatternChange={(pattern) => setNewPost({ ...newPost, recurringPattern: pattern })}
-                    endDate={newPost.recurringEndDate}
-                    onEndDateChange={(date) => setNewPost({ ...newPost, recurringEndDate: date })}
-                  />
-                )}
-              </CollapsibleContent>
-            </Collapsible>
-          )}
         </div>
       </div>
     </div>
