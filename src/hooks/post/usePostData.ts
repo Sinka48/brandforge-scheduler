@@ -17,7 +17,8 @@ export function usePostData(session: Session | null) {
       try {
         console.log('Fetching scheduled posts...');
         
-        const { data: posts, error } = await supabase
+        // First, get scheduled posts
+        const { data: scheduledPosts, error: scheduledError } = await supabase
           .from('posts')
           .select(`
             id,
@@ -35,16 +36,48 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('status.eq.scheduled,and(campaign_id.is.not.null,campaigns.status.eq.active)')
+          .eq('status', 'scheduled')
           .order('scheduled_for', { ascending: true });
 
-        if (error) {
-          console.error('Supabase error fetching posts:', error);
-          throw error;
+        if (scheduledError) {
+          console.error('Supabase error fetching scheduled posts:', scheduledError);
+          throw scheduledError;
         }
 
+        // Then, get posts from active campaigns
+        const { data: campaignPosts, error: campaignError } = await supabase
+          .from('posts')
+          .select(`
+            id,
+            content,
+            scheduled_for,
+            platform,
+            image_url,
+            status,
+            campaign_id,
+            campaigns (
+              id,
+              name,
+              description,
+              status
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .not('campaign_id', 'is', null)
+          .eq('campaigns.status', 'active')
+          .order('scheduled_for', { ascending: true });
+
+        if (campaignError) {
+          console.error('Supabase error fetching campaign posts:', campaignError);
+          throw campaignError;
+        }
+
+        // Combine and deduplicate posts
+        const allPosts = [...(scheduledPosts || []), ...(campaignPosts || [])];
+        const uniquePosts = Array.from(new Map(allPosts.map(post => [post.id, post])).values());
+
         // Format posts for display
-        const formattedPosts = (posts || []).map(post => ({
+        const formattedPosts = uniquePosts.map(post => ({
           id: post.id,
           content: post.content,
           date: new Date(post.scheduled_for),
