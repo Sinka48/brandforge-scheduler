@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Wand2, Clock } from "lucide-react";
+import { Plus, Wand2, Clock, CheckSquare, FileDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +11,18 @@ import { useNextPostTimer } from "@/hooks/useNextPostTimer";
 interface CalendarHeaderProps {
   onNewPost: () => void;
   onNewCampaign: () => void;
+  onToggleSelectMode: () => void;
+  isSelectMode: boolean;
+  onExport?: () => void;
 }
 
-export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps) {
+export function CalendarHeader({ 
+  onNewPost, 
+  onNewCampaign, 
+  onToggleSelectMode,
+  isSelectMode,
+  onExport 
+}: CalendarHeaderProps) {
   const timeLeft = useNextPostTimer();
 
   return (
@@ -24,7 +33,27 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex items-center gap-2">
+          <Button
+            variant={isSelectMode ? "default" : "outline"}
+            onClick={onToggleSelectMode}
+            className="flex items-center gap-2"
+            size="sm"
+          >
+            <CheckSquare className="h-4 w-4" />
+            {isSelectMode ? "Cancel Selection" : "Select Posts"}
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={onExport}
+            className="flex items-center gap-2"
+            size="sm"
+          >
+            <FileDown className="h-4 w-4" />
+            Export
+          </Button>
+
           <Button
             variant="outline"
             onClick={onNewCampaign}
@@ -33,8 +62,7 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
             <Wand2 className="h-4 w-4" />
             AI Campaign
           </Button>
-        </div>
-        <div className="hidden sm:block">
+
           <Button onClick={onNewPost} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Post
@@ -49,6 +77,14 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onToggleSelectMode}>
+                <CheckSquare className="h-4 w-4 mr-2" />
+                {isSelectMode ? "Cancel Selection" : "Select Posts"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onExport}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Export
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onNewPost}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Post
