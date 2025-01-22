@@ -1,60 +1,52 @@
-import { PostList } from "@/components/calendar/PostList";
-import { Button } from "@/components/ui/button";
-import { Plus, Wand2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { PostList } from "../PostList";
+import { PlatformId, PLATFORMS } from "@/constants/platforms";
+import { Post } from "../types";
+import { LucideIcon } from "lucide-react";
+
+interface Platform {
+  id: PlatformId;
+  name: string;
+  icon: LucideIcon;
+}
 
 interface CalendarContentProps {
+  posts: Post[];
   selectedDate: Date | undefined;
-  posts: any[];
-  platforms: any[];
   handleDeletePost: (postId: string) => void;
-  handleEditPost: (post: any) => void;
+  handleEditPost: (post: Post) => void;
   handlePublishPost: (postId: string) => void;
   isLoading: boolean;
-  onNewPost: () => void;
-  onNewCampaign: () => void;
 }
 
 export function CalendarContent({
-  selectedDate,
   posts,
-  platforms,
+  selectedDate,
   handleDeletePost,
   handleEditPost,
   handlePublishPost,
-  isLoading,
-  onNewPost,
-  onNewCampaign,
+  isLoading
 }: CalendarContentProps) {
-  return (
-    <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="outline"
-          onClick={onNewCampaign}
-          className="flex items-center gap-2"
-        >
-          <Wand2 className="h-4 w-4" />
-          AI Campaign
-          <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
-            BETA
-          </Badge>
-        </Button>
-        <Button onClick={onNewPost} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Post
-        </Button>
-      </div>
+  console.log('CalendarContent - Received posts:', posts);
+  
+  const platforms = PLATFORMS.map(platform => ({
+    ...platform,
+    icon: platform.icon
+  })) as readonly Platform[];
 
-      <PostList
-        selectedDate={selectedDate}
-        posts={posts}
-        platforms={platforms}
-        handleDeletePost={handleDeletePost}
-        handleEditPost={handleEditPost}
-        handlePublishPost={handlePublishPost}
-        isLoading={isLoading}
-      />
-    </div>
+  return (
+    <Card className="p-4 md:p-6">
+      <div className="space-y-4">
+        <PostList
+          selectedDate={selectedDate}
+          posts={posts}
+          platforms={platforms}
+          handleDeletePost={handleDeletePost}
+          handleEditPost={handleEditPost}
+          handlePublishPost={handlePublishPost}
+          isLoading={isLoading}
+        />
+      </div>
+    </Card>
   );
 }
