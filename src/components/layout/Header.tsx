@@ -104,7 +104,7 @@ export function Header({ session }: HeaderProps) {
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link to="/feed">
+                <Link to="/calendar">
                   <NavigationMenuLink
                     className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                   >
@@ -115,7 +115,7 @@ export function Header({ session }: HeaderProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <Link to="/posts">
+                <Link to="/drafts">
                   <NavigationMenuLink
                     className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
                   >

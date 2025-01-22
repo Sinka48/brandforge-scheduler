@@ -27,7 +27,7 @@ export function MobileNav() {
       <SheetContent side="left" className="w-[300px] sm:w-[400px]">
         <nav className="flex flex-col gap-4">
           <Link
-            to="/feed"
+            to="/calendar"
             className={cn(
               "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
@@ -37,7 +37,7 @@ export function MobileNav() {
             Feed
           </Link>
           <Link
-            to="/posts"
+            to="/drafts"
             className={cn(
               "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             )}
