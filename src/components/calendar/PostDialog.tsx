@@ -4,13 +4,6 @@ import { DialogActions } from "./post-dialog/DialogActions";
 import { DialogContent as PostDialogContent } from "./post-dialog/DialogContent";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "./post-dialog/LoadingState";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { TimeSelector } from "./post-dialog/TimeSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -126,38 +119,6 @@ export function PostDialog({
         <div className="h-full flex flex-col">
           <div className="p-6 space-y-4">
             <DialogHeader editMode={editMode} />
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-[180px] justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => setNewPost({ ...newPost, date })}
-                      initialFocus
-                      disabled={(date) => date < new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <TimeSelector
-                  time={newPost.time}
-                  onTimeChange={(time) => setNewPost({ ...newPost, time })}
-                  selectedPlatforms={newPost.platforms}
-                />
-              </div>
-            </div>
           </div>
           
           {!newPost ? (

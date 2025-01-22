@@ -4,6 +4,13 @@ import { PlatformSelector } from "./PlatformSelector";
 import { ImageUploader } from "./ImageUploader";
 import { PlatformPreview } from "./PlatformPreview";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TimeSelector } from "./TimeSelector";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface DialogContentProps {
   newPost: any;
@@ -52,14 +59,49 @@ export function DialogContent({
         {/* Right Column - Content & Settings */}
         <div className="space-y-4">
           <div className="space-y-4">
-            <PostContent
-              content={newPost.content}
-              onContentChange={(content) => setNewPost({ ...newPost, content })}
-              selectedPlatforms={newPost.platforms}
-              imageUrl={newPost.image}
-              onGenerateContent={onGenerateContent}
-              isGenerating={isGenerating}
-            />
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-[180px] justify-start text-left font-normal",
+                          !newPost.date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {newPost.date ? format(newPost.date, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={newPost.date}
+                        onSelect={(date) => setNewPost({ ...newPost, date })}
+                        initialFocus
+                        disabled={(date) => date < new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <TimeSelector
+                    time={newPost.time}
+                    onTimeChange={(time) => setNewPost({ ...newPost, time })}
+                    selectedPlatforms={newPost.platforms}
+                  />
+                </div>
+              </div>
+
+              <PostContent
+                content={newPost.content}
+                onContentChange={(content) => setNewPost({ ...newPost, content })}
+                selectedPlatforms={newPost.platforms}
+                imageUrl={newPost.image}
+                onGenerateContent={onGenerateContent}
+                isGenerating={isGenerating}
+              />
+            </div>
             
             <div className="flex flex-wrap gap-2">
               <ImageUploader
