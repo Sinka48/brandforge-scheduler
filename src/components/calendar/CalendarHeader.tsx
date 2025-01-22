@@ -1,46 +1,55 @@
 import { Button } from "@/components/ui/button";
-import { useNextPostTimer } from "@/hooks/useNextPostTimer";
-import { Wand2, Plus } from "lucide-react";
+import { Plus, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { AICampaignDialog } from "./AICampaignDialog";
 
 interface CalendarHeaderProps {
-  onNewPost?: () => void;
-  onNewCampaign?: () => void;
-  postsCount?: number;
+  onCreatePost: () => void;
 }
 
-export function CalendarHeader({ 
-  onNewPost, 
-  onNewCampaign,
-  postsCount = 0
-}: CalendarHeaderProps) {
-  const timeLeft = useNextPostTimer();
+export function CalendarHeader({ onCreatePost }: CalendarHeaderProps) {
+  const [isAICampaignOpen, setIsAICampaignOpen] = useState(false);
+
+  const handleGenerateCampaign = (posts: any[]) => {
+    console.log('Generated posts:', posts);
+  };
 
   return (
-    <div className="flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-4">
-        {timeLeft !== "No upcoming posts" && (
-          <p className="text-sm text-muted-foreground">
-            {timeLeft}
-          </p>
-        )}
+    <div className="flex items-center justify-between">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
+        <p className="text-muted-foreground">
+          Schedule and manage your social media posts
+        </p>
       </div>
       <div className="flex items-center gap-2">
-        <Button
-          onClick={onNewCampaign}
+        <Button 
+          variant="default"
+          onClick={() => setIsAICampaignOpen(true)}
+          className="flex items-center gap-2"
         >
-          <Wand2 className="mr-2 h-4 w-4" />
+          <Wand2 className="h-4 w-4" />
           AI Campaign
-          <Badge variant="secondary" className="ml-2">BETA</Badge>
+          <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
+            BETA
+          </Badge>
         </Button>
         <Button
           variant="outline"
-          onClick={onNewPost}
+          onClick={onCreatePost}
+          className="flex items-center gap-2"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Create Post
         </Button>
       </div>
+
+      <AICampaignDialog
+        isOpen={isAICampaignOpen}
+        onOpenChange={setIsAICampaignOpen}
+        onGenerateCampaign={handleGenerateCampaign}
+      />
     </div>
   );
 }
