@@ -108,8 +108,6 @@ export function CalendarView({
     icon: <platform.icon className="h-4 w-4" />
   }));
 
-  const sortedPosts = [...posts].sort((a, b) => a.date.getTime() - b.date.getTime());
-
   const handleEditPost = async (post: Post) => {
     if (onPostClick) {
       onPostClick(post);
@@ -156,10 +154,10 @@ export function CalendarView({
       <div className="space-y-4">
         {isLoading ? (
           <LoadingState />
-        ) : sortedPosts.length > 0 ? (
+        ) : posts && posts.length > 0 ? (
           <PostList
             selectedDate={selectedDate}
-            posts={sortedPosts}
+            posts={posts}
             platforms={platforms}
             handleDeletePost={handleDeletePost}
             handleEditPost={handleEditPost}
