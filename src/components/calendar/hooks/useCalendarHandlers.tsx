@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -47,14 +47,21 @@ export function useCalendarHandlers({
 
       for (const post of campaignPosts) {
         try {
-          // Use the formatted date from the post if available, otherwise create it from time
+          // Create a proper timestamp by combining the selected date with the time
           let scheduledDate: Date;
           if (post.date) {
             scheduledDate = post.date;
-          } else {
+          } else if (selectedDate && post.time) {
             const [hours, minutes] = post.time.split(':').map(Number);
-            scheduledDate = new Date(selectedDate!);
-            scheduledDate.setHours(hours, minutes, 0, 0);
+            scheduledDate = set(selectedDate, {
+              hours,
+              minutes,
+              seconds: 0,
+              milliseconds: 0
+            });
+          } else {
+            errors.push(`Invalid date/time for post on ${post.platform}`);
+            continue;
           }
 
           // Validate scheduled time
@@ -67,7 +74,7 @@ export function useCalendarHandlers({
             content: post.content,
             platform: post.platform.toLowerCase(),
             image_url: post.imageUrl || '',
-            scheduled_for: scheduledDate.toISOString(),
+            scheduled_for: scheduledDate.toISOString(), // Convert to ISO string format
             status: 'scheduled' as const,
             user_id: session.user.id
           };
