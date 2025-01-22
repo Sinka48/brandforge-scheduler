@@ -29,8 +29,9 @@ export function usePostData(session: Session | null) {
               status
             )
           `)
-          .in('status', ['scheduled', 'draft'])
-          .order('scheduled_for', { ascending: true });
+          .eq('user_id', session.user.id)
+          .eq('status', 'draft')
+          .order('created_at', { ascending: false });
 
         console.log('Raw posts data from Supabase:', allPosts);
 
@@ -63,6 +64,6 @@ export function usePostData(session: Session | null) {
       }
     },
     enabled: !!session?.user,
-    refetchInterval: 5000, // Refresh every 5 seconds to catch newly scheduled posts
+    refetchInterval: 5000, // Refresh every 5 seconds to catch newly created drafts
   });
 }

@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { format } from "date-fns";
+import { usePostData } from "@/hooks/post/usePostData";
 
 interface DraftsPageProps {
   session: Session | null;
@@ -17,12 +18,13 @@ interface DraftsPageProps {
 
 export default function DraftsPage({ session }: DraftsPageProps) {
   const {
-    posts,
     handleDeletePost,
     handleEditPost,
     handleAddPost,
-    isLoading
+    isLoading: isManagementLoading
   } = usePostManagement();
+
+  const { data: posts = [], isLoading: isPostsLoading } = usePostData(session);
 
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [newPost, setNewPost] = useState({
@@ -60,6 +62,8 @@ export default function DraftsPage({ session }: DraftsPageProps) {
       date: new Date(),
     });
   };
+
+  const isLoading = isManagementLoading || isPostsLoading;
 
   return (
     <Layout session={session}>
