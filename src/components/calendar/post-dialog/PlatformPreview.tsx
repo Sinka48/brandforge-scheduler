@@ -1,4 +1,4 @@
-import { AlertCircle, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FacebookPreview } from "./platform-previews/FacebookPreview";
@@ -7,6 +7,7 @@ import { InstagramPreview } from "./platform-previews/InstagramPreview";
 import { LinkedinPreview } from "./platform-previews/LinkedinPreview";
 import { PLATFORM_LIMITS } from "./platform-previews/types";
 import { getValidationIssues } from "./platform-previews/utils";
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 interface PlatformPreviewProps {
   content: string;
@@ -14,11 +15,23 @@ interface PlatformPreviewProps {
   imageUrl?: string;
 }
 
-const platformIcons = {
-  facebook: Facebook,
-  twitter: Twitter,
-  instagram: Instagram,
-  linkedin: Linkedin,
+const platformComponents = {
+  facebook: {
+    icon: Facebook,
+    component: FacebookPreview
+  },
+  twitter: {
+    icon: Twitter,
+    component: TwitterPreview
+  },
+  instagram: {
+    icon: Instagram,
+    component: InstagramPreview
+  },
+  linkedin: {
+    icon: Linkedin,
+    component: LinkedinPreview
+  }
 };
 
 export function PlatformPreview({ content, selectedPlatforms, imageUrl }: PlatformPreviewProps) {
@@ -49,7 +62,9 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
       <Tabs defaultValue={selectedPlatforms[0]} className="w-full">
         <TabsList className="w-full">
           {selectedPlatforms.map(platform => {
-            const Icon = platformIcons[platform as keyof typeof platformIcons];
+            const platformConfig = platformComponents[platform as keyof typeof platformComponents];
+            if (!platformConfig) return null;
+            const Icon = platformConfig.icon;
             return (
               <TabsTrigger
                 key={platform}
@@ -61,30 +76,31 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
             );
           })}
         </TabsList>
-        {selectedPlatforms.map(platform => (
-          <TabsContent key={platform} value={platform} className="mt-4">
-            {platform === 'facebook' && (
-              <FacebookPreview content={content} imageUrl={imageUrl} />
-            )}
-            {platform === 'twitter' && (
-              <TwitterPreview 
-                content={content} 
-                imageUrl={imageUrl}
-                remainingChars={PLATFORM_LIMITS.twitter.maxLength - content.length}
-              />
-            )}
-            {platform === 'instagram' && (
-              <InstagramPreview 
-                content={content} 
-                imageUrl={imageUrl}
-                hashtags={content.match(/#[a-zA-Z0-9]+/g) || []}
-              />
-            )}
-            {platform === 'linkedin' && (
-              <LinkedinPreview content={content} imageUrl={imageUrl} />
-            )}
-          </TabsContent>
-        ))}
+        {selectedPlatforms.map(platform => {
+          const platformConfig = platformComponents[platform as keyof typeof platformComponents];
+          if (!platformConfig) return null;
+          const PreviewComponent = platformConfig.component;
+          
+          return (
+            <TabsContent key={platform} value={platform} className="mt-4">
+              {platform === 'twitter' ? (
+                <PreviewComponent 
+                  content={content} 
+                  imageUrl={imageUrl}
+                  remainingChars={PLATFORM_LIMITS.twitter.maxLength - content.length}
+                />
+              ) : platform === 'instagram' ? (
+                <PreviewComponent 
+                  content={content} 
+                  imageUrl={imageUrl}
+                  hashtags={content.match(/#[a-zA-Z0-9]+/g) || []}
+                />
+              ) : (
+                <PreviewComponent content={content} imageUrl={imageUrl} />
+              )}
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );
