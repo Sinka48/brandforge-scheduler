@@ -13,29 +13,6 @@ interface IndexPageProps {
 }
 
 export default function IndexPage({ session }: IndexPageProps) {
-  const { data: analytics } = useQuery({
-    queryKey: ['dashboard-analytics', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      // Force refresh analytics before fetching
-      await supabase.rpc('ensure_dashboard_analytics_exists', {
-        input_user_id: session.user.id
-      });
-      
-      const { data, error } = await supabase
-        .from('dashboard_analytics')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
-    refetchInterval: 30000, // Refresh every 30 seconds
-  });
-
   if (session) {
     return (
       <Layout session={session}>
@@ -46,7 +23,7 @@ export default function IndexPage({ session }: IndexPageProps) {
               Welcome back! Here's an overview of your social media performance.
             </p>
           </div>
-          <StatsCards analytics={analytics} />
+          <StatsCards />
           <QuickActions />
         </div>
       </Layout>
