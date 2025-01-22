@@ -77,9 +77,9 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           </Button>
         </div>
 
-        <Tabs defaultValue="posts" className="space-y-4">
+        <Tabs defaultValue="drafts" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="posts">Published</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
           </TabsList>
 
