@@ -7,13 +7,11 @@ import { InstagramPreview } from "./platform-previews/InstagramPreview";
 import { LinkedinPreview } from "./platform-previews/LinkedinPreview";
 import { PLATFORM_LIMITS } from "./platform-previews/types";
 import { getValidationIssues } from "./platform-previews/utils";
-import { cn } from "@/lib/utils";
 
 interface PlatformPreviewProps {
   content: string;
   selectedPlatforms: string[];
   imageUrl?: string;
-  previewMode: "mobile" | "desktop";
 }
 
 const platformIcons = {
@@ -23,7 +21,7 @@ const platformIcons = {
   linkedin: Linkedin,
 };
 
-export function PlatformPreview({ content, selectedPlatforms, imageUrl, previewMode }: PlatformPreviewProps) {
+export function PlatformPreview({ content, selectedPlatforms, imageUrl }: PlatformPreviewProps) {
   const issues = getValidationIssues(content, selectedPlatforms);
 
   if (selectedPlatforms.length === 0) {
@@ -48,51 +46,46 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl, previewM
         </Alert>
       ))}
 
-      <div className={cn(
-        "w-full transition-all duration-200",
-        previewMode === "mobile" ? "max-w-sm mx-auto" : "max-w-none"
-      )}>
-        <Tabs defaultValue={selectedPlatforms[0]} className="w-full">
-          <TabsList className="w-full">
-            {selectedPlatforms.map(platform => {
-              const Icon = platformIcons[platform as keyof typeof platformIcons];
-              return (
-                <TabsTrigger
-                  key={platform}
-                  value={platform}
-                  className="flex-1"
-                >
-                  <Icon className="h-4 w-4" />
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-          {selectedPlatforms.map(platform => (
-            <TabsContent key={platform} value={platform} className="mt-4">
-              {platform === 'facebook' && (
-                <FacebookPreview content={content} imageUrl={imageUrl} />
-              )}
-              {platform === 'twitter' && (
-                <TwitterPreview 
-                  content={content} 
-                  imageUrl={imageUrl}
-                  remainingChars={PLATFORM_LIMITS.twitter.maxLength - content.length}
-                />
-              )}
-              {platform === 'instagram' && (
-                <InstagramPreview 
-                  content={content} 
-                  imageUrl={imageUrl}
-                  hashtags={content.match(/#[a-zA-Z0-9]+/g) || []}
-                />
-              )}
-              {platform === 'linkedin' && (
-                <LinkedinPreview content={content} imageUrl={imageUrl} />
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
-      </div>
+      <Tabs defaultValue={selectedPlatforms[0]} className="w-full">
+        <TabsList className="w-full">
+          {selectedPlatforms.map(platform => {
+            const Icon = platformIcons[platform as keyof typeof platformIcons];
+            return (
+              <TabsTrigger
+                key={platform}
+                value={platform}
+                className="flex-1"
+              >
+                <Icon className="h-4 w-4" />
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+        {selectedPlatforms.map(platform => (
+          <TabsContent key={platform} value={platform} className="mt-4">
+            {platform === 'facebook' && (
+              <FacebookPreview content={content} imageUrl={imageUrl} />
+            )}
+            {platform === 'twitter' && (
+              <TwitterPreview 
+                content={content} 
+                imageUrl={imageUrl}
+                remainingChars={PLATFORM_LIMITS.twitter.maxLength - content.length}
+              />
+            )}
+            {platform === 'instagram' && (
+              <InstagramPreview 
+                content={content} 
+                imageUrl={imageUrl}
+                hashtags={content.match(/#[a-zA-Z0-9]+/g) || []}
+              />
+            )}
+            {platform === 'linkedin' && (
+              <LinkedinPreview content={content} imageUrl={imageUrl} />
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }

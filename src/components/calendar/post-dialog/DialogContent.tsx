@@ -19,7 +19,7 @@ interface DialogContentProps {
   editMode?: boolean;
   onGenerateContent?: () => void;
   isGenerating?: boolean;
-  previewMode: "mobile" | "desktop";
+  previewMode: 'mobile' | 'desktop';
 }
 
 export function DialogContent({
@@ -44,13 +44,15 @@ export function DialogContent({
     <div className="space-y-4 py-4">
       <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-2 gap-8'}`}>
         {/* Left Column - Preview */}
-        <div>
+        <div className={cn(
+          "w-full",
+          previewMode === 'mobile' ? 'max-w-[375px] mx-auto' : 'max-w-none'
+        )}>
           {newPost.platforms.length > 0 ? (
             <PlatformPreview 
               content={newPost.content}
               selectedPlatforms={newPost.platforms}
               imageUrl={newPost.image || "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"}
-              previewMode={previewMode}
             />
           ) : (
             <div className="rounded-lg border-2 border-dashed p-8 text-center text-muted-foreground">

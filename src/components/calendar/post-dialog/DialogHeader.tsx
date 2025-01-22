@@ -1,86 +1,51 @@
 import { Smartphone, Laptop } from "lucide-react";
-import { DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader as Header } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { PLATFORMS } from "@/constants/platforms";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface DialogHeaderProps {
   editMode?: boolean;
-  previewMode: "mobile" | "desktop";
-  onPreviewModeChange: (mode: "mobile" | "desktop") => void;
-  selectedPlatforms: string[];
-  onPlatformToggle: (platformId: string) => void;
+  previewMode: 'mobile' | 'desktop';
+  onPreviewModeChange: (mode: 'mobile' | 'desktop') => void;
 }
 
 export function DialogHeader({ 
   editMode,
   previewMode,
-  onPreviewModeChange,
-  selectedPlatforms,
-  onPlatformToggle
+  onPreviewModeChange
 }: DialogHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex-1">
-        <DialogTitle className="text-xl font-semibold mb-4">
+    <div className="flex items-center justify-between">
+      <Header className="flex-1">
+        <h2 className="text-lg font-semibold leading-none tracking-tight">
           {editMode ? "Edit Post" : "Create New Post"}
-        </DialogTitle>
-        
-        <TooltipProvider>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {PLATFORMS.map((platform) => {
-              const isSelected = selectedPlatforms.includes(platform.id);
-              const Icon = platform.icon;
-              
-              return (
-                <Tooltip key={platform.id}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={isSelected ? "default" : "outline"}
-                      onClick={() => onPlatformToggle(platform.id)}
-                      className="relative w-full h-10 px-4"
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <Icon className="h-4 w-4" />
-                        <span className="hidden sm:inline text-sm">{platform.name}</span>
-                        {isSelected && (
-                          <Badge 
-                            variant="secondary" 
-                            className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
-                          >
-                            ✓
-                          </Badge>
-                        )}
-                      </div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs text-muted-foreground">
-                      {isSelected ? `Remove from ${platform.name}` : `Add to ${platform.name}`}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </div>
-        </TooltipProvider>
-      </div>
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {editMode 
+            ? "Make changes to your existing post" 
+            : "Create a new post for your social media platforms"
+          }
+        </p>
+      </Header>
 
       <div className="flex items-center gap-4">
-        <ToggleGroup 
-          type="single" 
-          value={previewMode}
-          onValueChange={(value) => value && onPreviewModeChange(value as "mobile" | "desktop")}
-        >
-          <ToggleGroupItem value="mobile" aria-label="Mobile preview">
-            <Smartphone className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="desktop" aria-label="Desktop preview">
+        <div className="flex items-center gap-2 border rounded-lg p-1">
+          <Button
+            variant={previewMode === 'desktop' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onPreviewModeChange('desktop')}
+            className="h-8"
+          >
             <Laptop className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+          </Button>
+          <Button
+            variant={previewMode === 'mobile' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onPreviewModeChange('mobile')}
+            className="h-8"
+          >
+            <Smartphone className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
