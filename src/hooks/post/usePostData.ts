@@ -20,7 +20,8 @@ export function usePostData(session: Session | null) {
       try {
         console.log('Fetching posts with campaign data...');
         
-        const query = supabase
+        // Split the query into two parts and combine results
+        const { data: scheduledPosts, error: scheduledError } = await supabase
           .from('posts')
           .select(`
             id,
@@ -38,30 +39,46 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('status.eq.scheduled,campaign_id.is.not.null')
+          .eq('status', 'scheduled')
           .order('scheduled_for', { ascending: true });
 
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Supabase error fetching posts:', error);
-          toast({
-            title: "Error loading posts",
-            description: "There was a problem loading your posts. Please try again.",
-            variant: "destructive",
-          });
-          throw error;
+        if (scheduledError) {
+          console.error('Supabase error fetching scheduled posts:', scheduledError);
+          throw scheduledError;
         }
 
-        console.log('Raw posts data from Supabase:', data);
+        const { data: campaignPosts, error: campaignError } = await supabase
+          .from('posts')
+          .select(`
+            id,
+            content,
+            scheduled_for,
+            platform,
+            image_url,
+            status,
+            campaign_id,
+            campaigns (
+              id,
+              name,
+              description,
+              status
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .not('campaign_id', 'is', null)
+          .order('scheduled_for', { ascending: true });
 
-        if (!data) {
-          console.log('No posts found');
-          return [];
+        if (campaignError) {
+          console.error('Supabase error fetching campaign posts:', campaignError);
+          throw campaignError;
         }
 
-        // Filter posts to only include scheduled ones or those from active campaigns
-        const formattedPosts = data
+        // Combine and deduplicate posts
+        const allPosts = [...(scheduledPosts || []), ...(campaignPosts || [])];
+        const uniquePosts = Array.from(new Map(allPosts.map(post => [post.id, post])).values());
+
+        // Filter and format posts
+        const formattedPosts = uniquePosts
           .filter(post => 
             post.status === 'scheduled' || 
             (post.campaign_id && post.campaigns?.status === 'active')
