@@ -2,16 +2,12 @@ import { Layout } from "@/components/layout/Layout";
 import { Session } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Calendar, Wand2, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 interface HowItWorksPageProps {
   session: Session | null;
 }
 
 export default function HowItWorksPage({ session }: HowItWorksPageProps) {
-  const navigate = useNavigate();
-
   return (
     <Layout session={session}>
       <div className="space-y-6">
@@ -51,12 +47,6 @@ export default function HowItWorksPage({ session }: HowItWorksPageProps) {
                     before publishing.
                   </p>
                 </div>
-              </div>
-
-              <div className="flex justify-center mt-6">
-                <Button onClick={() => navigate("/calendar")} size="lg">
-                  Create Your First Post
-                </Button>
               </div>
             </CardContent>
           </Card>

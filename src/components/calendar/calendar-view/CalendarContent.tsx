@@ -1,23 +1,14 @@
-import { Card } from "@/components/ui/card";
-import { PostList } from "../PostList";
-import { PlatformId, PLATFORMS } from "@/constants/platforms";
-import { Post } from "../types";
-import { LucideIcon } from "lucide-react";
+import { PostList } from "@/components/calendar/PostList";
 import { Button } from "@/components/ui/button";
 import { Plus, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface Platform {
-  id: PlatformId;
-  name: string;
-  icon: LucideIcon;
-}
-
 interface CalendarContentProps {
-  posts: Post[];
   selectedDate: Date | undefined;
+  posts: any[];
+  platforms: any[];
   handleDeletePost: (postId: string) => void;
-  handleEditPost: (post: Post) => void;
+  handleEditPost: (post: any) => void;
   handlePublishPost: (postId: string) => void;
   isLoading: boolean;
   onNewPost: () => void;
@@ -25,14 +16,15 @@ interface CalendarContentProps {
 }
 
 export function CalendarContent({
-  posts,
   selectedDate,
+  posts,
+  platforms,
   handleDeletePost,
   handleEditPost,
   handlePublishPost,
   isLoading,
   onNewPost,
-  onNewCampaign
+  onNewCampaign,
 }: CalendarContentProps) {
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -53,10 +45,11 @@ export function CalendarContent({
           New Post
         </Button>
       </div>
+
       <PostList
         selectedDate={selectedDate}
         posts={posts}
-        platforms={PLATFORMS}
+        platforms={platforms}
         handleDeletePost={handleDeletePost}
         handleEditPost={handleEditPost}
         handlePublishPost={handlePublishPost}
