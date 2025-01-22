@@ -102,8 +102,8 @@ export function DraftManager({
         .update({ 
           status: 'scheduled',
           published_at: new Date().toISOString(),
-          platform: post.platforms[0], // Use the first selected platform
-          scheduled_for: post.date.toISOString() // Ensure scheduled_for is set
+          platform: post.platforms[0],
+          scheduled_for: post.date.toISOString()
         })
         .eq('id', postId);
 
