@@ -1,10 +1,4 @@
-import { Card } from "@/components/ui/card";
 import { PostList } from "./PostList";
-import { PlatformId } from "@/constants/platforms";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { PLATFORMS } from "@/constants/platforms";
-import { useToast } from "@/hooks/use-toast";
 import { useCalendarState } from "./hooks/useCalendarState";
 import {
   LoadingState,
@@ -12,21 +6,9 @@ import {
   UnauthenticatedState,
   ErrorState
 } from "./CalendarStates";
-
-interface Post {
-  id: string;
-  content: string;
-  date: Date;
-  platforms: PlatformId[];
-  image?: string;
-  status: 'draft' | 'scheduled';
-  time?: string;
-  campaign?: {
-    id: string;
-    name: string;
-    description: string;
-  };
-}
+import { CalendarContent } from "./calendar-view/CalendarContent";
+import { useCalendarData } from "./calendar-view/useCalendarData";
+import { Post } from "./types";
 
 interface CalendarViewProps {
   selectedDate: Date | undefined;
@@ -41,113 +23,25 @@ export function CalendarView({
   onCreatePost,
   onPostClick
 }: CalendarViewProps) {
-  const { toast } = useToast();
   const {
     handleDeletePost,
     handleUpdatePost,
     handlePublishPost,
   } = useCalendarState();
 
+  const { 
+    session,
+    posts,
+    isLoading,
+    error,
+    authLoading
+  } = useCalendarData();
+
   const handleEditPost = (post: Post) => {
     if (onPostClick) {
       onPostClick(post);
     }
   };
-
-  const { data: session, isLoading: authLoading } = useQuery({
-    queryKey: ['auth-session'],
-    queryFn: async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Auth error:', error);
-        toast({
-          title: "Authentication Error",
-          description: "Failed to check authentication status. Please try again.",
-          variant: "destructive",
-        });
-        throw error;
-      }
-      console.log('Auth session:', session);
-      return session;
-    },
-  });
-
-  const { data: posts = [], isLoading, error } = useQuery({
-    queryKey: ['posts', session?.user?.id],
-    queryFn: async () => {
-      console.log('Starting post fetch for user:', session?.user?.id);
-      if (!session?.user) {
-        console.log('No authenticated user found');
-        return [];
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('posts')
-          .select(`
-            id,
-            content,
-            scheduled_for,
-            platform,
-            image_url,
-            status,
-            campaign_id,
-            campaigns (
-              id,
-              name,
-              description
-            )
-          `)
-          .eq('user_id', session.user.id)
-          .order('scheduled_for', { ascending: true });
-
-        if (error) {
-          console.error('Supabase error fetching posts:', error);
-          toast({
-            title: "Error loading posts",
-            description: "There was a problem loading your posts. Please try again.",
-            variant: "destructive",
-          });
-          throw error;
-        }
-
-        console.log('Raw posts data from Supabase:', data);
-
-        if (!data || data.length === 0) {
-          console.log('No posts found for user');
-          return [];
-        }
-
-        const formattedPosts = data.map(post => {
-          console.log('Processing post:', post);
-          return {
-            id: post.id,
-            content: post.content,
-            date: new Date(post.scheduled_for),
-            platforms: [post.platform as PlatformId],
-            image: post.image_url,
-            status: post.status as 'draft' | 'scheduled',
-            time: new Date(post.scheduled_for).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            }),
-            campaign: post.campaigns ? {
-              id: post.campaign_id,
-              name: post.campaigns.name,
-              description: post.campaigns.description
-            } : undefined
-          };
-        });
-
-        console.log('Formatted posts:', formattedPosts);
-        return formattedPosts;
-      } catch (error) {
-        console.error('Error in posts query:', error);
-        throw error;
-      }
-    },
-    enabled: !!session?.user,
-  });
 
   if (authLoading) {
     console.log('Auth loading...');
@@ -169,33 +63,14 @@ export function CalendarView({
     return <LoadingState />;
   }
 
-  const platforms = PLATFORMS.map(platform => ({
-    ...platform,
-    icon: <platform.icon className="h-4 w-4" />
-  }));
-
-  console.log('Final posts being rendered:', posts);
-  console.log('Selected date:', selectedDate);
-
   return (
-    <Card className="p-4 md:p-6">
-      <div className="space-y-4">
-        {posts && posts.length > 0 ? (
-          <PostList
-            selectedDate={selectedDate}
-            posts={posts}
-            platforms={platforms}
-            handleDeletePost={handleDeletePost}
-            handleEditPost={handleEditPost}
-            handlePublishPost={handlePublishPost}
-            isLoading={isLoading}
-          />
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No upcoming posts scheduled</p>
-          </div>
-        )}
-      </div>
-    </Card>
+    <CalendarContent
+      posts={posts}
+      selectedDate={selectedDate}
+      handleDeletePost={handleDeletePost}
+      handleEditPost={handleEditPost}
+      handlePublishPost={handlePublishPost}
+      isLoading={isLoading}
+    />
   );
 }
