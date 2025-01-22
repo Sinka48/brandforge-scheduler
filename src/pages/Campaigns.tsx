@@ -63,19 +63,19 @@ export default function CampaignsPage({ session }: { session: any }) {
             icon={Wand2}
             title="No campaigns yet"
             description="Create your first AI-powered campaign to get started"
-            actions={[
+            action={{
+              label: "AI Campaigns",
+              onClick: () => setIsCampaignDialogOpen(true),
+              icon: Wand2,
+              variant: "secondary",
+              badge: "BETA"
+            }}
+            additionalActions={[
               {
                 label: "How It Works",
                 onClick: () => navigate("/how-it-works"),
                 icon: HelpCircle,
                 variant: "outline"
-              },
-              {
-                label: "AI Campaigns",
-                onClick: () => setIsCampaignDialogOpen(true),
-                icon: Wand2,
-                variant: "secondary",
-                badge: "BETA"
               }
             ]}
           />
