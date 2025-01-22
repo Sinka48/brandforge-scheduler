@@ -1,8 +1,8 @@
 import { Textarea } from "@/components/ui/textarea";
-import { PlatformPreview } from "./PlatformPreview";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { PLATFORM_LIMITS } from "./platform-previews/types";
 
 interface PostContentProps {
@@ -10,13 +10,17 @@ interface PostContentProps {
   onContentChange: (content: string) => void;
   selectedPlatforms: string[];
   imageUrl?: string;
+  onGenerateContent?: () => void;
+  isGenerating?: boolean;
 }
 
 export function PostContent({ 
   content, 
   onContentChange, 
   selectedPlatforms,
-  imageUrl 
+  imageUrl,
+  onGenerateContent,
+  isGenerating = false
 }: PostContentProps) {
   const getMinCharLimit = () => {
     return Math.min(...selectedPlatforms.map(p => 
@@ -29,7 +33,20 @@ export function PostContent({
   const isExceeded = remainingChars < 0;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={onGenerateContent}
+          disabled={isGenerating}
+        >
+          <Sparkles className="h-4 w-4" />
+          {isGenerating ? "Generating..." : "Generate with AI"}
+        </Button>
+      </div>
+
       <Textarea
         placeholder="What's on your mind?"
         value={content}

@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { TimeSelector } from "./post-dialog/TimeSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export function PostDialog({
 }: PostDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSubmit = async () => {
     if (newPost.platforms.length === 0) {
@@ -86,6 +88,7 @@ export function PostDialog({
 
   const handleQuickPost = async () => {
     try {
+      setIsGenerating(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -121,6 +124,8 @@ export function PostDialog({
         description: "Failed to generate post content. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -161,15 +166,6 @@ export function PostDialog({
                   selectedPlatforms={newPost.platforms}
                 />
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={handleQuickPost}
-              >
-                <Sparkles className="h-4 w-4" />
-                Generate with AI
-              </Button>
             </div>
           </div>
           
@@ -183,6 +179,8 @@ export function PostDialog({
                   setNewPost={setNewPost}
                   handlePlatformToggle={handlePlatformToggle}
                   editMode={editMode}
+                  onGenerateContent={handleQuickPost}
+                  isGenerating={isGenerating}
                 />
               </div>
 
