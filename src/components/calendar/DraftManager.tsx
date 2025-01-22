@@ -6,6 +6,7 @@ import { FileText, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { DraftFilters } from "./draft-manager/DraftFilters";
 import { supabase } from "@/integrations/supabase/client";
 import { LucideIcon } from "lucide-react";
 
@@ -40,8 +41,22 @@ export function DraftManager({
   handleEditPost,
   isLoading
 }: DraftManagerProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"date" | "content">("date");
   const [selectedDrafts, setSelectedDrafts] = useState<string[]>([]);
   const { toast } = useToast();
+
+  const draftPosts = posts.filter(post => {
+    const matchesSearch = post.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPlatform = selectedPlatform === "all" || post.platforms.includes(selectedPlatform as PlatformId);
+    return post.status === 'draft' && matchesSearch && matchesPlatform;
+  }).sort((a, b) => {
+    if (sortBy === "date") {
+      return b.date.getTime() - a.date.getTime();
+    }
+    return a.content.localeCompare(b.content);
+  });
 
   const handleSelectDraft = (postId: string) => {
     setSelectedDrafts(prev => 
@@ -52,10 +67,10 @@ export function DraftManager({
   };
 
   const handleSelectAll = () => {
-    if (selectedDrafts.length === posts.length) {
+    if (selectedDrafts.length === draftPosts.length) {
       setSelectedDrafts([]);
     } else {
-      setSelectedDrafts(posts.map(post => post.id));
+      setSelectedDrafts(draftPosts.map(post => post.id));
     }
   };
 
@@ -116,26 +131,38 @@ export function DraftManager({
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           <h2 className="text-lg font-semibold">Drafts</h2>
-          <Badge variant="secondary">{posts.length}</Badge>
+          <Badge variant="secondary">{draftPosts.length}</Badge>
         </div>
         
-        {selectedDrafts.length > 0 && (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-            className="flex items-center gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete ({selectedDrafts.length})
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {selectedDrafts.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete ({selectedDrafts.length})
+            </Button>
+          )}
+          
+          <DraftFilters
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedPlatform={selectedPlatform}
+            setSelectedPlatform={setSelectedPlatform}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            platforms={platforms}
+          />
+        </div>
       </div>
 
-      {posts.length > 0 && (
+      {draftPosts.length > 0 && (
         <div className="flex items-center gap-2 py-2">
           <Checkbox
-            checked={selectedDrafts.length === posts.length}
+            checked={selectedDrafts.length === draftPosts.length}
             onCheckedChange={handleSelectAll}
           />
           <span className="text-sm text-muted-foreground">
@@ -148,7 +175,7 @@ export function DraftManager({
 
       <PostList
         selectedDate={undefined}
-        posts={posts}
+        posts={draftPosts}
         platforms={platforms}
         handleDeletePost={handleDeletePost}
         handleEditPost={handleEditPost}
