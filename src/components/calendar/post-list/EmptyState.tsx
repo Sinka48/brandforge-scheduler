@@ -24,7 +24,8 @@ export function EmptyState({ onCreatePost, onCreateCampaign, onHowItWorks }: Pos
           label: "AI Campaign",
           onClick: onCreateCampaign,
           icon: Sparkles,
-          variant: "default"  // Changed from outline to default (primary)
+          variant: "default",
+          badge: "BETA"
         },
         {
           label: "How it Works",
