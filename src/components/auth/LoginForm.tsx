@@ -65,7 +65,6 @@ export function LoginForm() {
         return;
       }
 
-      // Successful login
       toast({
         title: "Success",
         description: "You have successfully logged in.",
@@ -75,7 +74,7 @@ export function LoginForm() {
       console.error("Login error:", error);
       toast({
         title: "Error",
-        description: "Failed to sign in. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -102,7 +101,6 @@ export function LoginForm() {
       });
 
       if (error) {
-        console.error("Reset password error:", error);
         throw error;
       }
 
