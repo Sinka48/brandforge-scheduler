@@ -119,7 +119,7 @@ export function DraftManager({
           platform: post.platforms[0],
           scheduled_for: publishDate.toISOString()
         })
-        .match({ id: postId });
+        .eq('id', postId);
 
       if (updateError) throw updateError;
       
