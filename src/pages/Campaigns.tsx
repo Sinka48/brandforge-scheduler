@@ -8,6 +8,7 @@ import { Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function CampaignsPage({ session }: { session: any }) {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
@@ -56,23 +57,18 @@ export default function CampaignsPage({ session }: { session: any }) {
         </div>
 
         {!isLoading && (!campaigns || campaigns.length === 0) ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px]">
-            <h3 className="text-xl font-semibold mb-2">No campaigns yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first AI-powered campaign to get started
-            </p>
-            <Button
-              onClick={() => setIsCampaignDialogOpen(true)}
-              variant="secondary"
-              className="flex items-center gap-2"
-            >
-              <Wand2 className="h-4 w-4" />
-              Create AI Campaign
-              <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
-                BETA
-              </Badge>
-            </Button>
-          </div>
+          <EmptyState
+            icon={Wand2}
+            title="No campaigns yet"
+            description="Create your first AI-powered campaign to get started"
+            action={{
+              label: "Create AI Campaign",
+              onClick: () => setIsCampaignDialogOpen(true),
+              icon: Wand2,
+              variant: "secondary",
+              badge: "BETA"
+            }}
+          />
         ) : (
           <CampaignManager campaigns={campaigns || []} />
         )}
