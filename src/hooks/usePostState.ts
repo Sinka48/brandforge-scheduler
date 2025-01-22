@@ -16,7 +16,7 @@ interface Post {
 export function usePostState() {
   const [newPost, setNewPost] = useState<Post>({
     content: '',
-    platforms: [],
+    platforms: ['facebook'], // Set Facebook as default platform
     image: '',
     time: format(new Date(), 'HH:mm'),
     status: 'scheduled'
