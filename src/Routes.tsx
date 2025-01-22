@@ -1,5 +1,8 @@
-import { Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
+import { Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import IndexPage from "@/pages/Index";
 import CalendarPage from "@/pages/Calendar";
 import BrandsPage from "@/pages/Brands";
@@ -34,7 +37,6 @@ export function Routes({ session }: RoutesProps) {
 }
 
 function AuthCallback() {
-  const { data: { session }, error } = await supabase.auth.getSession()
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -92,7 +94,7 @@ function AuthCallback() {
     };
 
     handleCallback();
-  }, []);
+  }, [navigate, toast]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
