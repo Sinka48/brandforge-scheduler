@@ -32,7 +32,7 @@ export function CalendarContent({
   onNewCampaign
 }: CalendarContentProps) {
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="py-4 md:py-6 space-y-4">
       <PostList
         selectedDate={selectedDate}
         posts={posts}
