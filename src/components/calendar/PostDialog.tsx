@@ -93,14 +93,14 @@ export function PostDialog({
       <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] max-h-[90vh] p-0">
         <div className="h-full flex flex-col">
           <div className="p-6 space-y-4">
-            <DialogHeader editMode={editMode} selectedDate={selectedDate} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DialogHeader editMode={editMode} />
+            <div className="flex items-center gap-4">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-[240px] justify-start text-left font-normal",
                       !selectedDate && "text-muted-foreground"
                     )}
                   >
