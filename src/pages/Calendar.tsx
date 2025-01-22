@@ -9,7 +9,7 @@ import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHand
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Session } from "@supabase/supabase-js";
-import { Plus } from "lucide-react";
+import { Plus, Wand2 } from "lucide-react";
 import { useState } from "react";
 
 interface CalendarPageProps {
@@ -72,13 +72,14 @@ export default function CalendarPage({ session }: CalendarPageProps) {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
               onClick={handleCreateCampaign}
               className="flex items-center gap-2"
             >
+              <Wand2 className="h-4 w-4" />
               AI Campaign
             </Button>
             <Button
+              variant="secondary"
               onClick={handleCreatePost}
               className="flex items-center gap-2"
             >
