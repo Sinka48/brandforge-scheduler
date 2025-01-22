@@ -34,25 +34,22 @@ export function PostContent({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={onGenerateContent}
-          disabled={isGenerating}
-        >
-          <Sparkles className="h-4 w-4" />
-          {isGenerating ? "Generating..." : "Generate with AI"}
-        </Button>
-      </div>
-
       <Textarea
         placeholder="What's on your mind?"
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
         className={`min-h-[100px] resize-none ${isExceeded ? 'border-destructive' : ''}`}
       />
+
+      <Button 
+        variant="outline" 
+        className="w-full flex items-center gap-2"
+        onClick={onGenerateContent}
+        disabled={isGenerating}
+      >
+        <Sparkles className="h-4 w-4" />
+        {isGenerating ? "Generating..." : "Generate Content"}
+      </Button>
 
       {isExceeded && (
         <Alert variant="destructive" className="mt-2">

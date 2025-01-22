@@ -64,17 +64,6 @@ export function DialogContent({
         />
       </div>
 
-      {/* AI Generation Button */}
-      <Button 
-        variant="outline" 
-        className="w-full gap-2"
-        onClick={onGenerateContent}
-        disabled={isGenerating}
-      >
-        <Sparkles className="h-4 w-4" />
-        {isGenerating ? "Generating..." : "Generate with AI"}
-      </Button>
-
       {/* Content Area */}
       <PostContent
         content={newPost.content}
