@@ -21,7 +21,7 @@ function validateEnvironmentVariables() {
   console.log("Environment variables validated successfully");
 }
 
-async function generateOAuthSignature(
+function generateOAuthSignature(
   method: string,
   url: string,
   oauthParams: Record<string, string>,
@@ -88,6 +88,41 @@ async function generateOAuthHeader(method: string, url: string): Promise<string>
     .join(', ');
 }
 
+async function getTwitterUsername(): Promise<string> {
+  const url = "https://api.twitter.com/2/users/me";
+  const method = "GET";
+
+  const oauthHeader = await generateOAuthHeader(method, url);
+  console.log("Getting Twitter username with OAuth Header:", oauthHeader);
+
+  const response = await fetch(url, {
+    method: method,
+    headers: {
+      'Authorization': oauthHeader,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Twitter API Error:", {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: errorText
+    });
+    throw new Error(`Failed to get Twitter username: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log("Twitter user data:", data);
+  
+  if (!data.data?.username) {
+    throw new Error("Could not retrieve username from Twitter response");
+  }
+
+  return data.data.username;
+}
+
 async function publishTweet(content: string): Promise<any> {
   const url = "https://api.twitter.com/2/tweets";
   const method = "POST";
@@ -106,11 +141,7 @@ async function publishTweet(content: string): Promise<any> {
   });
 
   const responseText = await response.text();
-  console.log("Twitter API Response:", {
-    status: response.status,
-    headers: Object.fromEntries(response.headers.entries()),
-    body: responseText
-  });
+  console.log("Response Body:", responseText);
 
   if (!response.ok) {
     throw new Error(`Failed to publish tweet: ${response.status} - ${responseText}`);
@@ -131,6 +162,15 @@ serve(async (req) => {
 
     const { content, test = false } = await req.json();
     
+    if (test) {
+      console.log("Test mode - verifying credentials and getting username");
+      const username = await getTwitterUsername();
+      return new Response(
+        JSON.stringify({ username, status: "ok" }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!content) {
       throw new Error("Tweet content is required");
     }

@@ -11,7 +11,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Unlink,
-  Badge,
 } from "lucide-react";
 import { PLATFORMS } from "@/constants/platforms";
 
@@ -85,11 +84,13 @@ export function SocialMediaSettings() {
         throw new Error('Failed to verify Twitter credentials');
       }
 
+      // Extract Twitter username from the test response
       const twitterUsername = testResult?.username;
       if (!twitterUsername) {
         throw new Error('Could not retrieve Twitter username');
       }
 
+      // Save the connection with the correct Twitter username
       const { error: saveError } = await supabase
         .from('social_connections')
         .insert({
@@ -180,7 +181,6 @@ export function SocialMediaSettings() {
           {PLATFORMS.map((platform) => {
             const connected = isConnected(platform.name);
             const accountDetails = getConnectedAccount(platform.name);
-            const isTwitter = platform.name.toLowerCase() === 'twitter';
             
             return (
               <div
@@ -190,12 +190,7 @@ export function SocialMediaSettings() {
                 <div className="flex items-center gap-3">
                   {getPlatformIcon(platform.name)}
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{platform.name}</h3>
-                      {!isTwitter && (
-                        <Badge className="h-4 w-4 text-yellow-600" />
-                      )}
-                    </div>
+                    <h3 className="font-medium">{platform.name}</h3>
                     {connected ? (
                       <div className="space-y-1">
                         <span className="flex items-center gap-1 text-green-600">
@@ -211,31 +206,29 @@ export function SocialMediaSettings() {
                     ) : (
                       <span className="flex items-center gap-1 text-yellow-600">
                         <AlertCircle className="h-4 w-4" />
-                        {isTwitter ? "Not connected" : "Coming soon"}
+                        Not connected
                       </span>
                     )}
                   </div>
                 </div>
-                {isTwitter && (
-                  <Button
-                    variant={connected ? "destructive" : "default"}
-                    onClick={() =>
-                      connected
-                        ? handleDisconnect(platform.name)
-                        : handleConnect(platform.name)
-                    }
-                    disabled={isConnecting}
-                  >
-                    {connected ? (
-                      <>
-                        <Unlink className="h-4 w-4 mr-2" />
-                        Disconnect
-                      </>
-                    ) : (
-                      "Connect"
-                    )}
-                  </Button>
-                )}
+                <Button
+                  variant={connected ? "destructive" : "default"}
+                  onClick={() =>
+                    connected
+                      ? handleDisconnect(platform.name)
+                      : handleConnect(platform.name)
+                  }
+                  disabled={isConnecting}
+                >
+                  {connected ? (
+                    <>
+                      <Unlink className="h-4 w-4 mr-2" />
+                      Disconnect
+                    </>
+                  ) : (
+                    "Connect"
+                  )}
+                </Button>
               </div>
             );
           })}
