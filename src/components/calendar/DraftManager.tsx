@@ -96,7 +96,7 @@ export function DraftManager({
         return;
       }
 
-      // Update the post status
+      // Update the post status using a simple update query
       const { error } = await supabase
         .from('posts')
         .update({ 
