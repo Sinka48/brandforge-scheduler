@@ -5,6 +5,7 @@ import { LoadingState } from "../calendar/post-list/LoadingState";
 import { EmptyState } from "../calendar/post-list/EmptyState";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CampaignPostsProps {
   campaignId: string;
@@ -106,17 +107,19 @@ export function CampaignPosts({ campaignId }: CampaignPostsProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {posts.map((post) => (
-        <PostItem
-          key={post.id}
-          post={post}
-          platforms={PLATFORMS}
-          onEdit={handleEditPost}
-          onDelete={handleDeletePost}
-          onPublish={handlePublishPost}
-        />
-      ))}
-    </div>
+    <ScrollArea className="h-[500px] pr-4">
+      <div className="space-y-4">
+        {posts.map((post) => (
+          <PostItem
+            key={post.id}
+            post={post}
+            platforms={PLATFORMS}
+            onEdit={handleEditPost}
+            onDelete={handleDeletePost}
+            onPublish={handlePublishPost}
+          />
+        ))}
+      </div>
+    </ScrollArea>
   );
 }
