@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -12,7 +13,34 @@ import {
   CheckCircle2,
   Unlink,
 } from "lucide-react";
-import { PLATFORMS } from "@/constants/platforms";
+
+// Reorder platforms to put Twitter first
+const PLATFORMS = [
+  {
+    id: 'twitter',
+    name: 'Twitter',
+    icon: Twitter,
+    isAvailable: true
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook',
+    icon: Facebook,
+    isAvailable: false
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram',
+    icon: Instagram,
+    isAvailable: false
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn',
+    icon: Linkedin,
+    isAvailable: false
+  },
+] as const;
 
 interface PlatformConnection {
   platform: string;
@@ -50,15 +78,6 @@ export function SocialMediaSettings() {
   };
 
   const handleConnect = async (platform: string) => {
-    if (platform.toLowerCase() !== 'twitter') {
-      toast({
-        title: "Coming Soon",
-        description: `${platform} integration will be available soon.`,
-        variant: "default",
-      });
-      return;
-    }
-
     setIsConnecting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -84,13 +103,11 @@ export function SocialMediaSettings() {
         throw new Error('Failed to verify Twitter credentials');
       }
 
-      // Extract Twitter username from the test response
       const twitterUsername = testResult?.username;
       if (!twitterUsername) {
         throw new Error('Could not retrieve Twitter username');
       }
 
-      // Save the connection with the correct Twitter username
       const { error: saveError } = await supabase
         .from('social_connections')
         .insert({
@@ -144,21 +161,6 @@ export function SocialMediaSettings() {
     }
   };
 
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case "Facebook":
-        return <Facebook className="h-5 w-5" />;
-      case "Twitter":
-        return <Twitter className="h-5 w-5" />;
-      case "Instagram":
-        return <Instagram className="h-5 w-5" />;
-      case "LinkedIn":
-        return <Linkedin className="h-5 w-5" />;
-      default:
-        return null;
-    }
-  };
-
   const isConnected = (platformName: string) => {
     return connectedPlatforms.some(p => p.platform === platformName.toLowerCase());
   };
@@ -181,6 +183,7 @@ export function SocialMediaSettings() {
           {PLATFORMS.map((platform) => {
             const connected = isConnected(platform.name);
             const accountDetails = getConnectedAccount(platform.name);
+            const Icon = platform.icon;
             
             return (
               <div
@@ -188,7 +191,7 @@ export function SocialMediaSettings() {
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  {getPlatformIcon(platform.name)}
+                  <Icon className="h-5 w-5" />
                   <div>
                     <h3 className="font-medium">{platform.name}</h3>
                     {connected ? (
@@ -211,24 +214,28 @@ export function SocialMediaSettings() {
                     )}
                   </div>
                 </div>
-                <Button
-                  variant={connected ? "destructive" : "default"}
-                  onClick={() =>
-                    connected
-                      ? handleDisconnect(platform.name)
-                      : handleConnect(platform.name)
-                  }
-                  disabled={isConnecting}
-                >
-                  {connected ? (
-                    <>
+                {platform.isAvailable ? (
+                  connected ? (
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDisconnect(platform.name)}
+                    >
                       <Unlink className="h-4 w-4 mr-2" />
                       Disconnect
-                    </>
+                    </Button>
                   ) : (
-                    "Connect"
-                  )}
-                </Button>
+                    <Button
+                      onClick={() => handleConnect(platform.name)}
+                      disabled={isConnecting}
+                    >
+                      Connect
+                    </Button>
+                  )
+                ) : (
+                  <Badge variant="secondary" className="bg-gray-100">
+                    Coming Soon
+                  </Badge>
+                )}
               </div>
             );
           })}
