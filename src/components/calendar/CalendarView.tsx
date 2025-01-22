@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { PostList } from "./PostList";
 import { PlatformId } from "@/constants/platforms";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PLATFORMS } from "@/constants/platforms";
 import { useToast } from "@/hooks/use-toast";
+import { useCalendarState } from "./hooks/useCalendarState";
 import {
   LoadingState,
   AuthCheckingState,
@@ -41,32 +42,10 @@ export function CalendarView({
   onPostClick
 }: CalendarViewProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  const handleDeletePost = async (postId: string) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['posts'] });
-      
-      toast({
-        title: "Success",
-        description: "Post deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete post. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const {
+    handleDeletePost,
+    handleUpdatePost,
+  } = useCalendarState();
 
   const handleEditPost = (post: Post) => {
     if (onPostClick) {
@@ -168,34 +147,6 @@ export function CalendarView({
     },
     enabled: !!session?.user,
   });
-
-  const handlePublishPost = async (postId: string) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .update({ 
-          status: 'scheduled',
-          published_at: new Date().toISOString()
-        })
-        .eq('id', postId);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['posts'] });
-      
-      toast({
-        title: "Success",
-        description: "Post scheduled for publishing",
-      });
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to publish post. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (authLoading) {
     console.log('Auth loading...');
