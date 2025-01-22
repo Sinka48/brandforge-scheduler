@@ -11,7 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Session } from "@supabase/supabase-js";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { format } from "date-fns";
+import { useNextPostTimer } from "@/hooks/useNextPostTimer";
 
 interface CalendarPageProps {
   session: Session;
@@ -21,6 +21,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
   useCalendarAuth();
   const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const nextPostTime = useNextPostTimer();
 
   const {
     isDialogOpen,
@@ -64,9 +65,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
       <div className="space-y-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
-          <p className="text-muted-foreground">
-            View and manage your social media posts
-          </p>
+          <p className="text-muted-foreground">{nextPostTime}</p>
         </div>
 
         <div className="space-y-6">
