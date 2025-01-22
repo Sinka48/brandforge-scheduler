@@ -31,7 +31,7 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
             className="flex items-center gap-2"
           >
             <Wand2 className="h-4 w-4" />
-            AI Campaign
+            AI Campaign [Beta]
           </Button>
         </div>
         <div className="hidden sm:block">
@@ -55,7 +55,7 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onNewCampaign}>
                 <Wand2 className="h-4 w-4 mr-2" />
-                AI Campaign
+                AI Campaign [Beta]
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
