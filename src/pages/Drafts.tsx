@@ -30,7 +30,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     platforms: [],
     status: "draft",
     time: format(new Date(), 'HH:mm'),
-    date: new Date(), // Add default date
+    date: new Date(),
   });
 
   if (!session) {
