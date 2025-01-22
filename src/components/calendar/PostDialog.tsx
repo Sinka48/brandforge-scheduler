@@ -69,16 +69,16 @@ export function PostDialog({
 
         if (tweetError) throw tweetError;
 
-        // Update post status in database using a simple update query
+        // Update post status in database using a direct update query
         const { error: updateError } = await supabase
           .from('posts')
-          .update({ 
+          .update({
             status: 'scheduled',
             published_at: publishDate.toISOString(),
             platform: newPost.platforms[0],
             scheduled_for: publishDate.toISOString()
           })
-          .eq('id', newPost.id);
+          .match({ id: newPost.id });
 
         if (updateError) throw updateError;
 
