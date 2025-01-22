@@ -51,7 +51,8 @@ export function useCalendarData() {
               description
             )
           `)
-          .eq('user_id', session.user.id);
+          .eq('user_id', session.user.id)
+          .order('scheduled_for', { ascending: true });
 
         if (error) {
           console.error('Supabase error fetching posts:', error);
@@ -96,6 +97,7 @@ export function useCalendarData() {
       }
     },
     enabled: !!session?.user,
+    refetchInterval: 5000, // Refresh every 5 seconds to catch new campaign posts
   });
 
   return {

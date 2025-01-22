@@ -42,10 +42,15 @@ export function PostList({
     return <LoadingState />;
   }
 
+  // Sort posts by scheduled date
+  const sortedPosts = [...posts].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
   return (
     <PostListContent
       selectedDate={selectedDate}
-      posts={posts}
+      posts={sortedPosts}
       platforms={platforms}
       handleDeletePost={handleDeletePost}
       handleEditPost={handleEditPost}
