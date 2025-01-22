@@ -68,21 +68,21 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           </p>
         </div>
 
-        <div className="flex justify-between items-center">
-          <TabsList>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="drafts">Drafts</TabsTrigger>
-          </TabsList>
-          <Button 
-            onClick={() => setIsPostDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Create Post
-          </Button>
-        </div>
-
         <Tabs defaultValue="drafts" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="posts">Posts</TabsTrigger>
+              <TabsTrigger value="drafts">Drafts</TabsTrigger>
+            </TabsList>
+            <Button 
+              onClick={() => setIsPostDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Post
+            </Button>
+          </div>
+
           <TabsContent value="posts" className="space-y-4">
             <PostList
               selectedDate={undefined}
