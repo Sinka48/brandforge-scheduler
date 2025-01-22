@@ -38,12 +38,9 @@ export function PostListContent({
   console.log('PostListContent - All posts:', posts);
   console.log('PostListContent - selectedDate:', selectedDate);
 
-  // If no date is selected, show all posts
+  // If selectedDate is undefined, show all posts
   const filteredPosts = selectedDate
-    ? posts.filter(post => {
-        const postDate = new Date(post.date);
-        return isSameDay(postDate, selectedDate);
-      })
+    ? posts.filter(post => isSameDay(new Date(post.date), selectedDate))
     : posts;
 
   console.log('PostListContent - filteredPosts:', filteredPosts);
@@ -68,7 +65,7 @@ export function PostListContent({
           onSelect={onSelectPost}
         />
       ))}
-      {filteredPosts.length === 0 && (
+      {filteredPosts.length === 0 && selectedDate && (
         <EmptyState />
       )}
     </div>

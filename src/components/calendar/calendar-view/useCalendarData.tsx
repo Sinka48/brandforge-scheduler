@@ -51,8 +51,7 @@ export function useCalendarData() {
               description
             )
           `)
-          .eq('user_id', session.user.id)
-          .order('scheduled_for', { ascending: true });
+          .eq('user_id', session.user.id);
 
         if (error) {
           console.error('Supabase error fetching posts:', error);
@@ -66,8 +65,8 @@ export function useCalendarData() {
 
         console.log('Raw posts data from Supabase:', data);
 
-        if (!data || data.length === 0) {
-          console.log('No posts found for user');
+        if (!data) {
+          console.log('No posts found');
           return [];
         }
 
