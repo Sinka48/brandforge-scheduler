@@ -40,6 +40,7 @@ export function useCalendarState() {
         image: '',
         time: format(new Date(), 'HH:mm'),
         status: 'draft',
+        date: new Date()
       });
       setIsDialogOpen(false);
     }
