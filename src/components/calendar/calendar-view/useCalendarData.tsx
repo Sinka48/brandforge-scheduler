@@ -35,6 +35,7 @@ export function useCalendarData() {
       }
 
       try {
+        // First get all direct posts and posts from active campaigns
         const { data, error } = await supabase
           .from('posts')
           .select(`
@@ -48,10 +49,12 @@ export function useCalendarData() {
             campaigns (
               id,
               name,
-              description
+              description,
+              status
             )
           `)
           .eq('user_id', session.user.id)
+          .or('campaign_id.is.null,campaigns.status.eq.active')
           .order('scheduled_for', { ascending: true });
 
         if (error) {
