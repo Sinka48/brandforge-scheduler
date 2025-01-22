@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 interface DialogActionsProps {
   onSaveAsDraft: () => void;
   onAddPost: () => void;
+  onPublish: () => void;
   isDisabled: boolean;
   editMode: boolean;
 }
 
 export function DialogActions({ 
   onSaveAsDraft, 
-  onAddPost, 
+  onAddPost,
+  onPublish,
   isDisabled,
   editMode 
 }: DialogActionsProps) {
@@ -19,10 +21,17 @@ export function DialogActions({
         Save as Draft
       </Button>
       <Button 
+        variant="outline"
         onClick={onAddPost}
         disabled={isDisabled}
       >
-        {editMode ? 'Update Post' : 'Schedule Post'}
+        Schedule
+      </Button>
+      <Button 
+        onClick={onPublish}
+        disabled={isDisabled}
+      >
+        {editMode ? 'Update & Publish' : 'Publish Now'}
       </Button>
     </div>
   );

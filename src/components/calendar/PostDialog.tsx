@@ -4,6 +4,12 @@ import { DialogActions } from "./post-dialog/DialogActions";
 import { DialogContent as PostDialogContent } from "./post-dialog/DialogContent";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "./post-dialog/LoadingState";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -58,6 +64,15 @@ export function PostDialog({
       return;
     }
 
+    if (!selectedDate) {
+      toast({
+        title: "Date Required",
+        description: "Please select a date for your post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     handleAddPost();
   };
 
@@ -79,6 +94,31 @@ export function PostDialog({
         <div className="h-full flex flex-col">
           <div className="p-6">
             <DialogHeader editMode={editMode} selectedDate={selectedDate} />
+            <div className="mt-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => setNewPost({ ...newPost, date })}
+                    initialFocus
+                    disabled={(date) => date < new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
           
           {!newPost ? (
@@ -98,6 +138,7 @@ export function PostDialog({
                 <DialogActions
                   onSaveAsDraft={handleDraftSubmit}
                   onAddPost={handleSubmit}
+                  onPublish={handleSubmit}
                   isDisabled={!newPost.content.trim()}
                   editMode={editMode}
                 />
