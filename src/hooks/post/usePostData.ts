@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Post } from "@/components/calendar/types";
 import { PlatformId } from "@/constants/platforms";
+import { format } from "date-fns";
 
 export function usePostData(session: Session | null) {
   return useQuery({
@@ -15,10 +16,10 @@ export function usePostData(session: Session | null) {
       }
 
       try {
-        console.log('Fetching scheduled posts...');
+        console.log('Fetching posts...');
         
-        // First, get scheduled posts
-        const { data: scheduledPosts, error: scheduledError } = await supabase
+        // Get both scheduled and draft posts
+        const { data: allPosts, error: postsError } = await supabase
           .from('posts')
           .select(`
             id,
@@ -36,58 +37,23 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .eq('status', 'scheduled')
+          .in('status', ['scheduled', 'draft'])
           .order('scheduled_for', { ascending: true });
 
-        if (scheduledError) {
-          console.error('Supabase error fetching scheduled posts:', scheduledError);
-          throw scheduledError;
+        if (postsError) {
+          console.error('Supabase error fetching posts:', postsError);
+          throw postsError;
         }
-
-        // Then, get posts from active campaigns
-        const { data: campaignPosts, error: campaignError } = await supabase
-          .from('posts')
-          .select(`
-            id,
-            content,
-            scheduled_for,
-            platform,
-            image_url,
-            status,
-            campaign_id,
-            campaigns (
-              id,
-              name,
-              description,
-              status
-            )
-          `)
-          .eq('user_id', session.user.id)
-          .not('campaign_id', 'is', null)
-          .eq('campaigns.status', 'active')
-          .order('scheduled_for', { ascending: true });
-
-        if (campaignError) {
-          console.error('Supabase error fetching campaign posts:', campaignError);
-          throw campaignError;
-        }
-
-        // Combine and deduplicate posts
-        const allPosts = [...(scheduledPosts || []), ...(campaignPosts || [])];
-        const uniquePosts = Array.from(new Map(allPosts.map(post => [post.id, post])).values());
 
         // Format posts for display
-        const formattedPosts = uniquePosts.map(post => ({
+        const formattedPosts = (allPosts || []).map(post => ({
           id: post.id,
           content: post.content,
           date: new Date(post.scheduled_for),
           platforms: [post.platform as PlatformId],
           image: post.image_url,
           status: post.status as 'draft' | 'scheduled',
-          time: new Date(post.scheduled_for).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
+          time: format(new Date(post.scheduled_for), 'HH:mm'),
           campaign: post.campaigns ? {
             id: post.campaign_id,
             name: post.campaigns.name,
