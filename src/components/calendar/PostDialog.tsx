@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogActions } from "./post-dialog/DialogActions";
-import { PostDialogContent } from "./post-dialog/PostDialogContent";
+import { DialogHeader } from "./post-dialog/DialogHeader";
 import { usePostState } from "@/hooks/usePostState";
 import { usePostCreate } from "@/hooks/post/usePostCreate";
 import { useToast } from "@/hooks/use-toast";
@@ -55,25 +55,23 @@ export function PostDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <PostDialogContent
-          newPost={newPost}
-          setNewPost={setNewPost}
-          handlePlatformToggle={handlePlatformToggle}
+      <DialogContent
+        newPost={newPost}
+        setNewPost={setNewPost}
+        handlePlatformToggle={handlePlatformToggle}
+        editMode={editMode}
+        onGenerateContent={handleGenerateContent}
+        isGenerating={isGenerating}
+      />
+      <div className="p-4 border-t sticky bottom-0 bg-background z-10">
+        <DialogActions
+          onSaveAsDraft={handleSaveAsDraft}
+          onAddPost={handleAddPost}
+          onPublish={handleAddPost}
+          isDisabled={isDisabled}
           editMode={editMode}
-          onGenerateContent={handleGenerateContent}
-          isGenerating={isGenerating}
         />
-        <div className="p-4 border-t sticky bottom-0 bg-background z-10">
-          <DialogActions
-            onSaveAsDraft={handleSaveAsDraft}
-            onAddPost={handleAddPost}
-            onPublish={handleAddPost}
-            isDisabled={isDisabled}
-            editMode={editMode}
-          />
-        </div>
-      </DialogContent>
+      </div>
     </Dialog>
   );
 }
