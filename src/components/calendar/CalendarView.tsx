@@ -73,8 +73,6 @@ export function CalendarView({
       handleEditPost={handleEditPost}
       handlePublishPost={handlePublishPost}
       isLoading={isLoading}
-      onNewPost={() => onCreatePost?.()}
-      onNewCampaign={() => console.log('New campaign')}
     />
   );
 }
