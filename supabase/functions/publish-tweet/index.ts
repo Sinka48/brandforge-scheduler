@@ -22,27 +22,23 @@ function validateEnvironmentVariables() {
 async function generateOAuthSignature(
   method: string,
   url: string,
-  params: Record<string, string>,
+  oauthParams: Record<string, string>,
   consumerSecret: string,
   tokenSecret: string
 ): Promise<string> {
-  const signatureBaseString = `${method}&${encodeURIComponent(
-    url
-  )}&${encodeURIComponent(
-    Object.entries(params)
+  const signatureBaseString = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(
+    Object.entries(oauthParams)
       .sort()
-      .map(([k, v]) => `${k}=${v}`)
+      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
       .join("&")
   )}`;
-  
+
   const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
   
-  // Convert string to Uint8Array for HMAC
   const encoder = new TextEncoder();
   const key = encoder.encode(signingKey);
   const message = encoder.encode(signatureBaseString);
   
-  // Create HMAC
   const hmacKey = await crypto.subtle.importKey(
     "raw",
     key,
@@ -52,22 +48,20 @@ async function generateOAuthSignature(
   );
   
   const signature = await crypto.subtle.sign("HMAC", hmacKey, message);
-  const base64Signature = encodeBase64(new Uint8Array(signature));
-
-  console.log("Signature Base String:", signatureBaseString);
-  console.log("Generated Signature:", base64Signature);
-
-  return base64Signature;
+  return encodeBase64(new Uint8Array(signature));
 }
 
 async function generateOAuthHeader(method: string, url: string): Promise<string> {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const nonce = Math.random().toString(36).substring(2);
+
   const oauthParams = {
     oauth_consumer_key: API_KEY!,
-    oauth_nonce: Math.random().toString(36).substring(2),
+    oauth_nonce: nonce,
     oauth_signature_method: "HMAC-SHA1",
-    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
+    oauth_timestamp: timestamp,
     oauth_token: ACCESS_TOKEN!,
-    oauth_version: "1.0",
+    oauth_version: "1.0"
   };
 
   const signature = await generateOAuthSignature(
@@ -78,44 +72,38 @@ async function generateOAuthHeader(method: string, url: string): Promise<string>
     ACCESS_TOKEN_SECRET!
   );
 
-  const signedOAuthParams = {
+  return 'OAuth ' + Object.entries({
     ...oauthParams,
-    oauth_signature: signature,
-  };
-
-  return "OAuth " + Object.entries(signedOAuthParams)
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([k, v]) => `${encodeURIComponent(k)}="${encodeURIComponent(v)}"`)
-    .join(", ");
+    oauth_signature: signature
+  })
+    .sort()
+    .map(([key, value]) => `${key}="${encodeURIComponent(value)}"`)
+    .join(', ');
 }
 
-async function publishTweet(content: string, imageUrl?: string): Promise<any> {
+async function publishTweet(content: string): Promise<any> {
   const url = "https://api.twitter.com/2/tweets";
   const method = "POST";
-  
-  const tweetData: any = {
-    text: content
-  };
-
-  if (imageUrl) {
-    console.log("Image URL provided but not implemented:", imageUrl);
-  }
 
   const oauthHeader = await generateOAuthHeader(method, url);
-  console.log("OAuth Header:", oauthHeader);
+  console.log("Generated OAuth Header:", oauthHeader);
 
   const response = await fetch(url, {
     method: method,
     headers: {
-      Authorization: oauthHeader,
-      "Content-Type": "application/json",
+      'Authorization': oauthHeader,
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(tweetData),
+    body: JSON.stringify({ text: content })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Twitter API Error:", errorText);
+    console.error("Twitter API Response:", {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: errorText
+    });
     throw new Error(`Twitter API error: ${response.status} - ${errorText}`);
   }
 
@@ -130,6 +118,7 @@ serve(async (req) => {
 
   try {
     validateEnvironmentVariables();
+    console.log("Environment variables validated");
 
     const { content, test = false } = await req.json();
     
@@ -142,8 +131,7 @@ serve(async (req) => {
     }
 
     if (test) {
-      // For test requests, just verify credentials without posting
-      console.log("Test request - verifying credentials only");
+      console.log("Test mode - verifying credentials only");
       return new Response(JSON.stringify({ status: "ok" }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -156,7 +144,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error("Error publishing tweet:", error);
+    console.error("Error in Edge Function:", error);
     return new Response(
       JSON.stringify({ error: error.message || "Failed to publish tweet" }),
       { 
