@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wand2, HelpCircle, Roadmap } from "lucide-react";
+import { Wand2, HelpCircle, GitBranch } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
@@ -65,7 +65,7 @@ export function QuickActions() {
           className="w-full justify-start gap-2"
           onClick={() => navigate("/roadmap")}
         >
-          <Roadmap className="h-4 w-4 text-blue-500" />
+          <GitBranch className="h-4 w-4 text-blue-500" />
           Roadmap
         </Button>
 

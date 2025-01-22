@@ -1,4 +1,4 @@
-import { BrowserRouter } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -48,10 +48,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <BrowserRouter>
-          <Routes session={session} />
-          <Toaster />
-        </BrowserRouter>
+        <RouterProvider router={Routes({ session })} />
+        <Toaster />
       </ThemeProvider>
     </QueryClientProvider>
   );

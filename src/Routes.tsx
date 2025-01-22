@@ -9,46 +9,53 @@ import BrandIdentityPage from "./pages/BrandIdentity";
 import BrandListPage from "./pages/BrandList";
 import HowItWorksPage from "./pages/HowItWorks";
 import DraftsPage from "./pages/Drafts";
+import { Session } from "@supabase/supabase-js";
 
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <IndexPage />,
-  },
-  {
-    path: "/calendar",
-    element: <CalendarPage />,
-  },
-  {
-    path: "/campaigns",
-    element: <CampaignsPage />,
-  },
-  {
-    path: "/settings",
-    element: <SettingsPage />,
-  },
-  {
-    path: "/brands",
-    element: <BrandsPage />,
-  },
-  {
-    path: "/brand/:id",
-    element: <BrandPage />,
-  },
-  {
-    path: "/brand/:id/identity",
-    element: <BrandIdentityPage />,
-  },
-  {
-    path: "/brand-list",
-    element: <BrandListPage />,
-  },
-  {
-    path: "/how-it-works",
-    element: <HowItWorksPage />,
-  },
-  {
-    path: "/drafts",
-    element: <DraftsPage />,
-  },
-]);
+interface RoutesProps {
+  session: Session | null;
+}
+
+export function Routes({ session }: RoutesProps) {
+  return createBrowserRouter([
+    {
+      path: "/",
+      element: <IndexPage session={session} />,
+    },
+    {
+      path: "/calendar",
+      element: <CalendarPage session={session} />,
+    },
+    {
+      path: "/campaigns",
+      element: <CampaignsPage session={session} />,
+    },
+    {
+      path: "/settings",
+      element: <SettingsPage session={session} />,
+    },
+    {
+      path: "/brands",
+      element: <BrandsPage session={session} />,
+    },
+    {
+      path: "/brand/:id",
+      element: <BrandPage session={session} />,
+    },
+    {
+      path: "/brand/:id/identity",
+      element: <BrandIdentityPage session={session} />,
+    },
+    {
+      path: "/brand-list",
+      element: <BrandListPage session={session} />,
+    },
+    {
+      path: "/how-it-works",
+      element: <HowItWorksPage session={session} />,
+    },
+    {
+      path: "/drafts",
+      element: <DraftsPage session={session} />,
+    },
+  ]);
+}
