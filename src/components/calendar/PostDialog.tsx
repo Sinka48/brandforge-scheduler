@@ -92,9 +92,9 @@ export function PostDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] max-h-[90vh] p-0">
         <div className="h-full flex flex-col">
-          <div className="p-6">
+          <div className="p-6 space-y-4">
             <DialogHeader editMode={editMode} selectedDate={selectedDate} />
-            <div className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button

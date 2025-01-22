@@ -53,40 +53,47 @@ export function TimeSelector({ time, onTimeChange, selectedPlatforms }: TimeSele
       <PopoverTrigger asChild>
         <Button 
           variant="outline" 
-          size="icon"
-          className={error ? "border-destructive" : ""}
+          size="sm"
+          className={`flex items-center gap-2 ${error ? "border-destructive" : ""}`}
         >
           <Clock className="h-4 w-4" />
+          {time ? format(new Date(`2000-01-01T${time}`), 'h:mm a') : "Select time"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-2">
-        <div className="space-y-2">
-          <Input
-            type="time"
-            value={time}
-            onChange={(e) => {
-              if (validateTime(e.target.value)) {
-                onTimeChange(e.target.value);
-              }
-            }}
-            className="w-full"
-          />
-          <div className="grid grid-cols-2 gap-1">
-            {commonTimes.map((t) => (
-              <Button
-                key={t}
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (validateTime(t)) {
-                    onTimeChange(t);
-                  }
-                }}
-                className="text-xs"
-              >
-                {format(new Date(`2000-01-01T${t}`), 'h:mm a')}
-              </Button>
-            ))}
+      <PopoverContent className="w-64 p-4">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Select Time</h4>
+            <Input
+              type="time"
+              value={time}
+              onChange={(e) => {
+                if (validateTime(e.target.value)) {
+                  onTimeChange(e.target.value);
+                }
+              }}
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Common Times</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {commonTimes.map((t) => (
+                <Button
+                  key={t}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (validateTime(t)) {
+                      onTimeChange(t);
+                    }
+                  }}
+                  className="text-xs justify-start"
+                >
+                  {format(new Date(`2000-01-01T${t}`), 'h:mm a')}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </PopoverContent>
