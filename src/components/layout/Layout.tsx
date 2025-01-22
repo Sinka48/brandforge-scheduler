@@ -10,8 +10,8 @@ export function Layout({ children, session }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header session={session} />
-      <div className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <main className="py-8">
+      <div className="container max-w-[1400px] mx-auto">
+        <main className="py-8 space-y-8">
           {children}
         </main>
       </div>

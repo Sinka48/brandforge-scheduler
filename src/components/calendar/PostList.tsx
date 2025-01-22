@@ -36,30 +36,28 @@ export function PostList({
 }: PostListProps) {
   const [showAllPosts, setShowAllPosts] = useState(false);
   
-  console.log('PostList - Received posts:', posts);
-  console.log('PostList - Selected date:', selectedDate);
-  
   if (isLoading) {
     return <LoadingState />;
   }
 
-  // Sort posts by scheduled date
   const sortedPosts = [...posts].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
   return (
-    <PostListContent
-      selectedDate={selectedDate}
-      posts={sortedPosts}
-      platforms={platforms}
-      handleDeletePost={handleDeletePost}
-      handleEditPost={handleEditPost}
-      handlePublishPost={handlePublishPost}
-      showAllPosts={showAllPosts}
-      setShowAllPosts={setShowAllPosts}
-      selectedPosts={selectedPosts}
-      onSelectPost={onSelectPost}
-    />
+    <div className="space-y-4">
+      <PostListContent
+        selectedDate={selectedDate}
+        posts={sortedPosts}
+        platforms={platforms}
+        handleDeletePost={handleDeletePost}
+        handleEditPost={handleEditPost}
+        handlePublishPost={handlePublishPost}
+        showAllPosts={showAllPosts}
+        setShowAllPosts={setShowAllPosts}
+        selectedPosts={selectedPosts}
+        onSelectPost={onSelectPost}
+      />
+    </div>
   );
 }

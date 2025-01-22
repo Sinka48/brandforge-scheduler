@@ -64,13 +64,13 @@ export default function CalendarPage({ session }: CalendarPageProps) {
 
   return (
     <Layout session={session}>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <div className="space-y-1">
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
             <p className="text-muted-foreground">Schedule and manage your social media posts in one place</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               onClick={handleCreateCampaign}
               className="flex items-center gap-2"
@@ -102,7 +102,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
 
         {isMobile && (
           <Button
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
+            className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg"
             onClick={() => setIsDialogOpen(true)}
           >
             <Plus className="h-6 w-6" />

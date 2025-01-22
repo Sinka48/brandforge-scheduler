@@ -62,7 +62,7 @@ export function PostItem({
   const shouldTruncate = post.content.length > 150;
 
   return (
-    <Card className={`p-4 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
+    <Card className={`p-6 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
       <div className="flex items-start gap-4">
         {onSelect && (
           <Checkbox
@@ -72,14 +72,14 @@ export function PostItem({
           />
         )}
         
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-4">
           {post.time && (
             <p className="text-sm text-muted-foreground">
               {format(post.date, 'PPP')} at {post.time}
             </p>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="font-medium break-words">
               {truncatedContent}
               {shouldTruncate && !isExpanded && "..."}
@@ -96,11 +96,11 @@ export function PostItem({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-2">
             {postPlatforms.map((platform) => {
               const Icon = platform.icon;
               return (
-                <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
+                <Badge key={platform.id} variant="secondary" className="flex items-center gap-1.5">
                   <Icon className="h-3 w-3" />
                   {platform.name}
                 </Badge>
@@ -108,7 +108,7 @@ export function PostItem({
             })}
             
             {post.campaign && (
-              <Badge variant="outline" className="flex items-center gap-1">
+              <Badge variant="outline" className="flex items-center gap-1.5">
                 <Calendar className="h-3 w-3" />
                 {post.campaign.name}
               </Badge>
@@ -116,7 +116,7 @@ export function PostItem({
 
             <Badge 
               variant={post.status === 'scheduled' ? 'default' : 'secondary'}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1.5"
             >
               <FileText className="h-3 w-3" />
               {post.status}
@@ -124,13 +124,13 @@ export function PostItem({
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {post.status === 'draft' && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPublish(post.id)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-2"
             >
               <Send className="h-4 w-4" />
               Publish
