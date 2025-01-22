@@ -125,6 +125,8 @@ export function PostDialog({
                 editMode={editMode}
                 previewMode={previewMode}
                 onPreviewModeChange={setPreviewMode}
+                selectedPlatforms={newPost.platforms}
+                onPlatformToggle={handlePlatformToggle}
               />
             </div>
             
