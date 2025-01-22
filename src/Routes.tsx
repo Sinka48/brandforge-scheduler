@@ -62,7 +62,7 @@ function AuthCallback() {
                 refresh_token: data.session.provider_refresh_token,
                 platform_user_id: data.session.user.identities?.[0]?.id,
                 platform_username: data.session.user.identities?.[0]?.identity_data?.full_name,
-                token_expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) // 60 days from now
+                token_expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString() // Convert Date to ISO string
               });
 
             if (connectionError) {
