@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TimeSelector } from "./post-dialog/TimeSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -91,20 +92,15 @@ export function PostDialog({
 
   const handleQuickPost = async () => {
     try {
-      const response = await fetch('/api/generate-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('generate-post', {
+        body: {
           platforms: newPost.platforms,
           topic: 'general', // You might want to make this configurable
-        }),
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to generate post');
+      if (error) throw error;
 
-      const data = await response.json();
       setNewPost({ ...newPost, content: data.content });
       
       toast({
@@ -112,6 +108,7 @@ export function PostDialog({
         description: "AI has generated content for your post. Feel free to edit it!",
       });
     } catch (error) {
+      console.error('Failed to generate post:', error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate post content. Please try again.",
