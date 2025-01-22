@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Session } from "@supabase/supabase-js";
 import { Plus } from "lucide-react";
+import { useState } from "react";
+import { format } from "date-fns";
 
 interface CalendarPageProps {
   session: Session;
@@ -18,10 +20,9 @@ interface CalendarPageProps {
 export default function CalendarPage({ session }: CalendarPageProps) {
   useCalendarAuth();
   const isMobile = useIsMobile();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const {
-    selectedDate,
-    setSelectedDate,
     isDialogOpen,
     setIsDialogOpen,
     isCampaignDialogOpen,
@@ -29,9 +30,6 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     editingPost,
     setEditingPost,
     toast,
-    posts,
-    isManagementLoading,
-    isQueryLoading,
     newPost,
     setNewPost,
     handleAddPost,
@@ -57,6 +55,10 @@ export default function CalendarPage({ session }: CalendarPageProps) {
     selectedDate,
   });
 
+  const handleCreatePost = () => {
+    setIsDialogOpen(true);
+  };
+
   return (
     <Layout session={session}>
       <div className="space-y-6">
@@ -76,6 +78,8 @@ export default function CalendarPage({ session }: CalendarPageProps) {
           <CalendarView 
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
+            onCreatePost={handleCreatePost}
+            onPostClick={handleEditPost}
           />
         </div>
 
