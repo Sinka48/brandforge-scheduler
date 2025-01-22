@@ -1,16 +1,18 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
+import { DialogActions } from "./post-dialog/DialogActions";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Loader2, Save, Folder, Wand2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { SaveTemplateDialog } from "./campaign-dialog/SaveTemplateDialog";
-import { LoadTemplateDialog } from "./campaign-dialog/LoadTemplateDialog";
 import { useNavigate } from "react-router-dom";
 import { CampaignConfiguration } from "./campaign-dialog/CampaignConfiguration";
 import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
-import { addDays, parse } from "date-fns";
+import { addDays } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ export function AICampaignDialog({
 }: AICampaignDialogProps) {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [topic, setTopic] = useState("");
+  const [goal, setGoal] = useState("");
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
   const [tone, setTone] = useState("professional");
@@ -35,8 +37,6 @@ export function AICampaignDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedPosts, setGeneratedPosts] = useState<any[]>([]);
-  const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
-  const [isLoadTemplateOpen, setIsLoadTemplateOpen] = useState(false);
   const { toast } = useToast();
 
   const handlePlatformToggle = (platformId: string) => {
@@ -54,7 +54,7 @@ export function AICampaignDialog({
     try {
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
-          topic,
+          goal,
           platforms: [generatedPosts[index].platform],
           duration: 1,
           tone,
@@ -96,10 +96,10 @@ export function AICampaignDialog({
       return;
     }
 
-    if (!topic.trim()) {
+    if (!goal) {
       toast({
         title: "Missing Information",
-        description: "Please enter a campaign topic",
+        description: "Please select a campaign goal",
         variant: "destructive",
       });
       return;
@@ -124,14 +124,14 @@ export function AICampaignDialog({
         throw new Error('Not authenticated');
       }
 
-      const startDate = new Date(); // Campaign starts today
+      const startDate = new Date();
       const endDate = addDays(startDate, parseInt(duration));
 
       const { data: campaignData, error: campaignError } = await supabase
         .from('campaigns')
         .insert({
           name,
-          description: topic,
+          description: goal,
           platforms: platforms.map(p => p.toLowerCase()),
           status: 'draft',
           start_date: startDate.toISOString(),
@@ -151,7 +151,7 @@ export function AICampaignDialog({
 
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
-          topic,
+          goal,
           platforms: platforms.map(p => p.toLowerCase()),
           duration: parseInt(duration),
           tone,
@@ -162,32 +162,6 @@ export function AICampaignDialog({
 
       if (error) throw error;
 
-      const postsToCreate = data.campaign.map((post: any) => {
-        // Parse the time string (e.g., "09:00") into a Date object
-        const timeDate = parse(post.time, 'HH:mm', new Date());
-        
-        // Create a new date for scheduling that combines the campaign start date with the time
-        const scheduledDate = new Date(startDate);
-        scheduledDate.setHours(timeDate.getHours());
-        scheduledDate.setMinutes(timeDate.getMinutes());
-        
-        return {
-          content: post.content,
-          platform: post.platform.toLowerCase(),
-          scheduled_for: scheduledDate.toISOString(),
-          image_url: post.imageUrl,
-          status: 'draft',
-          campaign_id: campaignData.id,
-          user_id: session.user.id
-        };
-      });
-
-      const { error: postsError } = await supabase
-        .from('posts')
-        .insert(postsToCreate);
-
-      if (postsError) throw postsError;
-
       setGeneratedPosts(data.campaign);
       setSuggestedHashtags(data.suggestedHashtags || []);
       setProgress(100);
@@ -197,7 +171,6 @@ export function AICampaignDialog({
         description: "Campaign has been created successfully",
       });
 
-      // Navigate to campaigns page after successful creation
       navigate('/campaigns');
     } catch (error) {
       console.error('Error generating campaign:', error);
@@ -212,100 +185,81 @@ export function AICampaignDialog({
     }
   };
 
-  const handleLoadTemplate = (template: any) => {
-    setTopic(template.topic);
-    setPlatforms(template.platforms.map((p: string) => p.toLowerCase()));
-    setDuration(template.duration.toString());
-    setTone(template.tone);
-    setTimeSlots(template.time_slots);
-    setHashtags(template.hashtags);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col">
-        <DialogHeader editMode={false} />
-        
-        <div className="space-y-6 py-4 flex-1 overflow-y-auto">
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsLoadTemplateOpen(true)}
-            >
-              <Folder className="h-4 w-4 mr-2" />
-              Load Template
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsSaveTemplateOpen(true)}
-              disabled={!topic.trim()}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save as Template
-            </Button>
+      <DialogContent className="sm:max-w-[550px] h-[85vh] max-h-[700px] p-0">
+        <div className="h-full flex flex-col">
+          <div className="p-4 border-b">
+            <DialogHeader editMode={false} />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <CampaignConfiguration
-              name={name}
-              setName={setName}
-              topic={topic}
-              setTopic={setTopic}
-              platforms={platforms}
-              onPlatformToggle={handlePlatformToggle}
-              duration={duration}
-              setDuration={setDuration}
-              tone={tone}
-              setTone={setTone}
-              timeSlots={timeSlots}
-              onTimeSlotsChange={setTimeSlots}
-              hashtags={hashtags}
-              onHashtagsChange={setHashtags}
-              suggestedHashtags={suggestedHashtags}
-            />
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Campaign Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter campaign name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
 
-            <GeneratedContent
-              isLoading={isLoading}
-              progress={progress}
-              generatedPosts={generatedPosts}
-              onRegeneratePost={handleRegeneratePost}
-            />
+              <div className="space-y-2">
+                <Label htmlFor="goal">Campaign Goal</Label>
+                <Select value={goal} onValueChange={setGoal}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select campaign goal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="awareness">Raise Brand Awareness</SelectItem>
+                    <SelectItem value="engagement">Boost Engagement</SelectItem>
+                    <SelectItem value="traffic">Drive Website Traffic</SelectItem>
+                    <SelectItem value="leads">Generate Leads</SelectItem>
+                    <SelectItem value="sales">Increase Sales</SelectItem>
+                    <SelectItem value="loyalty">Build Customer Loyalty</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <CampaignConfiguration
+                platforms={platforms}
+                onPlatformToggle={handlePlatformToggle}
+                duration={duration}
+                setDuration={setDuration}
+                tone={tone}
+                setTone={setTone}
+                timeSlots={timeSlots}
+                onTimeSlotsChange={setTimeSlots}
+                hashtags={hashtags}
+                onHashtagsChange={setHashtags}
+                suggestedHashtags={suggestedHashtags}
+              />
+
+              <GeneratedContent
+                isLoading={isLoading}
+                progress={progress}
+                generatedPosts={generatedPosts}
+                onRegeneratePost={handleRegeneratePost}
+              />
+            </div>
+          </div>
+
+          <div className="p-4 border-t">
+            <Button
+              onClick={handleGenerate}
+              className="w-full"
+              disabled={isLoading || !name.trim() || !goal || platforms.length === 0}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Wand2 className="h-4 w-4 mr-2" />
+              )}
+              Generate AI Campaign
+            </Button>
           </div>
         </div>
-
-        <div className="flex gap-4 pt-4 border-t">
-          <Button
-            onClick={handleGenerate}
-            className="flex-1"
-            disabled={isLoading || !topic.trim() || platforms.length === 0}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Wand2 className="h-4 w-4 mr-2" />
-            )}
-            Generate Campaign
-          </Button>
-        </div>
-
-        <SaveTemplateDialog
-          isOpen={isSaveTemplateOpen}
-          onClose={() => setIsSaveTemplateOpen(false)}
-          campaignData={{
-            topic,
-            platforms: platforms.map(p => p.toLowerCase()),
-            duration,
-            tone,
-            timeSlots,
-            hashtags,
-          }}
-        />
-
-        <LoadTemplateDialog
-          isOpen={isLoadTemplateOpen}
-          onClose={() => setIsLoadTemplateOpen(false)}
-          onSelectTemplate={handleLoadTemplate}
-        />
       </DialogContent>
     </Dialog>
   );
