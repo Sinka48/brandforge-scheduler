@@ -3,9 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { PostItem } from "../calendar/post-list/PostItem";
 import { LoadingState } from "../calendar/post-list/LoadingState";
 import { EmptyState } from "../calendar/post-list/EmptyState";
-import { PlatformId } from "@/constants/platforms";
+import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { useToast } from "@/hooks/use-toast";
-import { platforms } from "@/constants/platforms";
 
 interface CampaignPostsProps {
   campaignId: string;
@@ -113,7 +112,7 @@ export function CampaignPosts({ campaignId }: CampaignPostsProps) {
         <PostItem
           key={post.id}
           post={post}
-          platforms={platforms}
+          platforms={PLATFORMS}
           onEdit={handleEditPost}
           onDelete={handleDeletePost}
           onPublish={handlePublishPost}
