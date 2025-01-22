@@ -1,40 +1,68 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
-import { useState } from "react";
+import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
+import { usePostState } from "@/hooks/usePostState";
+import { usePostActions } from "@/hooks/usePostActions";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onGenerateCampaign: () => void;
 }
 
 export function AICampaignDialog({
   isOpen,
   onOpenChange,
-  onGenerateCampaign,
 }: AICampaignDialogProps) {
-  const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("desktop");
-  
+  const { newPost, setNewPost, handlePlatformToggle } = usePostState();
+  const { createPost } = usePostActions("user-id"); // Replace "user-id" with actual user ID
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    try {
+      await createPost(newPost);
+      toast({
+        title: "Success",
+        description: "Post created successfully",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create post.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setNewPost({
+        content: '',
+        platforms: [],
+        image: '',
+        time: '',
+        status: 'draft',
+        date: new Date(),
+      });
+    }
+  }, [isOpen, setNewPost]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader 
-          editMode={false}
-          previewMode={previewMode}
-          onPreviewModeChange={setPreviewMode}
+          editMode={false} 
+          previewMode="desktop"
+          onPreviewModeChange={() => {}}
         />
-        <div className="p-4">
-          <h2 className="text-lg font-semibold">Generate Campaign</h2>
-          <p className="text-sm text-muted-foreground">
-            Use AI to generate your campaign content.
-          </p>
-          <button
-            onClick={onGenerateCampaign}
-            className="mt-4 btn btn-primary"
-          >
-            Generate Campaign
-          </button>
-        </div>
+        <GeneratedContent
+          content={newPost.content}
+          selectedPlatforms={newPost.platforms}
+          imageUrl={newPost.image}
+        />
+        {/* Add other components like PostContent, DialogActions, etc. */}
       </DialogContent>
     </Dialog>
   );

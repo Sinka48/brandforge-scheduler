@@ -1,4 +1,4 @@
-import { PlatformPreview } from "@/components/calendar/post-dialog/platform-previews/PlatformPreview";
+import { PlatformPreview } from "@/components/calendar/post-dialog/PlatformPreview";
 
 interface GeneratedContentProps {
   content: any;
