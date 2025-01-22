@@ -37,6 +37,8 @@ export function CalendarView({
     authLoading
   } = useCalendarData();
 
+  console.log('CalendarView - Fetched posts:', posts);
+
   const handleEditPost = (post: Post) => {
     if (onPostClick) {
       onPostClick(post);
@@ -65,7 +67,7 @@ export function CalendarView({
 
   return (
     <CalendarContent
-      posts={posts}
+      posts={posts || []}
       selectedDate={selectedDate}
       handleDeletePost={handleDeletePost}
       handleEditPost={handleEditPost}

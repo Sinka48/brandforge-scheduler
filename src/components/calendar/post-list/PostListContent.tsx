@@ -2,6 +2,7 @@ import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
 import { PlatformId } from "@/constants/platforms";
 import { Post } from "../types";
+import { isSameDay } from "date-fns";
 
 interface Platform {
   id: PlatformId;
@@ -34,24 +35,20 @@ export function PostListContent({
   selectedPosts = [],
   onSelectPost
 }: PostListContentProps) {
-  console.log('PostListContent - posts:', posts);
+  console.log('PostListContent - All posts:', posts);
   console.log('PostListContent - selectedDate:', selectedDate);
 
-  // Filter posts based on selected date if one is provided
+  // If no date is selected, show all posts
   const filteredPosts = selectedDate
     ? posts.filter(post => {
         const postDate = new Date(post.date);
-        return (
-          postDate.getFullYear() === selectedDate.getFullYear() &&
-          postDate.getMonth() === selectedDate.getMonth() &&
-          postDate.getDate() === selectedDate.getDate()
-        );
+        return isSameDay(postDate, selectedDate);
       })
     : posts;
 
   console.log('PostListContent - filteredPosts:', filteredPosts);
 
-  if (!filteredPosts || filteredPosts.length === 0) {
+  if (!posts || posts.length === 0) {
     return <EmptyState />;
   }
 
@@ -71,6 +68,9 @@ export function PostListContent({
           onSelect={onSelectPost}
         />
       ))}
+      {filteredPosts.length === 0 && (
+        <EmptyState />
+      )}
     </div>
   );
 }
