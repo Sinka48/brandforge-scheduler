@@ -3,7 +3,7 @@ import { DialogHeader } from "./post-dialog/DialogHeader";
 import { DialogActions } from "./post-dialog/DialogActions";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +34,7 @@ export function AICampaignDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedPosts, setGeneratedPosts] = useState<any[]>([]);
+  const [campaignId, setCampaignId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handlePlatformToggle = (platformId: string) => {
@@ -111,7 +112,6 @@ export function AICampaignDialog({
 
     setIsLoading(true);
     setProgress(0);
-    setGeneratedPosts([]);
     
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -141,6 +141,7 @@ export function AICampaignDialog({
         .single();
 
       if (campaignError) throw campaignError;
+      setCampaignId(campaignData.id);
 
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
@@ -156,24 +157,10 @@ export function AICampaignDialog({
       setGeneratedPosts(data.campaign);
       setProgress(100);
 
-      // Save generated posts as drafts
-      for (const post of data.campaign) {
-        await supabase.from('posts').insert({
-          content: post.content,
-          platform: post.platform,
-          status: 'draft',
-          campaign_id: campaignData.id,
-          scheduled_for: post.time || new Date().toISOString(),
-          user_id: session.user.id
-        });
-      }
-
       toast({
-        title: "Campaign Created",
-        description: "Campaign and posts have been created successfully",
+        title: "Campaign Generated",
+        description: "Campaign content has been generated successfully. Click Save to finalize.",
       });
-
-      navigate('/campaigns');
     } catch (error) {
       console.error('Error generating campaign:', error);
       toast({
@@ -182,6 +169,46 @@ export function AICampaignDialog({
         variant: "destructive",
       });
       setProgress(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!campaignId || !generatedPosts.length) return;
+
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      // Save generated posts as drafts
+      for (const post of generatedPosts) {
+        await supabase.from('posts').insert({
+          content: post.content,
+          platform: post.platform,
+          status: 'draft',
+          campaign_id: campaignId,
+          scheduled_for: post.time || new Date().toISOString(),
+          user_id: session.user.id
+        });
+      }
+
+      toast({
+        title: "Campaign Saved",
+        description: "Campaign and posts have been saved successfully",
+      });
+
+      // Close dialog and navigate to campaigns page
+      onOpenChange(false);
+      navigate('/campaigns');
+    } catch (error) {
+      console.error('Error saving campaign:', error);
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save campaign",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -236,18 +263,41 @@ export function AICampaignDialog({
           </div>
 
           <div className="p-4 border-t">
-            <Button
-              onClick={handleGenerate}
-              className="w-full"
-              disabled={isLoading || !name.trim() || !goal || platforms.length === 0}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Wand2 className="h-4 w-4 mr-2" />
-              )}
-              Generate AI Campaign
-            </Button>
+            {generatedPosts.length > 0 ? (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setGeneratedPosts([]);
+                    setCampaignId(null);
+                  }}
+                  className="flex-1"
+                >
+                  Reset
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  className="flex-1"
+                  disabled={isLoading}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Campaign
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={handleGenerate}
+                className="w-full"
+                disabled={isLoading || !name.trim() || !goal || platforms.length === 0}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Wand2 className="h-4 w-4 mr-2" />
+                )}
+                Generate AI Campaign
+              </Button>
+            )}
           </div>
         </div>
 
