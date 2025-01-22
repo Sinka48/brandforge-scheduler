@@ -40,29 +40,6 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
-      // First check if the user exists
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: data.email
-        }
-      });
-
-      if (getUserError) {
-        console.error("Error checking user:", getUserError);
-        throw getUserError;
-      }
-
-      if (!users || users.length === 0) {
-        toast({
-          title: "Account not found",
-          description: "No account exists with this email. Please sign up first.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Proceed with login
       const { error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -82,8 +59,8 @@ export function LoginForm() {
                 });
               } else if (error.message.includes("Invalid login credentials")) {
                 toast({
-                  title: "Invalid password",
-                  description: "The password you entered is incorrect. Please try again.",
+                  title: "Invalid credentials",
+                  description: "The email or password you entered is incorrect. Please try again.",
                   variant: "destructive",
                 });
                 form.setValue("password", "");
