@@ -15,16 +15,18 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PlayCircle, PauseCircle, Trash2, FileUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CampaignManagerProps {
   campaigns: Campaign[];
 }
 
-export function CampaignManager({ campaigns }: CampaignManagerProps) {
+export function CampaignManager({ campaigns: initialCampaigns }: CampaignManagerProps) {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [localCampaigns, setLocalCampaigns] = useState(initialCampaigns);
 
   // Fetch post counts for each campaign
   const { data: postCounts } = useQuery({
@@ -33,7 +35,7 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
       const { data, error } = await supabase
         .from('posts')
         .select('campaign_id, status')
-        .in('campaign_id', campaigns.map(c => c.id));
+        .in('campaign_id', localCampaigns.map(c => c.id));
 
       if (error) throw error;
 
@@ -50,7 +52,7 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
 
       return counts;
     },
-    enabled: campaigns.length > 0
+    enabled: localCampaigns.length > 0
   });
 
   const handleStatusToggle = async (campaignId: string, currentStatus: string) => {
@@ -62,6 +64,18 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
         .eq('id', campaignId);
 
       if (error) throw error;
+
+      // Update local state
+      setLocalCampaigns(prevCampaigns => 
+        prevCampaigns.map(campaign => 
+          campaign.id === campaignId 
+            ? { ...campaign, status: newStatus }
+            : campaign
+        )
+      );
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
 
       toast({
         title: "Success",
@@ -95,6 +109,14 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
 
       if (campaignError) throw campaignError;
 
+      // Update local state
+      setLocalCampaigns(prevCampaigns => 
+        prevCampaigns.filter(campaign => campaign.id !== campaignId)
+      );
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+
       toast({
         title: "Success",
         description: "Campaign and associated posts deleted successfully",
@@ -110,7 +132,6 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
   };
 
   const handleExport = (campaignId: string) => {
-    // Placeholder for export functionality
     console.log('Export campaign:', campaignId);
     toast({
       title: "Export",
@@ -133,7 +154,7 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {campaigns.map((campaign) => (
+          {localCampaigns.map((campaign) => (
             <TableRow 
               key={campaign.id}
               className="cursor-pointer hover:bg-muted"
@@ -148,9 +169,9 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
                   }}
                 >
                   {campaign.status === 'active' ? (
-                    <PauseCircle className="h-5 w-5 text-yellow-500" />
-                  ) : (
                     <PlayCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <PauseCircle className="h-5 w-5 text-yellow-500" />
                   )}
                 </Button>
               </TableCell>
