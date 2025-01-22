@@ -32,7 +32,6 @@ export default function CampaignsPage({ session }: { session: any }) {
   });
 
   const handleGenerateCampaign = (posts: any[]) => {
-    // Handle campaign generation
     console.log('Generated posts:', posts);
   };
 
@@ -46,16 +45,27 @@ export default function CampaignsPage({ session }: { session: any }) {
               Create and manage your marketing campaigns
             </p>
           </div>
-          <Button
-            onClick={() => setIsCampaignDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Wand2 className="h-4 w-4" />
-            AI Campaign
-            <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
-              BETA
-            </Badge>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              onClick={() => setIsCampaignDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Wand2 className="h-4 w-4" />
+              AI Campaign
+              <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
+                BETA
+              </Badge>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/how-it-works")}
+              className="flex items-center gap-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+              How It Works
+            </Button>
+          </div>
         </div>
 
         {!isLoading && (!campaigns || campaigns.length === 0) ? (
@@ -64,10 +74,10 @@ export default function CampaignsPage({ session }: { session: any }) {
             title="No campaigns yet"
             description="Create your first AI-powered campaign to get started"
             action={{
-              label: "AI Campaigns",
+              label: "AI Campaign",
               onClick: () => setIsCampaignDialogOpen(true),
               icon: Wand2,
-              variant: "secondary",
+              variant: "default",
               badge: "BETA"
             }}
             additionalActions={[
