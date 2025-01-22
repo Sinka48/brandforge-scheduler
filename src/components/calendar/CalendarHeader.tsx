@@ -1,71 +1,45 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Wand2, Clock } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useNextPostTimer } from "@/hooks/useNextPostTimer";
+import { Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CalendarHeaderProps {
-  onNewPost: () => void;
-  onNewCampaign: () => void;
+  onNewPost?: () => void;
+  onNewCampaign?: () => void;
+  postsCount?: number;
 }
 
-export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps) {
+export function CalendarHeader({ 
+  onNewPost, 
+  onNewCampaign,
+  postsCount = 0
+}: CalendarHeaderProps) {
   const timeLeft = useNextPostTimer();
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-2">
-        <h2 className="text-lg font-semibold">Next post in: {timeLeft}</h2>
-        <Clock className="h-4 w-4 text-muted-foreground" />
+      <div className="flex items-center gap-4">
+        <h1 className="text-2xl font-bold">Calendar</h1>
+        {postsCount > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Next post {timeLeft}
+          </p>
+        )}
       </div>
-
       <div className="flex items-center gap-2">
-        <div className="hidden sm:block">
-          <Button
-            onClick={onNewCampaign}
-            className="flex items-center gap-2"
-          >
-            <Wand2 className="h-4 w-4" />
-            AI Campaign
-            <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
-              BETA
-            </Badge>
-          </Button>
-        </div>
-        <div className="hidden sm:block">
-          <Button variant="secondary" onClick={onNewPost} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Post
-          </Button>
-        </div>
-        
-        <div className="sm:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onNewPost}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Post
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onNewCampaign}>
-                <Wand2 className="h-4 w-4 mr-2" />
-                AI Campaign
-                <Badge variant="secondary" className="ml-2 text-[10px] px-1 py-0">
-                  BETA
-                </Badge>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <Button
+          variant="outline"
+          onClick={onNewPost}
+        >
+          Create Post
+        </Button>
+        <Button
+          onClick={onNewCampaign}
+        >
+          <Wand2 className="mr-2 h-4 w-4" />
+          AI Campaign
+          <Badge variant="secondary" className="ml-2">BETA</Badge>
+        </Button>
       </div>
     </div>
   );
