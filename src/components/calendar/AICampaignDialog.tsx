@@ -13,6 +13,7 @@ import { addDays, set } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function AICampaignDialog({
   onGenerateCampaign,
 }: AICampaignDialogProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("");
   const [platforms, setPlatforms] = useState<string[]>([]);
@@ -186,7 +188,6 @@ export function AICampaignDialog({
 
       // Save generated posts as drafts
       for (const post of generatedPosts) {
-        // Create a proper timestamp by combining the current date with the post's time
         const [hours, minutes] = post.time.split(':').map(Number);
         const scheduledDate = set(startDate, {
           hours,
@@ -195,18 +196,21 @@ export function AICampaignDialog({
           milliseconds: 0
         });
 
-        // Add days offset based on post index to spread posts over time
         const finalDate = addDays(scheduledDate, generatedPosts.indexOf(post));
 
         await supabase.from('posts').insert({
           content: post.content,
-          platform: post.platform.toLowerCase(), // Ensure platform is lowercase
+          platform: post.platform.toLowerCase(),
           status: 'draft',
           campaign_id: campaignId,
           scheduled_for: finalDate.toISOString(),
           user_id: session.user.id
         });
       }
+
+      // Invalidate relevant queries
+      await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
 
       toast({
         title: "Campaign Saved",

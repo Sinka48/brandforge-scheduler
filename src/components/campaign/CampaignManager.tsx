@@ -77,6 +77,7 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
 
       toast({
         title: "Success",
@@ -117,6 +118,7 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
 
       toast({
         title: "Success",
