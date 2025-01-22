@@ -119,7 +119,8 @@ export function DraftManager({
           platform: post.platforms[0],
           scheduled_for: publishDate.toISOString()
         })
-        .eq('id', postId);
+        .eq('id', postId)
+        .select();  // Add .select() to ensure we get the updated record
 
       if (updateError) throw updateError;
       
