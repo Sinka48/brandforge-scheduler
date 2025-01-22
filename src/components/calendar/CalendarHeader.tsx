@@ -15,16 +15,14 @@ interface CalendarHeaderProps {
 }
 
 export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps) {
-  const { timeLeft, hasUpcomingPosts } = useNextPostTimer();
+  const timeLeft = useNextPostTimer();
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
-      {hasUpcomingPosts && (
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Next post in: {timeLeft}</h2>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-semibold">Next post in: {timeLeft}</h2>
+        <Clock className="h-4 w-4 text-muted-foreground" />
+      </div>
 
       <div className="flex items-center gap-2">
         <div className="hidden sm:block">
