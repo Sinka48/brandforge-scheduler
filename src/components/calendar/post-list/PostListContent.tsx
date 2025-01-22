@@ -3,17 +3,18 @@ import { EmptyState } from "./EmptyState";
 import { PlatformId } from "@/constants/platforms";
 import { Post } from "../types";
 import { isSameDay } from "date-fns";
+import { LucideIcon } from "lucide-react";
 
 interface Platform {
   id: PlatformId;
   name: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
 }
 
 interface PostListContentProps {
   selectedDate: Date | undefined;
   posts: Post[];
-  platforms: Platform[];
+  platforms: readonly Platform[];
   handleDeletePost: (postId: string, deleteAll?: boolean) => void;
   handleEditPost: (post: Post) => void;
   handlePublishPost: (postId: string) => void;

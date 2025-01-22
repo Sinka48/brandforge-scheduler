@@ -48,7 +48,6 @@ export function CampaignPosts({ campaignId }: CampaignPostsProps) {
   });
 
   const handleEditPost = async (post: any) => {
-    // This will be handled by the parent component
     console.log('Edit post:', post);
   };
 

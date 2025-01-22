@@ -3,17 +3,18 @@ import { PostListContent } from "./post-list/PostListContent";
 import { LoadingState } from "./post-list/LoadingState";
 import { useState } from "react";
 import { Post } from "./types";
+import { LucideIcon } from "lucide-react";
 
 interface Platform {
   id: PlatformId;
   name: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
 }
 
 interface PostListProps {
   selectedDate: Date | undefined;
   posts: Post[];
-  platforms: Platform[];
+  platforms: readonly Platform[];
   handleDeletePost: (postId: string, deleteAll?: boolean) => void;
   handleEditPost: (post: Post) => void;
   handlePublishPost: (postId: string) => void;
