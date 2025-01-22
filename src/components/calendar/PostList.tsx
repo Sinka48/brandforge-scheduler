@@ -35,6 +35,7 @@ interface PostListProps {
   platforms: Platform[];
   handleDeletePost: (postId: string, deleteAll?: boolean) => void;
   handleEditPost: (post: Post) => void;
+  handlePublishPost: (postId: string) => void;
   isLoading?: boolean;
   selectedPosts?: string[];
   onSelectPost?: (postId: string) => void;
@@ -46,6 +47,7 @@ export function PostList({
   platforms, 
   handleDeletePost, 
   handleEditPost,
+  handlePublishPost,
   isLoading,
   selectedPosts = [],
   onSelectPost
@@ -63,6 +65,7 @@ export function PostList({
       platforms={platforms}
       handleDeletePost={handleDeletePost}
       handleEditPost={handleEditPost}
+      handlePublishPost={handlePublishPost}
       showAllPosts={showAllPosts}
       setShowAllPosts={setShowAllPosts}
       selectedPosts={selectedPosts}

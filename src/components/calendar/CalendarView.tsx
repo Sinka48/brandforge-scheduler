@@ -62,6 +62,35 @@ export function CalendarView({
 
   const { data: posts = [], isLoading, error } = usePostFetching(session);
 
+  const handlePublishPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ 
+          status: 'scheduled',
+          published_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .eq('user_id', session?.user.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
+      
+      toast({
+        title: "Success",
+        description: "Post scheduled for publishing",
+      });
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (authLoading) {
     return <AuthCheckingState />;
   }
@@ -134,6 +163,7 @@ export function CalendarView({
             platforms={platforms}
             handleDeletePost={handleDeletePost}
             handleEditPost={handleEditPost}
+            handlePublishPost={handlePublishPost}
             isLoading={isLoading}
           />
         ) : (

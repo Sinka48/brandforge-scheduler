@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
-import { Edit, Trash2, MoreVertical, Calendar, Pause, Play } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Calendar, Send } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Platform {
   id: PlatformId;
@@ -41,6 +38,7 @@ interface PostItemProps {
   platforms: Platform[];
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
+  onPublish: (postId: string) => void;
   isSelected?: boolean;
   onSelect?: (postId: string) => void;
 }
@@ -50,42 +48,12 @@ export function PostItem({
   platforms, 
   onEdit, 
   onDelete,
+  onPublish,
   isSelected,
   onSelect
 }: PostItemProps) {
-  const [isPaused, setIsPaused] = useState(post.status === 'paused');
-  const { toast } = useToast();
-  
-  // Convert single platform to array if needed
   const platformsArray = Array.isArray(post.platforms) ? post.platforms : [post.platforms];
   const postPlatforms = platforms.filter(p => platformsArray.includes(p.id));
-
-  const handlePauseToggle = async () => {
-    try {
-      const newStatus = isPaused ? 'scheduled' : 'paused';
-      const { error } = await supabase
-        .from('posts')
-        .update({ status: newStatus })
-        .eq('id', post.id);
-
-      if (error) throw error;
-
-      setIsPaused(!isPaused);
-      toast({
-        title: isPaused ? "Post Activated" : "Post Paused",
-        description: isPaused 
-          ? "The post has been activated and will be published as scheduled." 
-          : "The post has been paused and won't be published until activated.",
-      });
-    } catch (error) {
-      console.error('Error toggling post status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update post status. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <Card className={`p-4 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
@@ -99,19 +67,16 @@ export function PostItem({
         )}
         
         <div className="flex-1 space-y-2">
-          {/* Date display */}
           {post.time && (
             <p className="text-sm text-muted-foreground">
               {format(post.date, 'PPP')} at {post.time}
             </p>
           )}
 
-          {/* Post content */}
           <div className="space-y-2">
             <p className="font-medium break-words">{post.content}</p>
           </div>
 
-          {/* Platform badges and campaign info */}
           <div className="flex flex-wrap gap-2 mt-2">
             {postPlatforms.map((platform) => (
               <Badge key={platform.id} variant="secondary" className="flex items-center gap-1">
@@ -126,22 +91,25 @@ export function PostItem({
                 {post.campaign.name}
               </Badge>
             )}
+
+            <Badge variant={post.status === 'scheduled' ? 'default' : 'secondary'}>
+              {post.status}
+            </Badge>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handlePauseToggle}
-            className="h-8 w-8"
-          >
-            {isPaused ? (
-              <Play className="h-4 w-4" />
-            ) : (
-              <Pause className="h-4 w-4" />
-            )}
-          </Button>
+          {post.status === 'draft' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPublish(post.id)}
+              className="flex items-center gap-1"
+            >
+              <Send className="h-4 w-4" />
+              Publish
+            </Button>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
