@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Image, ImagePlus, Sparkles, Upload } from "lucide-react";
+import { Image, ImagePlus, Sparkles } from "lucide-react";
 import { MediaLibrary } from "./MediaLibrary";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -165,54 +165,27 @@ export function DialogContent({
         )}
         
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateImage}
+            disabled={isGeneratingImage}
+            className="h-8 text-xs whitespace-nowrap"
+          >
+            <Sparkles className="h-3 w-3 mr-1" />
+            Generate
+          </Button>
+          
           {!showImageUrl ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateImage}
-                disabled={isGeneratingImage}
-                className="h-8 text-xs"
-              >
-                <Sparkles className="h-3 w-3 mr-1" />
-                Generate
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowImageUrl(true)}
-                className="h-8 text-xs"
-              >
-                <ImagePlus className="h-3 w-3 mr-1" />
-                Add URL
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsMediaLibraryOpen(true)}
-                className="h-8 text-xs"
-              >
-                <Image className="h-3 w-3 mr-1" />
-                Gallery
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById('image-upload')?.click()}
-                className="h-8 text-xs"
-              >
-                <Upload className="h-3 w-3 mr-1" />
-                Upload
-              </Button>
-              
-              <ImageUploader
-                imageUrl={newPost.image}
-                onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
-              />
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImageUrl(true)}
+              className="h-8 text-xs whitespace-nowrap"
+            >
+              <ImagePlus className="h-3 w-3 mr-1" />
+              Add URL
+            </Button>
           ) : (
             <div className="flex-1 flex gap-1.5">
               <Input
@@ -226,7 +199,7 @@ export function DialogContent({
                 size="sm"
                 onClick={handleImageUrlSubmit}
                 disabled={!imageUrl.trim()}
-                className="h-8 text-xs"
+                className="h-8 text-xs whitespace-nowrap"
               >
                 Add
               </Button>
@@ -240,6 +213,21 @@ export function DialogContent({
               </Button>
             </div>
           )}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsMediaLibraryOpen(true)}
+            className="h-8 text-xs whitespace-nowrap"
+          >
+            <Image className="h-3 w-3 mr-1" />
+            Gallery
+          </Button>
+          
+          <ImageUploader
+            imageUrl={newPost.image}
+            onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
+          />
         </div>
       </div>
 
