@@ -1,5 +1,5 @@
 import { Post } from "@/components/calendar/types";
-import { PostList } from "@/components/calendar/PostList";
+import { PostList } from "../../calendar/PostList";
 import { Button } from "@/components/ui/button";
 import { Plus, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
