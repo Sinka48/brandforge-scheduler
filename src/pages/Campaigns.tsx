@@ -4,14 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Campaign } from "@/types/campaign";
 import { CampaignManager } from "@/components/campaign/CampaignManager";
 import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
+import { Wand2, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useNavigate } from "react-router-dom";
 
 export default function CampaignsPage({ session }: { session: any }) {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
+  const navigate = useNavigate();
   
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ['campaigns', session?.user?.id],
@@ -61,13 +63,21 @@ export default function CampaignsPage({ session }: { session: any }) {
             icon={Wand2}
             title="No campaigns yet"
             description="Create your first AI-powered campaign to get started"
-            action={{
-              label: "Create AI Campaign",
-              onClick: () => setIsCampaignDialogOpen(true),
-              icon: Wand2,
-              variant: "secondary",
-              badge: "BETA"
-            }}
+            actions={[
+              {
+                label: "How It Works",
+                onClick: () => navigate("/how-it-works"),
+                icon: HelpCircle,
+                variant: "outline"
+              },
+              {
+                label: "AI Campaigns",
+                onClick: () => setIsCampaignDialogOpen(true),
+                icon: Wand2,
+                variant: "secondary",
+                badge: "BETA"
+              }
+            ]}
           />
         ) : (
           <CampaignManager campaigns={campaigns || []} />
