@@ -64,7 +64,7 @@ export function PostItem({
   return (
     <Card className={`p-6 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
       <div className="flex items-start gap-4">
-        {onSelect && (
+        {post.status === 'draft' && onSelect && (
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(post.id)}
