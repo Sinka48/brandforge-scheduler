@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import IndexPage from "./pages/Index";
 import CalendarPage from "./pages/Calendar";
 import CampaignsPage from "./pages/Campaigns";
@@ -16,15 +16,6 @@ interface RoutesProps {
 }
 
 export function Routes({ session }: RoutesProps) {
-  // Protected route wrapper
-  const ProtectedRoute = ({ element }: { element: React.ReactNode }) => {
-    if (!session) {
-      console.log('No session, redirecting to home');
-      return <Navigate to="/" replace />;
-    }
-    return element;
-  };
-
   return createBrowserRouter([
     {
       path: "/",
@@ -32,31 +23,31 @@ export function Routes({ session }: RoutesProps) {
     },
     {
       path: "/calendar",
-      element: <ProtectedRoute element={<CalendarPage session={session} />} />,
+      element: <CalendarPage session={session} />,
     },
     {
       path: "/campaigns",
-      element: <ProtectedRoute element={<CampaignsPage session={session} />} />,
+      element: <CampaignsPage session={session} />,
     },
     {
       path: "/settings",
-      element: <ProtectedRoute element={<SettingsPage session={session} />} />,
+      element: <SettingsPage session={session} />,
     },
     {
       path: "/brands",
-      element: <ProtectedRoute element={<BrandsPage session={session} />} />,
+      element: <BrandsPage session={session} />,
     },
     {
       path: "/brand/:id",
-      element: <ProtectedRoute element={<BrandPage session={session} />} />,
+      element: <BrandPage session={session} />,
     },
     {
       path: "/brand/:id/identity",
-      element: <ProtectedRoute element={<BrandIdentityPage session={session} />} />,
+      element: <BrandIdentityPage session={session} />,
     },
     {
       path: "/brand-list",
-      element: <ProtectedRoute element={<BrandListPage session={session} />} />,
+      element: <BrandListPage session={session} />,
     },
     {
       path: "/how-it-works",
@@ -64,7 +55,7 @@ export function Routes({ session }: RoutesProps) {
     },
     {
       path: "/drafts",
-      element: <ProtectedRoute element={<DraftsPage session={session} />} />,
+      element: <DraftsPage session={session} />,
     },
   ]);
 }
