@@ -13,9 +13,18 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, platforms, duration, tone, timeSlots, hashtags } = await req.json();
+    const requestData = await req.json();
+    console.log('Received request data:', requestData);
 
-    console.log('Generating campaign for:', { topic, platforms, duration, tone, timeSlots, hashtags });
+    const { goal, platforms, duration, tone } = requestData;
+
+    // Validate required parameters
+    if (!goal || !platforms || !Array.isArray(platforms) || platforms.length === 0) {
+      console.error('Missing or invalid required parameters:', { goal, platforms });
+      throw new Error('Missing required parameters: goal and platforms array');
+    }
+
+    console.log('Generating campaign for:', { goal, platforms, duration, tone });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -24,7 +33,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -34,17 +43,12 @@ serve(async (req) => {
             - platform: the social media platform
             - time: time in HH:mm format
             - imageUrl: a description for an image that would complement the post
-            - hashtags: relevant hashtags for the post
-            Return an object with two properties:
-            - campaign: array of post objects
-            - suggestedHashtags: array of relevant hashtags for the campaign`
+            Return an object with a campaign property containing an array of post objects.`
           },
           {
             role: 'user',
-            content: `Generate a ${duration}-day social media campaign about ${topic} for ${platforms.join(', ')}. 
-            Use a ${tone} tone. Each post should be platform-appropriate.
-            Time slots to use: ${JSON.stringify(timeSlots)}
-            Include these hashtags: ${hashtags.join(', ')}`
+            content: `Generate a ${duration}-day social media campaign about "${goal}" for ${platforms.join(', ')}. 
+            Use a ${tone || 'professional'} tone. Each post should be platform-appropriate.`
           }
         ],
         temperature: 0.7,
@@ -76,7 +80,11 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in generate-campaign function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Check function logs for more information'
+      }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
