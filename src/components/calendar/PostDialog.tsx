@@ -7,6 +7,7 @@ import { LoadingState } from "./post-dialog/LoadingState";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { format, set } from "date-fns";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -54,6 +55,23 @@ export function PostDialog({
       return;
     }
 
+    // Create a proper timestamp by combining the selected date with the time
+    if (selectedDate && newPost.time) {
+      const [hours, minutes] = newPost.time.split(':').map(Number);
+      const scheduledDate = set(selectedDate, {
+        hours,
+        minutes,
+        seconds: 0,
+        milliseconds: 0
+      });
+      
+      // Update the newPost with the properly formatted date
+      setNewPost({
+        ...newPost,
+        date: scheduledDate
+      });
+    }
+
     handleAddPost();
   };
 
@@ -72,7 +90,6 @@ export function PostDialog({
 
   const handleQuickPost = async () => {
     try {
-      // Check if platforms are selected
       if (!newPost.platforms || newPost.platforms.length === 0) {
         toast({
           title: "Platform Required",
