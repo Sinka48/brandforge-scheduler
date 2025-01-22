@@ -27,7 +27,6 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
       <div className="flex items-center gap-2">
         <div className="hidden sm:block">
           <Button
-            variant="outline"
             onClick={onNewCampaign}
             className="flex items-center gap-2"
           >
@@ -39,7 +38,7 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
           </Button>
         </div>
         <div className="hidden sm:block">
-          <Button onClick={onNewPost} className="flex items-center gap-2">
+          <Button variant="secondary" onClick={onNewPost} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Post
           </Button>
