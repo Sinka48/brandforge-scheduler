@@ -6,6 +6,9 @@ import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { useNavigate } from "react-router-dom";
+import { usePostState } from "@/hooks/usePostState";
+import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
+import { format } from "date-fns";
 
 interface CalendarPageProps {
   session: Session | null;
@@ -14,7 +17,10 @@ interface CalendarPageProps {
 export default function CalendarPage({ session }: CalendarPageProps) {
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [isAICampaignDialogOpen, setIsAICampaignDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const navigate = useNavigate();
+  const { newPost, setNewPost, handlePlatformToggle } = usePostState();
+  const { handleAddPost, handleSaveAsDraft } = useCalendarState();
 
   const handleCreatePost = () => {
     setIsPostDialogOpen(true);
@@ -45,17 +51,31 @@ export default function CalendarPage({ session }: CalendarPageProps) {
         </div>
 
         <div className="grid gap-8">
-          <CalendarView />
-          <PostList
+          <CalendarView 
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
             onCreatePost={handleCreatePost}
-            onCreateCampaign={handleCreateCampaign}
-            onHowItWorks={handleHowItWorks}
+            onPostClick={() => {}}
+          />
+          <PostList
+            selectedDate={selectedDate}
+            posts={[]}
+            platforms={[]}
+            handleDeletePost={() => {}}
+            handleEditPost={() => {}}
+            handlePublishPost={() => {}}
           />
         </div>
 
         <PostDialog
           isOpen={isPostDialogOpen}
           onOpenChange={setIsPostDialogOpen}
+          newPost={newPost}
+          setNewPost={setNewPost}
+          handleAddPost={handleAddPost}
+          handleSaveAsDraft={handleSaveAsDraft}
+          handlePlatformToggle={handlePlatformToggle}
+          selectedDate={selectedDate}
         />
 
         <AICampaignDialog
