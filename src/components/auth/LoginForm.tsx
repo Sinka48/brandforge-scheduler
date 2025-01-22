@@ -15,7 +15,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -161,10 +160,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <div className="flex items-center justify-between text-sm">
-          <Link to="/signup" className="text-primary hover:underline">
-            Don't have an account? Sign up
-          </Link>
+        <div className="flex items-center justify-end text-sm">
           <Button
             type="button"
             variant="link"
