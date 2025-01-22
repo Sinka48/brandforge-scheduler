@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Post } from "@/components/calendar/types";
+import { PlatformId } from "@/constants/platforms";
 
 export function usePostData(session: Session | null) {
   return useQuery({
@@ -34,7 +35,7 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('status.eq.scheduled,and(campaign_id.not.is.null,campaigns.status.eq.active)')
+          .or('status.eq.scheduled,and(campaign_id.is.not.null,campaigns.status.eq.active)')
           .order('scheduled_for', { ascending: true });
 
         if (error) {
@@ -47,7 +48,7 @@ export function usePostData(session: Session | null) {
           id: post.id,
           content: post.content,
           date: new Date(post.scheduled_for),
-          platforms: [post.platform],
+          platforms: [post.platform as PlatformId],
           image: post.image_url,
           status: post.status as 'draft' | 'scheduled',
           time: new Date(post.scheduled_for).toLocaleTimeString([], { 
