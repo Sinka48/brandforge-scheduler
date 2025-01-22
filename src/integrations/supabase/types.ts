@@ -481,12 +481,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      ensure_dashboard_analytics_exists: {
-        Args: {
-          input_user_id: string
-        }
-        Returns: undefined
-      }
+      ensure_dashboard_analytics_exists:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              input_user_id: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       [_ in never]: never

@@ -7,12 +7,18 @@ export function StatsCards() {
   const { data: analytics, isLoading } = useQuery({
     queryKey: ['dashboard-analytics'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return null;
+
       // Force refresh analytics before fetching
-      await supabase.rpc('ensure_dashboard_analytics_exists');
+      await supabase.rpc('ensure_dashboard_analytics_exists', {
+        input_user_id: session.user.id
+      });
       
       const { data, error } = await supabase
         .from('dashboard_analytics')
         .select('*')
+        .eq('user_id', session.user.id)
         .single();
 
       if (error) throw error;
@@ -20,8 +26,6 @@ export function StatsCards() {
     },
     refetchInterval: 30000, // Refresh every 30 seconds
   });
-
-  console.log('Dashboard analytics:', analytics);
 
   const stats = [
     {
