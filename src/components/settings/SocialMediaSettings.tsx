@@ -25,6 +25,12 @@ export function SocialMediaSettings() {
 
   const fetchConnectedPlatforms = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No active session found');
+        return;
+      }
+
       const { data: connections, error } = await supabase
         .from('social_connections')
         .select('platform');
@@ -59,24 +65,27 @@ export function SocialMediaSettings() {
         return;
       }
 
-      // Test Twitter credentials
+      // Test Twitter connection
       const { data: testResult, error: testError } = await supabase.functions.invoke('publish-tweet', {
         body: { 
           content: "Testing Twitter connection...",
-          test: true // This flag tells the function to only verify credentials
+          test: true
         }
       });
 
-      if (testError) throw testError;
+      if (testError) {
+        console.error('Twitter test error:', testError);
+        throw new Error('Failed to verify Twitter credentials');
+      }
 
-      // If test succeeds, save the connection
+      // Save the connection
       const { error: saveError } = await supabase
         .from('social_connections')
         .insert({
           user_id: session.user.id,
           platform: platform.toLowerCase(),
-          access_token: 'connected', // We don't store actual tokens as they're in env vars
-          platform_username: session.user.email // Placeholder for actual Twitter username
+          access_token: 'connected',
+          platform_username: session.user.email
         });
 
       if (saveError) throw saveError;

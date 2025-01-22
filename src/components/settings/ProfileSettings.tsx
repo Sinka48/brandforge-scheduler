@@ -8,13 +8,23 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileSettingsProps {
-  session: Session;
+  session: Session | null;
 }
 
 export function ProfileSettings({ session }: ProfileSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [email, setEmail] = useState(session.user.email);
+  const [email, setEmail] = useState(session?.user?.email || '');
+
+  if (!session?.user) {
+    return (
+      <Card className="p-6">
+        <div className="text-center">
+          Please sign in to access profile settings.
+        </div>
+      </Card>
+    );
+  }
 
   const handleUpdateEmail = async () => {
     try {

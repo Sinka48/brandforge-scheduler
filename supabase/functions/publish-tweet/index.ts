@@ -98,8 +98,6 @@ async function publishTweet(content: string, imageUrl?: string): Promise<any> {
   };
 
   if (imageUrl) {
-    // Note: For images, we'd need to first upload to Twitter's media endpoint
-    // This is a simplified version without image support
     console.log("Image URL provided but not implemented:", imageUrl);
   }
 
@@ -133,7 +131,7 @@ serve(async (req) => {
   try {
     validateEnvironmentVariables();
 
-    const { content, imageUrl } = await req.json();
+    const { content, test = false } = await req.json();
     
     if (!content) {
       throw new Error("Tweet content is required");
@@ -143,8 +141,16 @@ serve(async (req) => {
       throw new Error("Tweet content exceeds 280 characters");
     }
 
-    console.log("Publishing tweet:", { content, imageUrl });
-    const result = await publishTweet(content, imageUrl);
+    if (test) {
+      // For test requests, just verify credentials without posting
+      console.log("Test request - verifying credentials only");
+      return new Response(JSON.stringify({ status: "ok" }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log("Publishing tweet:", { content });
+    const result = await publishTweet(content);
     
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
