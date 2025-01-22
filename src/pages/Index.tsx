@@ -2,8 +2,6 @@ import { Session } from "@supabase/supabase-js";
 import { Layout } from "@/components/layout/Layout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { Button } from "@/components/ui/button";
-import { LoginForm } from "@/components/auth/LoginForm";
 
 interface IndexPageProps {
   session: Session | null;
@@ -29,18 +27,5 @@ export default function IndexPage({ session }: IndexPageProps) {
     );
   }
 
-  // Show login form for non-authenticated users
-  return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold">Welcome</h1>
-          <p className="mt-2 text-muted-foreground">
-            Sign in to access your dashboard
-          </p>
-        </div>
-        <LoginForm />
-      </div>
-    </div>
-  );
+  return null;
 }
