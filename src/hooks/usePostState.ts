@@ -11,17 +11,19 @@ interface Post {
   recurringPattern?: string;
   recurringEndDate?: Date;
   bulkDates?: Date[];
-  date?: Date;
+  date: Date;
 }
 
 export function usePostState() {
+  const now = new Date();
+  
   const [newPost, setNewPost] = useState<Post>({
     content: '',
     platforms: [],
     image: '',
-    time: format(new Date(), 'HH:mm'),
+    time: format(now, 'HH:mm'),
     status: 'scheduled',
-    date: new Date() // Initialize with today's date
+    date: now // Initialize with current date
   });
 
   const handlePlatformToggle = (platformId: string) => {

@@ -46,10 +46,10 @@ export function PostDialog({
     }
 
     // For scheduling, both date and time are required
-    if (newPost.status === 'scheduled' && (!selectedDate || !newPost.time)) {
+    if (newPost.status === 'scheduled' && !newPost.time) {
       toast({
-        title: "Date and Time Required",
-        description: "Please select both a date and time for scheduling your post.",
+        title: "Time Required",
+        description: "Please select a time for scheduling your post.",
         variant: "destructive",
       });
       return;
