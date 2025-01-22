@@ -11,12 +11,19 @@ import {
   AlertCircle,
   CheckCircle2,
   Unlink,
+  User,
 } from "lucide-react";
 import { PLATFORMS } from "@/constants/platforms";
 
+interface PlatformConnection {
+  platform: string;
+  platform_username?: string | null;
+  platform_user_id?: string | null;
+}
+
 export function SocialMediaSettings() {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
+  const [connectedPlatforms, setConnectedPlatforms] = useState<PlatformConnection[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,11 +40,11 @@ export function SocialMediaSettings() {
 
       const { data: connections, error } = await supabase
         .from('social_connections')
-        .select('platform');
+        .select('platform, platform_username, platform_user_id');
       
       if (error) throw error;
       
-      setConnectedPlatforms(connections.map(conn => conn.platform));
+      setConnectedPlatforms(connections || []);
     } catch (error) {
       console.error('Error fetching social connections:', error);
     }
@@ -119,7 +126,7 @@ export function SocialMediaSettings() {
 
       if (error) throw error;
 
-      setConnectedPlatforms(connectedPlatforms.filter(p => p !== platform.toLowerCase()));
+      setConnectedPlatforms(connectedPlatforms.filter(p => p.platform !== platform.toLowerCase()));
       toast({
         title: "Platform Disconnected",
         description: `Successfully disconnected from ${platform}.`,
@@ -149,6 +156,14 @@ export function SocialMediaSettings() {
     }
   };
 
+  const isConnected = (platformName: string) => {
+    return connectedPlatforms.some(p => p.platform === platformName.toLowerCase());
+  };
+
+  const getConnectedAccount = (platformName: string) => {
+    return connectedPlatforms.find(p => p.platform === platformName.toLowerCase());
+  };
+
   return (
     <Card className="p-6">
       <div className="space-y-6">
@@ -161,7 +176,9 @@ export function SocialMediaSettings() {
 
         <div className="grid gap-4">
           {PLATFORMS.map((platform) => {
-            const isConnected = connectedPlatforms.includes(platform.name.toLowerCase());
+            const connected = isConnected(platform.name);
+            const accountDetails = getConnectedAccount(platform.name);
+            
             return (
               <div
                 key={platform.id}
@@ -171,31 +188,37 @@ export function SocialMediaSettings() {
                   {getPlatformIcon(platform.name)}
                   <div>
                     <h3 className="font-medium">{platform.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {isConnected ? (
+                    {connected ? (
+                      <div className="space-y-1">
                         <span className="flex items-center gap-1 text-green-600">
                           <CheckCircle2 className="h-4 w-4" />
                           Connected
                         </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-yellow-600">
-                          <AlertCircle className="h-4 w-4" />
-                          Not connected
-                        </span>
-                      )}
-                    </p>
+                        {accountDetails?.platform_username && (
+                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <User className="h-3 w-3" />
+                            @{accountDetails.platform_username}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="flex items-center gap-1 text-yellow-600">
+                        <AlertCircle className="h-4 w-4" />
+                        Not connected
+                      </span>
+                    )}
                   </div>
                 </div>
                 <Button
-                  variant={isConnected ? "destructive" : "default"}
+                  variant={connected ? "destructive" : "default"}
                   onClick={() =>
-                    isConnected
+                    connected
                       ? handleDisconnect(platform.name)
                       : handleConnect(platform.name)
                   }
                   disabled={isConnecting}
                 >
-                  {isConnected ? (
+                  {connected ? (
                     <>
                       <Unlink className="h-4 w-4 mr-2" />
                       Disconnect
