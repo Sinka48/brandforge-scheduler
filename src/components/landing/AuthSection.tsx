@@ -3,17 +3,40 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Facebook, Smartphone } from "lucide-react";
+import { Mail, Twitter, Smartphone } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export function AuthSection() {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSocialLogin = async (provider: string) => {
+  const handleSocialLogin = async (provider: 'twitter' | 'email' | 'mobile') => {
     setIsLoading(true);
-    // Dummy function - will be replaced with actual implementation
-    console.log(`Logging in with ${provider}`);
-    setTimeout(() => setIsLoading(false), 1000);
+    try {
+      if (provider === 'twitter') {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'twitter',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
+
+        if (error) {
+          throw error;
+        }
+      }
+    } catch (error: any) {
+      console.error('Social login error:', error);
+      toast({
+        title: "Authentication Error",
+        description: error.message || "Failed to authenticate. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,12 +70,12 @@ export function AuthSection() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleSocialLogin('meta')}
+                onClick={() => handleSocialLogin('twitter')}
                 disabled={isLoading}
                 className="w-full"
               >
-                <Facebook className="h-4 w-4 mr-2" />
-                Meta
+                <Twitter className="h-4 w-4 mr-2" />
+                Twitter
               </Button>
               <Button
                 variant="outline"
