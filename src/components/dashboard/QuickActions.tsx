@@ -47,8 +47,8 @@ export function QuickActions() {
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-4">
         <Button 
-          variant="outline" 
-          className="w-full justify-start gap-2"
+          variant="default" 
+          className="w-full justify-start gap-2 bg-black hover:bg-black/90"
           onClick={() => setIsCampaignDialogOpen(true)}
         >
           <Wand2 className="h-4 w-4" />
