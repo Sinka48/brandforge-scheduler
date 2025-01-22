@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -39,6 +40,29 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
+      // First check if the user exists
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: data.email
+        }
+      });
+
+      if (getUserError) {
+        console.error("Error checking user:", getUserError);
+        throw getUserError;
+      }
+
+      if (!users || users.length === 0) {
+        toast({
+          title: "Account not found",
+          description: "No account exists with this email. Please sign up first.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Proceed with login
       const { error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -58,15 +82,15 @@ export function LoginForm() {
                 });
               } else if (error.message.includes("Invalid login credentials")) {
                 toast({
-                  title: "Invalid credentials",
-                  description: "The email or password you entered is incorrect. Please try again.",
+                  title: "Invalid password",
+                  description: "The password you entered is incorrect. Please try again.",
                   variant: "destructive",
                 });
                 form.setValue("password", "");
               } else {
                 toast({
                   title: "Login failed",
-                  description: "Please check your credentials and try again.",
+                  description: error.message || "Please check your credentials and try again.",
                   variant: "destructive",
                 });
               }
@@ -144,7 +168,6 @@ export function LoginForm() {
         description: "We've sent you a password reset link. Please check your spam folder if you don't see it.",
       });
       
-      // Clear the password field after sending reset email
       form.setValue("password", "");
     } catch (error) {
       console.error("Reset password error:", error);
@@ -197,7 +220,10 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between text-sm">
+          <Link to="/signup" className="text-primary hover:underline">
+            Don't have an account? Sign up
+          </Link>
           <Button
             type="button"
             variant="link"
@@ -210,7 +236,7 @@ export function LoginForm() {
         </div>
         <Button 
           type="submit" 
-          className="w-full bg-muted text-black hover:bg-muted/90" 
+          className="w-full" 
           disabled={isLoading}
         >
           {isLoading ? "Signing in..." : "Sign in"}
