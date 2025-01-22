@@ -193,11 +193,6 @@ export function AICampaignDialog({
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
             <DialogHeader editMode={false} />
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground">
-                Create a complete social media campaign with AI-generated posts optimized for each platform.
-              </p>
-            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
