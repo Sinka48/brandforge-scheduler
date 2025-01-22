@@ -23,9 +23,9 @@ interface Post {
   id: string;
   content: string;
   date: Date;
-  platforms: PlatformId[] | PlatformId;
+  platforms: PlatformId[];
   image?: string;
-  status: 'draft' | 'scheduled' | 'paused';
+  status: 'draft' | 'scheduled';
   time?: string;
   campaign?: {
     id: string;
