@@ -47,34 +47,17 @@ export function PostDialog({
       return;
     }
 
-    if (newPost.status === 'scheduled' && !newPost.time) {
-      toast({
-        title: "Time Required",
-        description: "Please select a time for scheduling your post.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create a proper timestamp by combining the selected date with the time
-    if (selectedDate && newPost.time) {
-      const [hours, minutes] = newPost.time.split(':').map(Number);
-      const scheduledDate = set(selectedDate, {
-        hours,
-        minutes,
-        seconds: 0,
-        milliseconds: 0
-      });
-      
-      // Update the newPost with the properly formatted date
-      setNewPost({
-        ...newPost,
-        date: scheduledDate
-      });
-    }
+    // Create a proper timestamp for immediate publishing
+    const publishDate = new Date();
+    setNewPost({
+      ...newPost,
+      date: publishDate,
+      status: 'scheduled',
+      time: format(publishDate, 'HH:mm')
+    });
 
     // Handle immediate Twitter publishing
-    if (newPost.platforms.includes('twitter') && newPost.status !== 'draft') {
+    if (newPost.platforms.includes('twitter')) {
       setIsPublishing(true);
       try {
         const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
@@ -86,24 +69,37 @@ export function PostDialog({
 
         if (tweetError) throw tweetError;
 
+        // Update post status in database
+        const { error: updateError } = await supabase
+          .from('posts')
+          .update({ 
+            status: 'scheduled',
+            published_at: publishDate.toISOString()
+          })
+          .eq('id', newPost.id);
+
+        if (updateError) throw updateError;
+
         toast({
-          title: "Tweet Published",
-          description: "Your tweet has been published successfully!",
+          title: "Success",
+          description: "Your post has been published!",
         });
+
+        await queryClient.invalidateQueries({ queryKey: ['posts'] });
+        onOpenChange(false);
       } catch (error) {
-        console.error('Error publishing tweet:', error);
+        console.error('Error publishing post:', error);
         toast({
           title: "Publishing Failed",
-          description: "Failed to publish tweet. Please try again.",
+          description: "Failed to publish post. Please try again.",
           variant: "destructive",
         });
-        return;
       } finally {
         setIsPublishing(false);
       }
+    } else {
+      handleAddPost();
     }
-
-    handleAddPost();
   };
 
   const handleDraftSubmit = () => {
@@ -150,10 +146,7 @@ export function PostDialog({
         },
       });
 
-      if (error) {
-        console.error('Error generating post:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       setNewPost({ ...newPost, content: data.content });
       
@@ -201,7 +194,7 @@ export function PostDialog({
               <div className="p-4 border-t">
                 <DialogActions
                   onSaveAsDraft={handleDraftSubmit}
-                  onAddPost={handleSubmit}
+                  onAddPost={handleAddPost}
                   onPublish={handleSubmit}
                   isDisabled={!newPost.content.trim() || isPublishing}
                   editMode={editMode}
