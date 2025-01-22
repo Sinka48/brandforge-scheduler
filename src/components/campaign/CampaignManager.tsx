@@ -1,23 +1,15 @@
 import { Campaign } from "@/types/campaign";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 import { useState } from "react";
 import { CampaignPosts } from "./CampaignPosts";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, PauseCircle, Trash2, Wand2 } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CampaignTable } from "./CampaignTable";
+import { useCampaignData } from "./useCampaignData";
 
 interface CampaignManagerProps {
   campaigns: Campaign[];
@@ -27,34 +19,7 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [localCampaigns, setLocalCampaigns] = useState(initialCampaigns);
-
-  // Fetch post counts for each campaign
-  const { data: postCounts, isLoading } = useQuery({
-    queryKey: ['campaign-post-counts'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('campaign_id, status')
-        .in('campaign_id', localCampaigns.map(c => c.id));
-
-      if (error) throw error;
-
-      const counts = data.reduce((acc: Record<string, { total: number; published: number }>, post) => {
-        if (!acc[post.campaign_id]) {
-          acc[post.campaign_id] = { total: 0, published: 0 };
-        }
-        acc[post.campaign_id].total++;
-        if (post.status === 'published') {
-          acc[post.campaign_id].published++;
-        }
-        return acc;
-      }, {});
-
-      return counts;
-    },
-    enabled: localCampaigns.length > 0
-  });
+  const { localCampaigns, setLocalCampaigns, postCounts, isLoading } = useCampaignData(initialCampaigns);
 
   const handleStatusToggle = async (campaignId: string, currentStatus: string) => {
     try {
@@ -66,7 +31,6 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
       if (error) throw error;
 
-      // Update local state
       setLocalCampaigns(prevCampaigns => 
         prevCampaigns.map(campaign => 
           campaign.id === campaignId 
@@ -75,7 +39,6 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
         )
       );
 
-      // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       await queryClient.invalidateQueries({ queryKey: ['posts'] });
 
@@ -95,7 +58,6 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
   const handleDelete = async (campaignId: string) => {
     try {
-      // First, delete all posts associated with the campaign
       const { error: postsError } = await supabase
         .from('posts')
         .delete()
@@ -103,7 +65,6 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
       if (postsError) throw postsError;
 
-      // Then delete the campaign
       const { error: campaignError } = await supabase
         .from('campaigns')
         .delete()
@@ -111,12 +72,10 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
       if (campaignError) throw campaignError;
 
-      // Update local state
       setLocalCampaigns(prevCampaigns => 
         prevCampaigns.filter(campaign => campaign.id !== campaignId)
       );
 
-      // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       await queryClient.invalidateQueries({ queryKey: ['posts'] });
 
@@ -153,79 +112,13 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
 
   return (
     <div className="space-y-6">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Status</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Posts</TableHead>
-            <TableHead>Start Date</TableHead>
-            <TableHead>End Date</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {localCampaigns.map((campaign) => (
-            <TableRow 
-              key={campaign.id}
-              className="cursor-pointer hover:bg-muted"
-            >
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStatusToggle(campaign.id, campaign.status);
-                  }}
-                >
-                  {campaign.status === 'active' ? (
-                    <PlayCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <PauseCircle className="h-5 w-5 text-yellow-500" />
-                  )}
-                </Button>
-              </TableCell>
-              <TableCell onClick={() => setSelectedCampaignId(campaign.id)}>
-                {campaign.name}
-              </TableCell>
-              <TableCell onClick={() => setSelectedCampaignId(campaign.id)}>
-                {campaign.description}
-              </TableCell>
-              <TableCell onClick={() => setSelectedCampaignId(campaign.id)}>
-                {postCounts?.[campaign.id] ? (
-                  <Badge variant="secondary">
-                    {postCounts[campaign.id].published}/{postCounts[campaign.id].total}
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary">0/0</Badge>
-                )}
-              </TableCell>
-              <TableCell onClick={() => setSelectedCampaignId(campaign.id)}>
-                {campaign.start_date && format(new Date(campaign.start_date), 'PPP')}
-              </TableCell>
-              <TableCell onClick={() => setSelectedCampaignId(campaign.id)}>
-                {campaign.end_date && format(new Date(campaign.end_date), 'PPP')}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(campaign.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <CampaignTable
+        campaigns={localCampaigns}
+        postCounts={postCounts || {}}
+        onStatusToggle={handleStatusToggle}
+        onDelete={handleDelete}
+        onCampaignSelect={setSelectedCampaignId}
+      />
 
       <Dialog open={!!selectedCampaignId} onOpenChange={() => setSelectedCampaignId(null)}>
         <DialogContent className="max-w-4xl">
