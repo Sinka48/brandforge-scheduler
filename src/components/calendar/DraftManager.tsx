@@ -111,7 +111,7 @@ export function DraftManager({
       }
 
       // Update the post status in the database
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('posts')
         .update({ 
           status: 'scheduled',
@@ -120,9 +120,14 @@ export function DraftManager({
           scheduled_for: publishDate.toISOString()
         })
         .eq('id', postId)
-        .select();  // Add .select() to ensure we get the updated record
+        .select()
+        .single();
 
       if (updateError) throw updateError;
+
+      if (!data) {
+        throw new Error('Failed to update post');
+      }
       
       toast({
         title: "Success",
