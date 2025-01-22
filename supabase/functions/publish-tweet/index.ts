@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createHmac } from "https://deno.land/std@0.182.0/node/crypto.ts";
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
+import { encode as encodeBase64 } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const API_KEY = Deno.env.get("TWITTER_CONSUMER_KEY")?.trim();
 const API_SECRET = Deno.env.get("TWITTER_CONSUMER_SECRET")?.trim();
@@ -18,13 +19,13 @@ function validateEnvironmentVariables() {
   if (!ACCESS_TOKEN_SECRET) throw new Error("Missing TWITTER_ACCESS_TOKEN_SECRET");
 }
 
-function generateOAuthSignature(
+async function generateOAuthSignature(
   method: string,
   url: string,
   params: Record<string, string>,
   consumerSecret: string,
   tokenSecret: string
-): string {
+): Promise<string> {
   const signatureBaseString = `${method}&${encodeURIComponent(
     url
   )}&${encodeURIComponent(
@@ -35,16 +36,31 @@ function generateOAuthSignature(
   )}`;
   
   const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
-  const hmacSha1 = createHmac("sha1", signingKey);
-  const signature = hmacSha1.update(signatureBaseString).digest("base64");
+  
+  // Convert string to Uint8Array for HMAC
+  const encoder = new TextEncoder();
+  const key = encoder.encode(signingKey);
+  const message = encoder.encode(signatureBaseString);
+  
+  // Create HMAC
+  const hmacKey = await crypto.subtle.importKey(
+    "raw",
+    key,
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"]
+  );
+  
+  const signature = await crypto.subtle.sign("HMAC", hmacKey, message);
+  const base64Signature = encodeBase64(new Uint8Array(signature));
 
   console.log("Signature Base String:", signatureBaseString);
-  console.log("Generated Signature:", signature);
+  console.log("Generated Signature:", base64Signature);
 
-  return signature;
+  return base64Signature;
 }
 
-function generateOAuthHeader(method: string, url: string): string {
+async function generateOAuthHeader(method: string, url: string): Promise<string> {
   const oauthParams = {
     oauth_consumer_key: API_KEY!,
     oauth_nonce: Math.random().toString(36).substring(2),
@@ -54,7 +70,7 @@ function generateOAuthHeader(method: string, url: string): string {
     oauth_version: "1.0",
   };
 
-  const signature = generateOAuthSignature(
+  const signature = await generateOAuthSignature(
     method,
     url,
     oauthParams,
@@ -87,7 +103,7 @@ async function publishTweet(content: string, imageUrl?: string): Promise<any> {
     console.log("Image URL provided but not implemented:", imageUrl);
   }
 
-  const oauthHeader = generateOAuthHeader(method, url);
+  const oauthHeader = await generateOAuthHeader(method, url);
   console.log("OAuth Header:", oauthHeader);
 
   const response = await fetch(url, {
