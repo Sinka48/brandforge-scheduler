@@ -32,7 +32,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
   const [newPost, setNewPost] = useState({
     content: "",
     platforms: [],
-    status: "draft",
+    status: "draft" as const,
     time: format(new Date(), 'HH:mm'),
     date: new Date(),
   });
@@ -69,11 +69,10 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     setEditingPost(post);
     setNewPost({
       content: post.content,
-      platforms: Array.isArray(post.platforms) ? post.platforms : [post.platform],
-      image: post.image_url || '',
-      time: format(new Date(post.scheduled_for), 'HH:mm'),
+      platforms: post.platforms,
       status: post.status,
-      date: new Date(post.scheduled_for),
+      time: post.time || format(new Date(), 'HH:mm'),
+      date: post.date,
     });
     setIsPostDialogOpen(true);
   };
