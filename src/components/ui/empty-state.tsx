@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LucideIcon, Wand2, HelpCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
   icon?: LucideIcon;
@@ -14,16 +13,22 @@ interface EmptyStateProps {
     variant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost";
     badge?: string;
   };
+  additionalActions?: Array<{
+    label: string;
+    onClick?: () => void;
+    icon?: LucideIcon;
+    variant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost";
+    badge?: string;
+  }>;
 }
 
 export function EmptyState({
   icon: Icon,
   title,
   description,
-  action
+  action,
+  additionalActions = []
 }: EmptyStateProps) {
-  const navigate = useNavigate();
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-background/50 rounded-lg animate-fade-in">
       {Icon && <Icon className="h-12 w-12 text-muted-foreground mb-4 animate-pulse" />}
@@ -47,27 +52,26 @@ export function EmptyState({
             )}
           </Button>
         )}
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => navigate("/how-it-works")}
-            className="flex items-center gap-2"
-          >
-            <HelpCircle className="h-4 w-4" />
-            How it Works
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/campaigns")}
-            className="flex items-center gap-2"
-          >
-            <Wand2 className="h-4 w-4" />
-            AI Campaign
-            <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
-              BETA
-            </Badge>
-          </Button>
-        </div>
+        {additionalActions.length > 0 && (
+          <div className="flex gap-2">
+            {additionalActions.map((additionalAction, index) => (
+              <Button
+                key={index}
+                variant={additionalAction.variant || "outline"}
+                onClick={additionalAction.onClick}
+                className="flex items-center gap-2"
+              >
+                {additionalAction.icon && <additionalAction.icon className="h-4 w-4" />}
+                {additionalAction.label}
+                {additionalAction.badge && (
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
+                    {additionalAction.badge}
+                  </Badge>
+                )}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
