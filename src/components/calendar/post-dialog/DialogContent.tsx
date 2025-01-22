@@ -19,7 +19,6 @@ interface DialogContentProps {
   editMode?: boolean;
   onGenerateContent?: () => void;
   isGenerating?: boolean;
-  previewMode: "mobile" | "desktop";
 }
 
 export function DialogContent({
@@ -28,8 +27,7 @@ export function DialogContent({
   handlePlatformToggle,
   editMode = false,
   onGenerateContent,
-  isGenerating = false,
-  previewMode
+  isGenerating = false
 }: DialogContentProps) {
   const isMobile = useIsMobile();
 
@@ -50,7 +48,6 @@ export function DialogContent({
               content={newPost.content}
               selectedPlatforms={newPost.platforms}
               imageUrl={newPost.image || "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"}
-              previewMode={previewMode}
             />
           ) : (
             <div className="rounded-lg border-2 border-dashed p-8 text-center text-muted-foreground">

@@ -103,6 +103,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
         <AICampaignDialog
           isOpen={isCampaignDialogOpen}
           onOpenChange={setIsCampaignDialogOpen}
+          onGenerateCampaign={handleGenerateCampaign}
         />
       </div>
     </Layout>
