@@ -1,14 +1,12 @@
 import { EmptyState as BaseEmptyState } from "@/components/ui/empty-state";
-import { Plus, Wand2, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PostEmptyStateProps {
   onCreatePost?: () => void;
-  onCreateCampaign?: () => void;
-  onHowItWorks?: () => void;
 }
 
-export function EmptyState({ onCreatePost, onCreateCampaign }: PostEmptyStateProps) {
+export function EmptyState({ onCreatePost }: PostEmptyStateProps) {
   const navigate = useNavigate();
 
   return (
@@ -18,7 +16,7 @@ export function EmptyState({ onCreatePost, onCreateCampaign }: PostEmptyStatePro
       action={onCreatePost ? {
         label: "Create Post",
         onClick: onCreatePost,
-        icon: Plus,
+        icon: HelpCircle,
         variant: "secondary"
       } : undefined}
       additionalActions={[
@@ -27,13 +25,6 @@ export function EmptyState({ onCreatePost, onCreateCampaign }: PostEmptyStatePro
           onClick: () => navigate("/how-it-works"),
           icon: HelpCircle,
           variant: "secondary"
-        },
-        {
-          label: "AI Campaign",
-          onClick: onCreateCampaign,
-          icon: Wand2,
-          variant: "default",
-          badge: "BETA"
         }
       ]}
     />
