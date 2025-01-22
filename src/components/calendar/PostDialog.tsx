@@ -122,7 +122,7 @@ export function PostDialog({
             {/* Sticky Header */}
             <div className="sticky top-0 z-10 bg-background border-b px-6 py-4">
               <DialogHeader 
-                editMode={editMode} 
+                editMode={editMode}
                 previewMode={previewMode}
                 onPreviewModeChange={setPreviewMode}
               />

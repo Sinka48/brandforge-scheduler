@@ -1,7 +1,8 @@
-import { Smartphone, Laptop, X } from "lucide-react";
+import { Smartphone, Laptop } from "lucide-react";
 import { DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PLATFORMS } from "@/constants/platforms";
 
 interface DialogHeaderProps {
   editMode?: boolean;
