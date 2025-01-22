@@ -38,6 +38,7 @@ export function AICampaignDialog({
   const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
   const [isLoadTemplateOpen, setIsLoadTemplateOpen] = useState(false);
   const { toast } = useToast();
+  const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop'>('desktop');
 
   const handlePlatformToggle = (platformId: string) => {
     setPlatforms(prev =>
@@ -224,7 +225,11 @@ export function AICampaignDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col">
-        <DialogHeader editMode={false} />
+        <DialogHeader 
+          editMode={false} 
+          previewMode={previewMode}
+          onPreviewModeChange={setPreviewMode}
+        />
         
         <div className="space-y-6 py-4 flex-1 overflow-y-auto">
           <div className="flex justify-end gap-2">

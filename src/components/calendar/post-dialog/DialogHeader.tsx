@@ -1,7 +1,6 @@
 import { Smartphone, Laptop } from "lucide-react";
 import { DialogHeader as Header } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PlatformSelector } from "./PlatformSelector";
 
 interface DialogHeaderProps {
   editMode?: boolean;
