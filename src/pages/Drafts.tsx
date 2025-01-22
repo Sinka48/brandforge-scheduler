@@ -17,6 +17,8 @@ interface DraftsPageProps {
   session: Session | null;
 }
 
+type PostStatus = 'draft' | 'scheduled';
+
 export default function DraftsPage({ session }: DraftsPageProps) {
   const {
     handleDeletePost,
@@ -32,7 +34,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
   const [newPost, setNewPost] = useState({
     content: "",
     platforms: [],
-    status: "draft" as const,
+    status: 'draft' as PostStatus,
     time: format(new Date(), 'HH:mm'),
     date: new Date(),
   });
@@ -54,12 +56,12 @@ export default function DraftsPage({ session }: DraftsPageProps) {
   };
 
   const handleSaveAsDraft = () => {
-    handleAddPost(newPost.date, { ...newPost, status: 'draft' as const });
+    handleAddPost(newPost.date, { ...newPost, status: 'draft' as PostStatus });
     setIsPostDialogOpen(false);
     setNewPost({
       content: "",
       platforms: [],
-      status: "draft" as const,
+      status: 'draft' as PostStatus,
       time: format(new Date(), 'HH:mm'),
       date: new Date(),
     });
@@ -95,7 +97,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
               setNewPost({
                 content: "",
                 platforms: [],
-                status: "draft" as const,
+                status: 'draft' as PostStatus,
                 time: format(new Date(), 'HH:mm'),
                 date: new Date(),
               });
