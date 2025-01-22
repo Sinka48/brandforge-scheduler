@@ -79,16 +79,25 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
 
   const handleDelete = async (campaignId: string) => {
     try {
-      const { error } = await supabase
+      // First, delete all posts associated with the campaign
+      const { error: postsError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('campaign_id', campaignId);
+
+      if (postsError) throw postsError;
+
+      // Then delete the campaign
+      const { error: campaignError } = await supabase
         .from('campaigns')
         .delete()
         .eq('id', campaignId);
 
-      if (error) throw error;
+      if (campaignError) throw campaignError;
 
       toast({
         title: "Success",
-        description: "Campaign deleted successfully",
+        description: "Campaign and associated posts deleted successfully",
       });
     } catch (error) {
       console.error('Error deleting campaign:', error);
