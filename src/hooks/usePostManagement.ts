@@ -129,6 +129,15 @@ export function usePostManagement() {
     }
   };
 
+  const handleEditPost = (post: any) => {
+    // This function is used to prepare a post for editing
+    return {
+      ...post,
+      platforms: Array.isArray(post.platforms) ? post.platforms : [post.platform],
+      time: format(new Date(post.date), 'HH:mm'),
+    };
+  };
+
   return {
     posts,
     setPosts,
@@ -136,5 +145,6 @@ export function usePostManagement() {
     handleAddPost,
     handleUpdatePost,
     handleDeletePost,
+    handleEditPost,
   };
 }
