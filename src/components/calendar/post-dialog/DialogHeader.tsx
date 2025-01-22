@@ -1,4 +1,4 @@
-import { DeviceMobile, DeviceDesktop, X } from "lucide-react";
+import { Smartphone, Laptop, X } from "lucide-react";
 import { DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -29,10 +29,10 @@ export function DialogHeader({
           onValueChange={(value) => value && onPreviewModeChange(value as "mobile" | "desktop")}
         >
           <ToggleGroupItem value="mobile" aria-label="Mobile preview">
-            <DeviceMobile className="h-4 w-4" />
+            <Smartphone className="h-4 w-4" />
           </ToggleGroupItem>
           <ToggleGroupItem value="desktop" aria-label="Desktop preview">
-            <DeviceDesktop className="h-4 w-4" />
+            <Laptop className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
