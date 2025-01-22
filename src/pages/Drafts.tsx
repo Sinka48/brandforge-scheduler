@@ -68,7 +68,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           </p>
         </div>
 
-        <Tabs defaultValue="drafts" className="space-y-4">
+        <Tabs defaultValue="posts" className="space-y-4">
           <div className="flex justify-between items-center">
             <TabsList>
               <TabsTrigger value="posts">Posts</TabsTrigger>
