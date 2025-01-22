@@ -1,16 +1,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Calendar, Users, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-interface StatsCardsProps {
-  analytics: {
-    total_posts?: number;
-    posts_this_week?: number;
-    active_campaigns?: number;
-    avg_engagement_rate?: number;
-  } | null;
-}
+export function StatsCards() {
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['dashboard-analytics'],
+    queryFn: async () => {
+      // Force refresh analytics before fetching
+      await supabase.rpc('ensure_dashboard_analytics_exists');
+      
+      const { data, error } = await supabase
+        .from('dashboard_analytics')
+        .select('*')
+        .single();
 
-export function StatsCards({ analytics }: StatsCardsProps) {
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  console.log('Dashboard analytics:', analytics);
+
   const stats = [
     {
       name: "Total Posts",
