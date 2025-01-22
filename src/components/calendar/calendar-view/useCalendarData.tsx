@@ -53,7 +53,7 @@ export function useCalendarData() {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('campaign_id.is.null,campaign_id.eq.null')
+          .is('campaign_id', null)
           .order('scheduled_for', { ascending: true });
 
         const { data, error } = await query;
