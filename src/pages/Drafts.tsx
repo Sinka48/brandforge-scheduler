@@ -22,8 +22,11 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     return null;
   }
 
+  // Explicitly filter posts by status
   const scheduledPosts = posts.filter(post => post.status === 'scheduled');
   const draftPosts = posts.filter(post => post.status === 'draft');
+
+  console.log('Draft posts:', draftPosts); // Debug log
 
   return (
     <Layout session={session}>
@@ -35,7 +38,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           </p>
         </div>
 
-        <Tabs defaultValue="posts" className="space-y-4">
+        <Tabs defaultValue="drafts" className="space-y-4">
           <TabsList>
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
