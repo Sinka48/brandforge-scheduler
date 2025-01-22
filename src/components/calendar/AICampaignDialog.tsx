@@ -65,6 +65,8 @@ export function AICampaignDialog({
           editMode={false} 
           previewMode={previewMode}
           onPreviewModeChange={setPreviewMode}
+          selectedPlatforms={newPost.platforms}
+          onPlatformToggle={handlePlatformToggle}
         />
         <GeneratedContent
           content={newPost.content}
