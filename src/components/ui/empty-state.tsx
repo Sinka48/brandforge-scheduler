@@ -23,7 +23,6 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon: Icon,
   title,
   description,
   action,
@@ -31,7 +30,6 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center bg-background/50 rounded-lg animate-fade-in">
-      {Icon && <Icon className="h-12 w-12 text-muted-foreground mb-4 animate-pulse" />}
       <h3 className="font-semibold text-lg mb-2">{title}</h3>
       <p className="text-muted-foreground mb-6 max-w-sm">
         {description}
