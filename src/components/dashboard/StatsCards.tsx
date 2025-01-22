@@ -8,21 +8,72 @@ export function StatsCards() {
     queryKey: ['dashboard-analytics'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) return null;
+      if (!session?.user?.id) {
+        console.log('No authenticated user found');
+        return null;
+      }
 
-      // Force refresh analytics before fetching
-      await supabase.rpc('ensure_dashboard_analytics_exists', {
+      console.log('Fetching analytics for user:', session.user.id);
+
+      // First, ensure the analytics record exists
+      const { error: rpcError } = await supabase.rpc('ensure_dashboard_analytics_exists', {
         input_user_id: session.user.id
       });
-      
-      const { data, error } = await supabase
-        .from('dashboard_analytics')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
 
-      if (error) throw error;
-      return data;
+      if (rpcError) {
+        console.error('Error ensuring analytics exists:', rpcError);
+        throw rpcError;
+      }
+
+      // Manually calculate current stats to ensure accuracy
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      // Get total posts count
+      const { count: totalPosts } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      // Get posts this week count
+      const { count: postsThisWeek } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .gte('scheduled_for', weekAgo.toISOString());
+
+      // Get active campaigns count
+      const { count: activeCampaigns } = await supabase
+        .from('campaigns')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .eq('status', 'active')
+        .lte('start_date', now.toISOString())
+        .or(`end_date.gt.${now.toISOString()},end_date.is.null`);
+
+      // Get average engagement rate
+      const { data: postAnalytics } = await supabase
+        .from('post_analytics')
+        .select('engagement_rate')
+        .gt('engagement_rate', 0);
+
+      const avgEngagementRate = postAnalytics?.length 
+        ? postAnalytics.reduce((sum, post) => sum + Number(post.engagement_rate), 0) / postAnalytics.length 
+        : 0;
+
+      console.log('Calculated analytics:', {
+        totalPosts,
+        postsThisWeek,
+        activeCampaigns,
+        avgEngagementRate
+      });
+
+      return {
+        total_posts: totalPosts || 0,
+        posts_this_week: postsThisWeek || 0,
+        active_campaigns: activeCampaigns || 0,
+        avg_engagement_rate: avgEngagementRate || 0
+      };
     },
     refetchInterval: 30000, // Refresh every 30 seconds
   });
