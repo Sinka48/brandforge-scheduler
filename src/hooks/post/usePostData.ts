@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 import { PlatformId } from "@/constants/platforms";
-import { format } from "date-fns";
 
 export function usePostData(session: Session | null) {
   const { toast } = useToast();
@@ -18,6 +18,8 @@ export function usePostData(session: Session | null) {
       }
 
       try {
+        console.log('Fetching posts with campaign data...');
+        
         const query = supabase
           .from('posts')
           .select(`
@@ -36,7 +38,7 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .or('status.eq.scheduled,campaign_id.not.is.null,campaigns.status.eq.active')
+          .or('status.eq.scheduled,campaign_id.is.not.null')
           .order('scheduled_for', { ascending: true });
 
         const { data, error } = await query;
@@ -58,23 +60,29 @@ export function usePostData(session: Session | null) {
           return [];
         }
 
-        const formattedPosts = data.map(post => ({
-          id: post.id,
-          content: post.content,
-          date: new Date(post.scheduled_for),
-          platforms: [post.platform as PlatformId],
-          image: post.image_url,
-          status: post.status as 'draft' | 'scheduled',
-          time: new Date(post.scheduled_for).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          campaign: post.campaigns ? {
-            id: post.campaign_id,
-            name: post.campaigns.name,
-            description: post.campaigns.description
-          } : undefined
-        }));
+        // Filter posts to only include scheduled ones or those from active campaigns
+        const formattedPosts = data
+          .filter(post => 
+            post.status === 'scheduled' || 
+            (post.campaign_id && post.campaigns?.status === 'active')
+          )
+          .map(post => ({
+            id: post.id,
+            content: post.content,
+            date: new Date(post.scheduled_for),
+            platforms: [post.platform as PlatformId],
+            image: post.image_url,
+            status: post.status as 'draft' | 'scheduled',
+            time: new Date(post.scheduled_for).toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            campaign: post.campaigns ? {
+              id: post.campaign_id,
+              name: post.campaigns.name,
+              description: post.campaigns.description
+            } : undefined
+          }));
 
         console.log('Formatted posts:', formattedPosts);
         return formattedPosts;
