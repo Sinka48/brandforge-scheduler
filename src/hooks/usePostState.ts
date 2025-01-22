@@ -1,37 +1,32 @@
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState } from 'react';
+import { PlatformId } from '@/constants/platforms';
+import { format } from 'date-fns';
 
 interface Post {
   content: string;
-  platforms: string[];
+  platforms: PlatformId[];
   image: string;
   time: string;
-  status: 'scheduled' | 'draft';
-  isRecurring?: boolean;
-  recurringPattern?: string;
-  recurringEndDate?: Date;
-  bulkDates?: Date[];
+  status: 'draft' | 'scheduled';
   date: Date;
 }
 
 export function usePostState() {
-  const now = new Date();
-  
   const [newPost, setNewPost] = useState<Post>({
     content: '',
     platforms: [],
     image: '',
-    time: format(now, 'HH:mm'),
-    status: 'scheduled',
-    date: now // Initialize with current date
+    time: format(new Date(), 'HH:mm'),
+    status: 'draft',
+    date: new Date()
   });
 
-  const handlePlatformToggle = (platformId: string) => {
+  const handlePlatformToggle = (platform: PlatformId) => {
     setNewPost(prev => ({
       ...prev,
-      platforms: prev.platforms.includes(platformId)
-        ? prev.platforms.filter(p => p !== platformId)
-        : [...prev.platforms, platformId]
+      platforms: prev.platforms.includes(platform)
+        ? prev.platforms.filter(p => p !== platform)
+        : [...prev.platforms, platform]
     }));
   };
 

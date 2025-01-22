@@ -43,6 +43,37 @@ export function CalendarView({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
+      
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditPost = (post: Post) => {
+    if (onPostClick) {
+      onPostClick(post);
+    }
+  };
+
   const { data: session, isLoading: authLoading } = useQuery({
     queryKey: ['auth-session'],
     queryFn: async () => {
@@ -146,8 +177,7 @@ export function CalendarView({
           status: 'scheduled',
           published_at: new Date().toISOString()
         })
-        .eq('id', postId)
-        .eq('user_id', session?.user.id);
+        .eq('id', postId);
 
       if (error) throw error;
 
