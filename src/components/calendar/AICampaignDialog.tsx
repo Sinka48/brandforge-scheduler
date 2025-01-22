@@ -187,10 +187,16 @@ export function AICampaignDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] h-[85vh] max-h-[700px] p-0">
+      <DialogContent className={`sm:max-w-[850px] h-[85vh] max-h-[700px] p-0 ${generatedPosts.length > 0 ? 'grid grid-cols-2 gap-4' : ''}`}>
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
             <DialogHeader editMode={false} />
+            <div className="mt-2">
+              <h2 className="text-lg font-semibold">AI Campaign Generator</h2>
+              <p className="text-sm text-muted-foreground">
+                Create a complete social media campaign with AI-generated posts optimized for each platform.
+              </p>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -235,13 +241,6 @@ export function AICampaignDialog({
                 onHashtagsChange={setHashtags}
                 suggestedHashtags={suggestedHashtags}
               />
-
-              <GeneratedContent
-                isLoading={isLoading}
-                progress={progress}
-                generatedPosts={generatedPosts}
-                onRegeneratePost={handleRegeneratePost}
-              />
             </div>
           </div>
 
@@ -260,6 +259,25 @@ export function AICampaignDialog({
             </Button>
           </div>
         </div>
+
+        {generatedPosts.length > 0 && (
+          <div className="border-l h-full overflow-hidden">
+            <div className="p-4 border-b">
+              <h3 className="font-semibold">Generated Posts</h3>
+              <p className="text-sm text-muted-foreground">
+                Review and customize your AI-generated campaign posts
+              </p>
+            </div>
+            <div className="p-4 h-[calc(100%-5rem)] overflow-y-auto">
+              <GeneratedContent
+                isLoading={isLoading}
+                progress={progress}
+                generatedPosts={generatedPosts}
+                onRegeneratePost={handleRegeneratePost}
+              />
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
