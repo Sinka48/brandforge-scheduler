@@ -27,7 +27,7 @@ function generateOAuthSignature(
   oauthParams: Record<string, string>,
   consumerSecret: string,
   tokenSecret: string
-): string {
+): Promise<string> {
   const signatureBaseString = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(
     Object.entries(oauthParams)
       .sort()
@@ -43,15 +43,13 @@ function generateOAuthSignature(
   
   console.log("Generating OAuth signature with base string:", signatureBaseString);
   
-  const hmacKey = crypto.subtle.importKey(
+  return crypto.subtle.importKey(
     "raw",
     key,
     { name: "HMAC", hash: "SHA-1" },
     false,
     ["sign"]
-  );
-
-  return hmacKey.then(key => {
+  ).then(key => {
     return crypto.subtle.sign("HMAC", key, message);
   }).then(signature => {
     return encodeBase64(new Uint8Array(signature));
