@@ -16,7 +16,7 @@ export function usePostData(session: Session | null) {
       }
 
       try {
-        console.log('Fetching posts...');
+        console.log('Fetching posts from Supabase...');
         
         const { data: allPosts, error: postsError } = await supabase
           .from('posts')
@@ -31,6 +31,8 @@ export function usePostData(session: Session | null) {
           `)
           .in('status', ['scheduled', 'draft'])
           .order('scheduled_for', { ascending: true });
+
+        console.log('Raw posts data from Supabase:', allPosts);
 
         if (postsError) {
           console.error('Supabase error fetching posts:', postsError);
