@@ -70,10 +70,7 @@ export default function CalendarPage({ session }: CalendarPageProps) {
         </div>
 
         <div className="space-y-6">
-          <CalendarHeader 
-            onNewPost={() => setIsDialogOpen(true)}
-            onNewCampaign={() => setIsCampaignDialogOpen(true)}
-          />
+          <CalendarHeader onCreatePost={handleCreatePost} />
           
           <CalendarView 
             selectedDate={selectedDate}
