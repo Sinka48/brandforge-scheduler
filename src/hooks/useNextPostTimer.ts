@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useNextPostTimer() {
-  const [timeLeft, setTimeLeft] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState<string>("No upcoming posts");
 
   const { data: posts = [] } = useQuery({
     queryKey: ['posts'],
@@ -45,7 +45,7 @@ export function useNextPostTimer() {
         const timeUntilPost = formatDistanceToNow(nextPost.date, { addSuffix: true });
         setTimeLeft(timeUntilPost);
       } else {
-        setTimeLeft(null);
+        setTimeLeft("No upcoming posts");
       }
     };
 

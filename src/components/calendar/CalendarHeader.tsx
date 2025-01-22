@@ -11,11 +11,9 @@ export function CalendarHeader({ onCreatePost }: CalendarHeaderProps) {
 
   return (
     <div className="flex items-center justify-between">
-      {nextPostTime && (
-        <p className="text-sm text-muted-foreground">
-          {nextPostTime}
-        </p>
-      )}
+      <p className="text-sm text-muted-foreground">
+        {nextPostTime}
+      </p>
       <div className="flex items-center justify-end">
         <Button
           onClick={onCreatePost}
