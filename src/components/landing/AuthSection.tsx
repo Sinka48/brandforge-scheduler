@@ -19,7 +19,7 @@ export function AuthSection() {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'twitter',
           options: {
-            redirectTo: `${window.location.origin}/`,
+            redirectTo: window.location.origin,
             skipBrowserRedirect: false,
           }
         });
