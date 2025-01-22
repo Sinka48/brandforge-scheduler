@@ -47,10 +47,8 @@ export function useCalendarHandlers({
 
       for (const post of campaignPosts) {
         try {
-          // Parse the time string to get hours and minutes
+          // Create a proper timestamp by combining the selected date with the time
           const [hours, minutes] = post.time.split(':').map(Number);
-          
-          // Create a new date object for the scheduled time
           const scheduledDate = new Date(selectedDate!);
           scheduledDate.setHours(hours, minutes, 0, 0);
 
@@ -64,7 +62,7 @@ export function useCalendarHandlers({
             content: post.content,
             platform: post.platform.toLowerCase(),
             image_url: post.imageUrl || '',
-            scheduled_for: scheduledDate.toISOString(),
+            scheduled_for: scheduledDate.toISOString(), // Convert to ISO string format
             status: 'scheduled' as const,
             user_id: session.user.id
           };
