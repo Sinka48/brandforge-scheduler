@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpCircle, Wand2, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Wand2, HelpCircle, Roadmap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
@@ -16,12 +17,10 @@ export function QuickActions() {
   });
 
   const handleAddPost = async () => {
-    // This will be handled by the PostDialog component
     setIsPostDialogOpen(false);
   };
 
   const handleSaveAsDraft = () => {
-    // This will be handled by the PostDialog component
     setIsPostDialogOpen(false);
   };
 
@@ -43,26 +42,31 @@ export function QuickActions() {
         <Button 
           variant="outline" 
           className="w-full justify-start gap-2"
+          onClick={() => navigate("/campaigns")}
+        >
+          <Wand2 className="h-4 w-4" />
+          AI Campaign
+          <Badge variant="secondary" className="ml-auto">
+            Beta
+          </Badge>
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="w-full justify-start gap-2"
           onClick={() => navigate("/how-it-works")}
         >
           <HelpCircle className="h-4 w-4" />
           How It Works
         </Button>
+
         <Button 
           variant="outline" 
           className="w-full justify-start gap-2"
-          onClick={() => navigate("/campaigns")}
+          onClick={() => navigate("/roadmap")}
         >
-          <Wand2 className="h-4 w-4" />
-          AI Campaign Beta
-        </Button>
-        <Button 
-          variant="outline" 
-          className="w-full justify-start gap-2"
-          onClick={() => setIsPostDialogOpen(true)}
-        >
-          <Plus className="h-4 w-4" />
-          New Post
+          <Roadmap className="h-4 w-4 text-blue-500" />
+          Roadmap
         </Button>
 
         <PostDialog
