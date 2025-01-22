@@ -55,16 +55,6 @@ export function PostDialog({
       return;
     }
 
-    // Check if platforms array exists and has at least one platform
-    if (!Array.isArray(newPost.platforms) || newPost.platforms.length === 0) {
-      toast({
-        title: "Platform Required",
-        description: "Please select at least one platform for your post.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     handleAddPost();
   };
 
@@ -73,16 +63,6 @@ export function PostDialog({
       toast({
         title: "Content Required",
         description: "Please add some content before saving as draft.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if platforms array exists and has at least one platform
-    if (!Array.isArray(newPost.platforms) || newPost.platforms.length === 0) {
-      toast({
-        title: "Platform Required",
-        description: "Please select at least one platform for your post.",
         variant: "destructive",
       });
       return;
