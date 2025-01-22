@@ -104,7 +104,6 @@ export function DialogContent({
 
   return (
     <div className="space-y-4 px-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
-      {/* Platform Selector */}
       <div className="py-2">
         <PlatformSelector
           selectedPlatforms={newPost.platforms}
@@ -112,14 +111,13 @@ export function DialogContent({
         />
       </div>
 
-      {/* Goal Selector */}
       <div className="py-2">
         <Select
           value={newPost.goal || ""}
           onValueChange={(value) => setNewPost({ ...newPost, goal: value })}
         >
           <SelectTrigger className="w-full h-8 text-xs">
-            <SelectValue placeholder="Select post goal (optional)" />
+            <SelectValue placeholder="Select post goal" />
           </SelectTrigger>
           <SelectContent>
             {POST_GOALS.map((goal) => (
@@ -131,7 +129,6 @@ export function DialogContent({
         </Select>
       </div>
 
-      {/* Content Area */}
       <div className="py-2">
         <PostContent
           content={newPost.content}
@@ -143,13 +140,12 @@ export function DialogContent({
         />
       </div>
 
-      {/* Image Section */}
       <div className="py-2">
         {newPost.image && (
           <div className="relative w-full h-12 rounded-lg overflow-hidden mb-2">
             <img
               src={newPost.image}
-              alt="Post preview"
+              alt="Post image"
               className="w-full h-full object-cover"
             />
             <Button
@@ -232,7 +228,6 @@ export function DialogContent({
         </div>
       </div>
 
-      {/* Date and Time Section */}
       <div className="py-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <Popover>
