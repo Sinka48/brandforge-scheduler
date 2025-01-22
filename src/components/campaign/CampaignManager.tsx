@@ -13,7 +13,7 @@ import { useState } from "react";
 import { CampaignPosts } from "./CampaignPosts";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, PauseCircle, Trash2, FileUp, Wand2 } from "lucide-react";
+import { PlayCircle, PauseCircle, Trash2, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -134,14 +134,6 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
     }
   };
 
-  const handleExport = (campaignId: string) => {
-    console.log('Export campaign:', campaignId);
-    toast({
-      title: "Export",
-      description: "Export feature coming soon",
-    });
-  };
-
   if (!isLoading && (!localCampaigns || localCampaigns.length === 0)) {
     return (
       <EmptyState
@@ -227,16 +219,6 @@ export function CampaignManager({ campaigns: initialCampaigns }: CampaignManager
                     }}
                   >
                     <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExport(campaign.id);
-                    }}
-                  >
-                    <FileUp className="h-4 w-4" />
                   </Button>
                 </div>
               </TableCell>
