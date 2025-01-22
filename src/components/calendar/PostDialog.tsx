@@ -7,7 +7,7 @@ import { LoadingState } from "./post-dialog/LoadingState";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -69,12 +69,14 @@ export function PostDialog({
 
         if (tweetError) throw tweetError;
 
-        // Update post status in database
+        // Update post status in database using a simple update query
         const { error: updateError } = await supabase
           .from('posts')
           .update({ 
             status: 'scheduled',
-            published_at: publishDate.toISOString()
+            published_at: publishDate.toISOString(),
+            platform: newPost.platforms[0],
+            scheduled_for: publishDate.toISOString()
           })
           .eq('id', newPost.id);
 
