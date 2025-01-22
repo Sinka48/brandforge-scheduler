@@ -104,9 +104,9 @@ export function DialogContent({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {/* Platform Selector */}
-      <div className="border-b pb-2">
+      <div>
         <PlatformSelector
           selectedPlatforms={newPost.platforms}
           onPlatformToggle={handlePlatformToggle}
@@ -114,7 +114,7 @@ export function DialogContent({
       </div>
 
       {/* Goal Selector */}
-      <div className="py-2 border-b">
+      <div>
         <Select
           value={newPost.goal || ""}
           onValueChange={(value) => setNewPost({ ...newPost, goal: value })}
@@ -133,7 +133,7 @@ export function DialogContent({
       </div>
 
       {/* Content Area */}
-      <div className="py-2">
+      <div>
         <PostContent
           content={newPost.content}
           onContentChange={(content) => setNewPost({ ...newPost, content })}
@@ -144,10 +144,10 @@ export function DialogContent({
         />
       </div>
 
-      {/* Image Section - Compact Layout */}
+      {/* Image Section */}
       <div className="space-y-2">
         {newPost.image && (
-          <div className="relative w-full h-20 rounded-lg overflow-hidden">
+          <div className="relative w-full h-16 rounded-lg overflow-hidden">
             <img
               src={newPost.image}
               alt="Post preview"
@@ -165,27 +165,44 @@ export function DialogContent({
         )}
         
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleGenerateImage}
-            disabled={isGeneratingImage}
-            className="h-8 text-xs whitespace-nowrap"
-          >
-            <Sparkles className="h-3 w-3 mr-1" />
-            Generate
-          </Button>
-          
           {!showImageUrl ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowImageUrl(true)}
-              className="h-8 text-xs whitespace-nowrap"
-            >
-              <ImagePlus className="h-3 w-3 mr-1" />
-              Add URL
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateImage}
+                disabled={isGeneratingImage}
+                className="h-8 text-xs whitespace-nowrap"
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Generate Image
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowImageUrl(true)}
+                className="h-8 text-xs whitespace-nowrap"
+              >
+                <ImagePlus className="h-3 w-3 mr-1" />
+                Add URL
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsMediaLibraryOpen(true)}
+                className="h-8 text-xs whitespace-nowrap"
+              >
+                <Image className="h-3 w-3 mr-1" />
+                Gallery
+              </Button>
+
+              <ImageUploader
+                imageUrl={newPost.image}
+                onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
+              />
+            </>
           ) : (
             <div className="flex-1 flex gap-1.5">
               <Input
@@ -213,26 +230,11 @@ export function DialogContent({
               </Button>
             </div>
           )}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsMediaLibraryOpen(true)}
-            className="h-8 text-xs whitespace-nowrap"
-          >
-            <Image className="h-3 w-3 mr-1" />
-            Gallery
-          </Button>
-          
-          <ImageUploader
-            imageUrl={newPost.image}
-            onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
-          />
         </div>
       </div>
 
       {/* Date and Time Section */}
-      <div className="space-y-2 pt-2 border-t">
+      <div>
         <div className="flex items-center gap-1.5">
           <Popover>
             <PopoverTrigger asChild>
@@ -244,21 +246,21 @@ export function DialogContent({
                   !newPost.date && "text-muted-foreground"
                 )}
               >
-                {newPost.date ? format(newPost.date, "PPP") : "Pick a date"}
+                {newPost.date ? format(newPost.date, "PPP") : format(new Date(), "PPP")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={newPost.date}
-                onSelect={(date) => setNewPost({ ...newPost, date })}
+                selected={newPost.date || new Date()}
+                onSelect={(date) => setNewPost({ ...newPost, date: date || new Date() })}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
           
           <TimeSelector
-            time={newPost.time}
+            time={newPost.time || format(new Date(), 'HH:mm')}
             onTimeChange={(time) => setNewPost({ ...newPost, time })}
             selectedPlatforms={newPost.platforms}
           />

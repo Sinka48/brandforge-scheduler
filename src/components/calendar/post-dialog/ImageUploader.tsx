@@ -30,11 +30,13 @@ export function ImageUploader({ imageUrl, onImageUrlChange }: ImageUploaderProps
       
       <Button
         variant="outline"
-        size="icon"
+        size="sm"
+        className="h-8 text-xs whitespace-nowrap"
         onClick={() => document.getElementById('image-upload')?.click()}
         disabled={uploading}
       >
-        <Upload className="h-4 w-4" />
+        <Upload className="h-3 w-3 mr-1" />
+        Upload
       </Button>
       
       <UploadProgress progress={uploadProgress} />
