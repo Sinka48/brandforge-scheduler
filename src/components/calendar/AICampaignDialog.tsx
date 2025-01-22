@@ -4,7 +4,7 @@ import { GeneratedContent } from "./campaign-dialog/GeneratedContent";
 import { usePostState } from "@/hooks/usePostState";
 import { usePostActions } from "@/hooks/usePostActions";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -15,22 +15,31 @@ export function AICampaignDialog({
   isOpen,
   onOpenChange,
 }: AICampaignDialogProps) {
+  const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("desktop");
   const { newPost, setNewPost, handlePlatformToggle } = usePostState();
   const { createPost } = usePostActions("user-id"); // Replace "user-id" with actual user ID
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     try {
-      await createPost(newPost);
+      const postData = {
+        content: newPost.content,
+        platform: newPost.platforms[0] || "", // Take first platform or empty string
+        image_url: newPost.image,
+        scheduled_for: new Date().toISOString(), // Current time as default
+        status: newPost.status,
+      };
+      
+      await createPost(postData);
       toast({
         title: "Success",
-        description: "Post created successfully",
+        description: "Campaign created successfully",
       });
       onOpenChange(false);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create post.",
+        description: "Failed to create campaign.",
         variant: "destructive",
       });
     }
@@ -39,11 +48,11 @@ export function AICampaignDialog({
   useEffect(() => {
     if (isOpen) {
       setNewPost({
-        content: '',
+        content: "",
         platforms: [],
-        image: '',
-        time: '',
-        status: 'draft',
+        image: "",
+        time: "",
+        status: "draft",
         date: new Date(),
       });
     }
@@ -54,15 +63,14 @@ export function AICampaignDialog({
       <DialogContent className="max-w-4xl">
         <DialogHeader 
           editMode={false} 
-          previewMode="desktop"
-          onPreviewModeChange={() => {}}
+          previewMode={previewMode}
+          onPreviewModeChange={setPreviewMode}
         />
         <GeneratedContent
           content={newPost.content}
           selectedPlatforms={newPost.platforms}
           imageUrl={newPost.image}
         />
-        {/* Add other components like PostContent, DialogActions, etc. */}
       </DialogContent>
     </Dialog>
   );
