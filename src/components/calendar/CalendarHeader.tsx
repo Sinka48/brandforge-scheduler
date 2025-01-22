@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNextPostTimer } from "@/hooks/useNextPostTimer";
+import { Badge } from "@/components/ui/badge";
 
 interface CalendarHeaderProps {
   onNewPost: () => void;
@@ -32,6 +33,9 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
           >
             <Wand2 className="h-4 w-4" />
             AI Campaign
+            <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
+              BETA
+            </Badge>
           </Button>
         </div>
         <div className="hidden sm:block">
@@ -56,6 +60,9 @@ export function CalendarHeader({ onNewPost, onNewCampaign }: CalendarHeaderProps
               <DropdownMenuItem onClick={onNewCampaign}>
                 <Wand2 className="h-4 w-4 mr-2" />
                 AI Campaign
+                <Badge variant="secondary" className="ml-2 text-[10px] px-1 py-0">
+                  BETA
+                </Badge>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
