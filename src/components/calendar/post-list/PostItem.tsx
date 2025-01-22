@@ -17,7 +17,7 @@ import { LucideIcon } from "lucide-react";
 interface Platform {
   id: PlatformId;
   name: string;
-  icon: LucideIcon;  // Updated to use LucideIcon type
+  icon: LucideIcon;
 }
 
 interface Post {
