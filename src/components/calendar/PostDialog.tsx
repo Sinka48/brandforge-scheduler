@@ -114,7 +114,7 @@ export function PostDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] max-h-[90vh] p-0">
+      <DialogContent className="w-[600px] h-[90vh] max-h-[90vh] p-0">
         <div className="h-full flex flex-col">
           <div className="p-6 border-b">
             <DialogHeader editMode={editMode} />
