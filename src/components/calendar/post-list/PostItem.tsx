@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
-import { Edit, Trash2, MoreVertical, Calendar, Send } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Calendar, Send, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface Platform {
   id: PlatformId;
@@ -52,8 +53,12 @@ export function PostItem({
   isSelected,
   onSelect
 }: PostItemProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const platformsArray = Array.isArray(post.platforms) ? post.platforms : [post.platforms];
   const postPlatforms = platforms.filter(p => platformsArray.includes(p.id));
+
+  const truncatedContent = isExpanded ? post.content : post.content.slice(0, 150);
+  const shouldTruncate = post.content.length > 150;
 
   return (
     <Card className={`p-4 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
@@ -74,7 +79,20 @@ export function PostItem({
           )}
 
           <div className="space-y-2">
-            <p className="font-medium break-words">{post.content}</p>
+            <p className="font-medium break-words">
+              {truncatedContent}
+              {shouldTruncate && !isExpanded && "..."}
+            </p>
+            {shouldTruncate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {isExpanded ? "Show less" : "Read more"}
+              </Button>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2 mt-2">
@@ -92,7 +110,11 @@ export function PostItem({
               </Badge>
             )}
 
-            <Badge variant={post.status === 'scheduled' ? 'default' : 'secondary'}>
+            <Badge 
+              variant={post.status === 'scheduled' ? 'default' : 'secondary'}
+              className="flex items-center gap-1"
+            >
+              <FileText className="h-3 w-3" />
               {post.status}
             </Badge>
           </div>
