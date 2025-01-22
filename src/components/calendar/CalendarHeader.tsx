@@ -16,13 +16,7 @@ export function CalendarHeader({ onCreatePost }: CalendarHeaderProps) {
   };
 
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground">
-          Schedule and manage your social media posts
-        </p>
-      </div>
+    <div className="flex items-center justify-end">
       <div className="flex items-center gap-2">
         <Button 
           variant="default"
