@@ -81,23 +81,19 @@ export function PlatformPreview({ content, selectedPlatforms, imageUrl }: Platfo
           if (!platformConfig) return null;
           const PreviewComponent = platformConfig.component;
           
+          let props: any = { content, imageUrl };
+          
+          if (platform === 'twitter') {
+            props.remainingChars = PLATFORM_LIMITS.twitter.maxLength - content.length;
+          }
+          
+          if (platform === 'instagram') {
+            props.hashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
+          }
+          
           return (
             <TabsContent key={platform} value={platform} className="mt-4">
-              {platform === 'twitter' ? (
-                <PreviewComponent 
-                  content={content} 
-                  imageUrl={imageUrl}
-                  remainingChars={PLATFORM_LIMITS.twitter.maxLength - content.length}
-                />
-              ) : platform === 'instagram' ? (
-                <PreviewComponent 
-                  content={content} 
-                  imageUrl={imageUrl}
-                  hashtags={content.match(/#[a-zA-Z0-9]+/g) || []}
-                />
-              ) : (
-                <PreviewComponent content={content} imageUrl={imageUrl} />
-              )}
+              <PreviewComponent {...props} />
             </TabsContent>
           );
         })}

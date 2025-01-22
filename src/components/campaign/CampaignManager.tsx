@@ -62,18 +62,27 @@ export function CampaignManager({ campaigns }: CampaignManagerProps) {
     
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // First, delete all associated posts
+      const { error: postsError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('campaign_id', deletingCampaign.id);
+
+      if (postsError) throw postsError;
+
+      // Then delete the campaign
+      const { error: campaignError } = await supabase
         .from('campaigns')
         .delete()
         .eq('id', deletingCampaign.id);
 
-      if (error) throw error;
+      if (campaignError) throw campaignError;
 
       await queryClient.invalidateQueries({ queryKey: ['campaigns'] });
 
       toast({
         title: "Success",
-        description: "Campaign deleted successfully",
+        description: "Campaign and associated posts deleted successfully",
       });
     } catch (error) {
       console.error('Error deleting campaign:', error);
