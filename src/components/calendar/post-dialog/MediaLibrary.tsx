@@ -15,25 +15,35 @@ interface MediaLibraryProps {
 export function MediaLibrary({ isOpen, onClose, onSelectImage }: MediaLibraryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images, isLoading } = useQuery({
+  const { data: images = [], isLoading } = useQuery({
     queryKey: ['media-library'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      const { data: posts, error } = await supabase
+      console.log('Fetching images for user:', session.user.id);
+
+      const { data, error } = await supabase
         .from('posts')
         .select('image_url')
         .eq('user_id', session.user.id)
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching images:', error);
+        throw error;
+      }
 
-      // Get unique image URLs
-      const uniqueImages = [...new Set(posts.map(post => post.image_url))];
-      return uniqueImages.filter(Boolean) as string[];
-    }
+      console.log('Fetched images:', data);
+
+      // Get unique image URLs and filter out any null values
+      const uniqueImages = [...new Set(data.map(post => post.image_url))]
+        .filter((url): url is string => url !== null);
+      
+      return uniqueImages;
+    },
+    retry: 1
   });
 
   const handleSelect = () => {
