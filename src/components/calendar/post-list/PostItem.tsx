@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
 import { Edit, Trash2, MoreVertical, Calendar, Send, FileText } from "lucide-react";
@@ -41,8 +40,6 @@ interface PostItemProps {
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
   onPublish: (postId: string) => void;
-  isSelected?: boolean;
-  onSelect?: (postId: string) => void;
 }
 
 export function PostItem({ 
@@ -51,8 +48,6 @@ export function PostItem({
   onEdit, 
   onDelete,
   onPublish,
-  isSelected,
-  onSelect
 }: PostItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const platformsArray = Array.isArray(post.platforms) ? post.platforms : [post.platforms];
@@ -62,16 +57,8 @@ export function PostItem({
   const shouldTruncate = post.content.length > 150;
 
   return (
-    <Card className={`p-6 transition-colors ${isSelected ? 'bg-muted' : ''}`}>
+    <Card className="p-6">
       <div className="flex items-start gap-4">
-        {post.status === 'draft' && onSelect && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => onSelect(post.id)}
-            className="mt-1"
-          />
-        )}
-        
         <div className="flex-1 space-y-4">
           {post.time && (
             <p className="text-sm text-muted-foreground">
