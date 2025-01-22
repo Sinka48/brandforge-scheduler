@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { usePostState } from "@/hooks/usePostState";
 import { usePostManagement } from "@/hooks/usePostManagement";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useCalendarState() {
@@ -12,6 +12,7 @@ export function useCalendarState() {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { newPost, setNewPost, handlePlatformToggle } = usePostState();
   const {
     posts,
@@ -21,6 +22,34 @@ export function useCalendarState() {
     handleDeletePost,
     handleUpdatePost,
   } = usePostManagement();
+
+  const handlePublishPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ 
+          status: 'scheduled',
+          published_at: new Date().toISOString()
+        })
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
+      
+      toast({
+        title: "Success",
+        description: "Post scheduled for publishing",
+      });
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSaveAsDraft = async () => {
     if (newPost.platforms.length === 0) {
@@ -128,7 +157,7 @@ export function useCalendarState() {
     toast,
     posts,
     isManagementLoading,
-    isQueryLoading,
+    isQueryLoading: false,
     newPost,
     setNewPost,
     handleAddPost,
@@ -136,5 +165,6 @@ export function useCalendarState() {
     handleDeletePost,
     handlePlatformToggle,
     handleUpdatePost,
+    handlePublishPost,
   };
 }

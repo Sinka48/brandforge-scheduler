@@ -45,6 +45,7 @@ export function CalendarView({
   const {
     handleDeletePost,
     handleUpdatePost,
+    handlePublishPost,
   } = useCalendarState();
 
   const handleEditPost = (post: Post) => {
