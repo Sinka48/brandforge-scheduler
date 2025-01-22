@@ -35,6 +35,7 @@ export function PostDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const handleSubmit = async () => {
     if (!newPost.content.trim()) {
@@ -70,6 +71,36 @@ export function PostDialog({
         ...newPost,
         date: scheduledDate
       });
+    }
+
+    // Handle immediate Twitter publishing
+    if (newPost.platforms.includes('twitter') && newPost.status !== 'draft') {
+      setIsPublishing(true);
+      try {
+        const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
+          body: { 
+            content: newPost.content,
+            imageUrl: newPost.image 
+          }
+        });
+
+        if (tweetError) throw tweetError;
+
+        toast({
+          title: "Tweet Published",
+          description: "Your tweet has been published successfully!",
+        });
+      } catch (error) {
+        console.error('Error publishing tweet:', error);
+        toast({
+          title: "Publishing Failed",
+          description: "Failed to publish tweet. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      } finally {
+        setIsPublishing(false);
+      }
     }
 
     handleAddPost();
@@ -172,8 +203,9 @@ export function PostDialog({
                   onSaveAsDraft={handleDraftSubmit}
                   onAddPost={handleSubmit}
                   onPublish={handleSubmit}
-                  isDisabled={!newPost.content.trim()}
+                  isDisabled={!newPost.content.trim() || isPublishing}
                   editMode={editMode}
+                  isPublishing={isPublishing}
                 />
               </div>
             </>

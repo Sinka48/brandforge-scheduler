@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface DialogActionsProps {
   onSaveAsDraft: () => void;
@@ -6,6 +7,7 @@ interface DialogActionsProps {
   onPublish: () => void;
   isDisabled: boolean;
   editMode: boolean;
+  isPublishing?: boolean;
 }
 
 export function DialogActions({ 
@@ -13,7 +15,8 @@ export function DialogActions({
   onAddPost,
   onPublish,
   isDisabled,
-  editMode 
+  editMode,
+  isPublishing = false
 }: DialogActionsProps) {
   return (
     <div className="flex justify-end gap-2">
@@ -31,7 +34,14 @@ export function DialogActions({
         onClick={onPublish}
         disabled={isDisabled}
       >
-        {editMode ? 'Update & Publish' : 'Publish Now'}
+        {isPublishing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Publishing...
+          </>
+        ) : (
+          editMode ? 'Update & Publish' : 'Publish Now'
+        )}
       </Button>
     </div>
   );
