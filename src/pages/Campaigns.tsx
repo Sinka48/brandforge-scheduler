@@ -4,16 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Campaign } from "@/types/campaign";
 import { CampaignManager } from "@/components/campaign/CampaignManager";
 import { Button } from "@/components/ui/button";
-import { Wand2, HelpCircle } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useNavigate } from "react-router-dom";
 
 export default function CampaignsPage({ session }: { session: any }) {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
-  const navigate = useNavigate();
   
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ['campaigns', session?.user?.id],
@@ -57,14 +55,6 @@ export default function CampaignsPage({ session }: { session: any }) {
                 BETA
               </Badge>
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/how-it-works")}
-              className="flex items-center gap-2"
-            >
-              <HelpCircle className="h-4 w-4" />
-              How It Works
-            </Button>
           </div>
         </div>
 
@@ -80,14 +70,6 @@ export default function CampaignsPage({ session }: { session: any }) {
               variant: "default",
               badge: "BETA"
             }}
-            additionalActions={[
-              {
-                label: "How It Works",
-                onClick: () => navigate("/how-it-works"),
-                icon: HelpCircle,
-                variant: "outline"
-              }
-            ]}
           />
         ) : (
           <CampaignManager campaigns={campaigns || []} />
