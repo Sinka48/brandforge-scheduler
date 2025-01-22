@@ -53,10 +53,7 @@ export function useCalendarData() {
             )
           `)
           .eq('user_id', session.user.id)
-          .or([
-            'campaign_id.is.null',
-            'campaigns.status.eq.active'
-          ])
+          .or('campaign_id.is.null,campaigns.status.eq.active')
           .order('scheduled_for', { ascending: true });
 
         if (error) {
