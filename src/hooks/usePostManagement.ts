@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { usePostCreate } from "./post/usePostCreate";
 import { usePostUpdate } from "./post/usePostUpdate";
@@ -27,7 +27,39 @@ export function usePostManagement() {
         return false;
       }
 
-      const data = await createPost(selectedDate, newPost);
+      // Create a proper timestamp by combining the selected date with the time
+      if (!selectedDate) {
+        toast({
+          title: "Error",
+          description: "Please select a date for the post",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const [hours, minutes] = newPost.time.split(':').map(Number);
+      const scheduledDate = set(selectedDate, {
+        hours,
+        minutes,
+        seconds: 0,
+        milliseconds: 0
+      });
+
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost.content,
+          platform: newPost.platforms[0],
+          image_url: newPost.image || null,
+          scheduled_for: scheduledDate.toISOString(),
+          status: newPost.status,
+          user_id: session.user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
       if (data) {
         setPosts([...posts, {
           id: data.id,
@@ -40,6 +72,14 @@ export function usePostManagement() {
         }]);
       }
       return !!data;
+    } catch (error: any) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create post",
+        variant: "destructive",
+      });
+      return false;
     } finally {
       setIsLoading(false);
     }
