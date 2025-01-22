@@ -45,9 +45,9 @@ export function DialogContent({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Platform Selector */}
-      <div className="border-b pb-4">
+    <div className="space-y-3">
+      {/* Platform Selector - Moved to top */}
+      <div className="border-b pb-2">
         <PlatformSelector
           selectedPlatforms={newPost.platforms}
           onPlatformToggle={handlePlatformToggle}
@@ -55,19 +55,21 @@ export function DialogContent({
       </div>
 
       {/* Content Area */}
-      <PostContent
-        content={newPost.content}
-        onContentChange={(content) => setNewPost({ ...newPost, content })}
-        selectedPlatforms={newPost.platforms}
-        imageUrl={newPost.image}
-        onGenerateContent={onGenerateContent}
-        isGenerating={isGenerating}
-      />
+      <div className="py-2">
+        <PostContent
+          content={newPost.content}
+          onContentChange={(content) => setNewPost({ ...newPost, content })}
+          selectedPlatforms={newPost.platforms}
+          imageUrl={newPost.image}
+          onGenerateContent={onGenerateContent}
+          isGenerating={isGenerating}
+        />
+      </div>
 
-      {/* Image Section */}
-      <div className="space-y-4">
+      {/* Image Section - Compact Layout */}
+      <div className="space-y-2">
         {newPost.image && (
-          <div className="relative w-full h-48 rounded-lg overflow-hidden">
+          <div className="relative w-full h-32 rounded-lg overflow-hidden">
             <img
               src={newPost.image}
               alt="Post preview"
@@ -85,17 +87,16 @@ export function DialogContent({
         )}
         
         <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <Input
-              placeholder="Enter image URL"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full"
-            />
-          </div>
+          <Input
+            placeholder="Enter image URL"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className="flex-1"
+            size="sm"
+          />
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={handleImageUrlSubmit}
             disabled={!imageUrl.trim()}
           >
@@ -103,7 +104,7 @@ export function DialogContent({
           </Button>
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={() => setIsMediaLibraryOpen(true)}
           >
             <Image className="h-4 w-4" />
@@ -115,15 +116,16 @@ export function DialogContent({
         </div>
       </div>
 
-      {/* Date and Time Section */}
-      <div className="space-y-4 pt-4 border-t">
-        <div className="flex items-center gap-4">
+      {/* Date and Time Section - Moved to bottom */}
+      <div className="space-y-2 pt-2 border-t">
+        <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
+                size="sm"
                 className={cn(
-                  "w-[240px] justify-start text-left font-normal",
+                  "justify-start text-left font-normal",
                   !newPost.date && "text-muted-foreground"
                 )}
               >

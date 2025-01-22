@@ -129,9 +129,9 @@ export function PostDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[600px] h-[90vh] max-h-[90vh] p-0">
+      <DialogContent className="w-[90vw] max-w-[500px] h-[85vh] max-h-[700px] p-0">
         <div className="h-full flex flex-col">
-          <div className="p-6 border-b">
+          <div className="p-4 border-b">
             <DialogHeader editMode={editMode} />
           </div>
           
@@ -139,7 +139,7 @@ export function PostDialog({
             <LoadingState />
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-4">
                 <PostDialogContent
                   newPost={newPost}
                   setNewPost={setNewPost}
@@ -150,7 +150,7 @@ export function PostDialog({
                 />
               </div>
 
-              <div className="p-6 border-t">
+              <div className="p-4 border-t">
                 <DialogActions
                   onSaveAsDraft={handleDraftSubmit}
                   onAddPost={handleSubmit}

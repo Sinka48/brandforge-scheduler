@@ -38,7 +38,7 @@ interface PlatformSelectorProps {
 export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: PlatformSelectorProps) {
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-2 gap-2 w-full">
+      <div className="flex flex-wrap gap-2">
         {platforms.map((platform) => {
           const isSelected = selectedPlatforms.includes(platform.id);
           const Icon = platform.icon;
@@ -49,15 +49,16 @@ export function PlatformSelector({ selectedPlatforms, onPlatformToggle }: Platfo
                 <Button
                   variant={isSelected ? "default" : "outline"}
                   onClick={() => onPlatformToggle(platform.id)}
-                  className="relative w-full h-10 px-4"
+                  className="relative h-8 px-3"
+                  size="sm"
                 >
-                  <div className="flex items-center justify-center gap-2 w-full">
-                    <Icon className="h-4 w-4" />
-                    <span className="text-sm">{platform.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Icon className="h-3.5 w-3.5" />
+                    <span className="text-xs">{platform.name}</span>
                     {isSelected && (
                       <Badge 
                         variant="secondary" 
-                        className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                        className="absolute -top-1.5 -right-1.5 h-3 w-3 p-0 flex items-center justify-center text-[8px]"
                       >
                         ✓
                       </Badge>
