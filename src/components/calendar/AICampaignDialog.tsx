@@ -53,7 +53,7 @@ export function AICampaignDialog({
       const { data, error } = await supabase.functions.invoke('generate-campaign', {
         body: { 
           goal,
-          platforms: [generatedPosts[index].platform],
+          platforms: [generatedPosts[index].platform.toLowerCase()],
           duration: 1,
           tone,
         },
@@ -200,7 +200,7 @@ export function AICampaignDialog({
 
         await supabase.from('posts').insert({
           content: post.content,
-          platform: post.platform,
+          platform: post.platform.toLowerCase(), // Ensure platform is lowercase
           status: 'draft',
           campaign_id: campaignId,
           scheduled_for: finalDate.toISOString(),
