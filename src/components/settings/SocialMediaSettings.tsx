@@ -11,7 +11,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Unlink,
-  User,
 } from "lucide-react";
 import { PLATFORMS } from "@/constants/platforms";
 
@@ -97,14 +96,12 @@ export function SocialMediaSettings() {
 
       if (saveError) throw saveError;
 
-      setConnectedPlatforms([...connectedPlatforms, platform.toLowerCase()]);
+      await fetchConnectedPlatforms();
       
       toast({
         title: "Success",
         description: `Successfully connected to ${platform}.`,
       });
-
-      await fetchConnectedPlatforms();
     } catch (error: any) {
       console.error(`Error connecting to ${platform}:`, error);
       toast({
@@ -195,8 +192,7 @@ export function SocialMediaSettings() {
                           Connected
                         </span>
                         {accountDetails?.platform_username && (
-                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <User className="h-3 w-3" />
+                          <span className="text-sm text-muted-foreground">
                             @{accountDetails.platform_username}
                           </span>
                         )}
