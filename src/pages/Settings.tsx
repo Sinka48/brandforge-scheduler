@@ -1,8 +1,8 @@
 import { Session } from "@supabase/supabase-js";
-import { Card } from "@/components/ui/card";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { SocialMediaSettings } from "@/components/settings/SocialMediaSettings";
 import { Layout } from "@/components/layout/Layout";
 
 interface SettingsPageProps {
@@ -22,6 +22,7 @@ export default function SettingsPage({ session }: SettingsPageProps) {
         
         <div className="grid gap-6">
           <ProfileSettings session={session} />
+          <SocialMediaSettings />
           <NotificationSettings />
           <AppearanceSettings />
         </div>
