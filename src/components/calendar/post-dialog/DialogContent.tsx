@@ -6,12 +6,18 @@ import { TimeSelector } from "./TimeSelector";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { GoalSelector } from "./GoalSelector";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Image, ImagePlus, Sparkles } from "lucide-react";
 import { MediaLibrary } from "./MediaLibrary";
@@ -19,6 +25,17 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+const POST_GOALS = [
+  { id: 'followers', label: 'Get New Followers' },
+  { id: 'engagement', label: 'Boost Engagement' },
+  { id: 'awareness', label: 'Raise Brand Awareness' },
+  { id: 'traffic', label: 'Drive Website Traffic' },
+  { id: 'leads', label: 'Generate Leads' },
+  { id: 'sales', label: 'Increase Sales' },
+  { id: 'community', label: 'Build Community' },
+  { id: 'authority', label: 'Establish Authority' }
+];
 
 interface DialogContentProps {
   newPost: any;
@@ -39,6 +56,7 @@ export function DialogContent({
 }: DialogContentProps) {
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [showImageUrl, setShowImageUrl] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const { toast } = useToast();
 
@@ -46,6 +64,7 @@ export function DialogContent({
     if (imageUrl.trim()) {
       setNewPost({ ...newPost, image: imageUrl });
       setImageUrl("");
+      setShowImageUrl(false);
     }
   };
 
@@ -96,10 +115,21 @@ export function DialogContent({
 
       {/* Goal Selector */}
       <div className="py-2 border-b">
-        <GoalSelector
-          selectedGoal={newPost.goal}
-          onGoalSelect={(goal) => setNewPost({ ...newPost, goal })}
-        />
+        <Select
+          value={newPost.goal || ""}
+          onValueChange={(value) => setNewPost({ ...newPost, goal: value })}
+        >
+          <SelectTrigger className="w-full h-8 text-xs">
+            <SelectValue placeholder="Select post goal (optional)" />
+          </SelectTrigger>
+          <SelectContent>
+            {POST_GOALS.map((goal) => (
+              <SelectItem key={goal.id} value={goal.id} className="text-xs">
+                {goal.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Content Area */}
@@ -135,35 +165,6 @@ export function DialogContent({
         )}
         
         <div className="flex items-center gap-1.5">
-          <Input
-            placeholder="Enter image URL"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="flex-1 h-8 text-xs"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleImageUrlSubmit}
-            disabled={!imageUrl.trim()}
-            className="h-8 text-xs whitespace-nowrap"
-          >
-            <ImagePlus className="h-3 w-3 mr-1" />
-            Add URL
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsMediaLibraryOpen(true)}
-            className="h-8 text-xs whitespace-nowrap"
-          >
-            <Image className="h-3 w-3 mr-1" />
-            Gallery
-          </Button>
-          <ImageUploader
-            imageUrl={newPost.image}
-            onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
-          />
           <Button
             variant="outline"
             size="sm"
@@ -174,6 +175,59 @@ export function DialogContent({
             <Sparkles className="h-3 w-3 mr-1" />
             Generate
           </Button>
+          
+          {!showImageUrl ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImageUrl(true)}
+              className="h-8 text-xs whitespace-nowrap"
+            >
+              <ImagePlus className="h-3 w-3 mr-1" />
+              Add URL
+            </Button>
+          ) : (
+            <div className="flex-1 flex gap-1.5">
+              <Input
+                placeholder="Enter image URL"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="h-8 text-xs"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleImageUrlSubmit}
+                disabled={!imageUrl.trim()}
+                className="h-8 text-xs whitespace-nowrap"
+              >
+                Add
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowImageUrl(false)}
+                className="h-8 text-xs"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsMediaLibraryOpen(true)}
+            className="h-8 text-xs whitespace-nowrap"
+          >
+            <Image className="h-3 w-3 mr-1" />
+            Gallery
+          </Button>
+          
+          <ImageUploader
+            imageUrl={newPost.image}
+            onImageUrlChange={(image) => setNewPost({ ...newPost, image })}
+          />
         </div>
       </div>
 
