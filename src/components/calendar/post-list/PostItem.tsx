@@ -36,7 +36,7 @@ interface Post {
 
 interface PostItemProps {
   post: Post;
-  platforms: Platform[];
+  platforms: readonly Platform[];  // Updated to accept readonly platforms
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
   onPublish: (postId: string) => void;
