@@ -96,25 +96,36 @@ export function DraftManager({
         return;
       }
 
-      // Update the post status using a simple update query
-      const { error } = await supabase
+      const publishDate = new Date();
+
+      // If it's a Twitter post, publish it immediately using the edge function
+      if (post.platforms.includes('twitter')) {
+        const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
+          body: { 
+            content: post.content,
+            imageUrl: post.image 
+          }
+        });
+
+        if (tweetError) throw tweetError;
+      }
+
+      // Update the post status in the database
+      const { error: updateError } = await supabase
         .from('posts')
         .update({ 
           status: 'scheduled',
-          published_at: new Date().toISOString(),
+          published_at: publishDate.toISOString(),
           platform: post.platforms[0],
-          scheduled_for: post.date.toISOString()
+          scheduled_for: publishDate.toISOString()
         })
-        .eq('id', postId);
+        .match({ id: postId });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (updateError) throw updateError;
       
       toast({
         title: "Success",
-        description: "Post scheduled for publishing",
+        description: "Post has been published",
       });
     } catch (error) {
       console.error('Error publishing post:', error);
