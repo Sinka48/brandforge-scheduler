@@ -1,86 +1,108 @@
 import { Layout } from "@/components/layout/Layout";
-import { Session } from "@supabase/supabase-js";
-import { CalendarView } from "@/components/calendar/CalendarView";
-import { PostList } from "@/components/calendar/PostList";
-import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
+import { CalendarHeader } from "@/components/calendar/CalendarHeader";
+import { CalendarView } from "@/components/calendar/CalendarView";
 import { AICampaignDialog } from "@/components/calendar/AICampaignDialog";
-import { useNavigate } from "react-router-dom";
-import { usePostState } from "@/hooks/usePostState";
+import { useCalendarAuth } from "@/hooks/useCalendarAuth";
 import { useCalendarState } from "@/components/calendar/hooks/useCalendarState";
-import { format } from "date-fns";
+import { useCalendarHandlers } from "@/components/calendar/hooks/useCalendarHandlers";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Session } from "@supabase/supabase-js";
+import { Plus } from "lucide-react";
 
 interface CalendarPageProps {
-  session: Session | null;
+  session: Session;
 }
 
 export default function CalendarPage({ session }: CalendarPageProps) {
-  const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
-  const [isAICampaignDialogOpen, setIsAICampaignDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const navigate = useNavigate();
-  const { newPost, setNewPost, handlePlatformToggle } = usePostState();
-  const { handleAddPost, handleSaveAsDraft } = useCalendarState();
+  useCalendarAuth();
+  const isMobile = useIsMobile();
 
-  const handleCreatePost = () => {
-    setIsPostDialogOpen(true);
-  };
+  const {
+    selectedDate,
+    setSelectedDate,
+    isDialogOpen,
+    setIsDialogOpen,
+    isCampaignDialogOpen,
+    setIsCampaignDialogOpen,
+    editingPost,
+    setEditingPost,
+    toast,
+    posts,
+    isManagementLoading,
+    isQueryLoading,
+    newPost,
+    setNewPost,
+    handleAddPost,
+    handleSaveAsDraft,
+    handleDeletePost,
+    handlePlatformToggle,
+    handleUpdatePost,
+  } = useCalendarState();
 
-  const handleCreateCampaign = () => {
-    setIsAICampaignDialogOpen(true);
-  };
-
-  const handleHowItWorks = () => {
-    navigate("/how-it-works");
-  };
-
-  const handleGenerateCampaign = (posts: any[]) => {
-    // Handle the generated campaign posts
-    console.log('Generated posts:', posts);
-    // You might want to update your state or perform other actions with the generated posts
-  };
+  const {
+    handleGenerateCampaign,
+    handleEditPost,
+    onAddPost,
+    onSaveAsDraft,
+    onDialogClose,
+  } = useCalendarHandlers({
+    setEditingPost,
+    setNewPost,
+    setIsDialogOpen,
+    handleAddPost,
+    handleUpdatePost,
+    toast,
+    selectedDate,
+  });
 
   return (
     <Layout session={session}>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Feed</h1>
           <p className="text-muted-foreground">
-            Schedule and manage your social media posts
+            View and manage your social media posts
           </p>
         </div>
 
-        <div className="grid gap-8">
+        <div className="space-y-6">
+          <CalendarHeader 
+            onNewPost={() => setIsDialogOpen(true)}
+            onNewCampaign={() => setIsCampaignDialogOpen(true)}
+          />
+          
           <CalendarView 
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onCreatePost={handleCreatePost}
-            onPostClick={() => {}}
-          />
-          <PostList
-            selectedDate={selectedDate}
-            posts={[]}
-            platforms={[]}
-            handleDeletePost={() => {}}
-            handleEditPost={() => {}}
-            handlePublishPost={() => {}}
           />
         </div>
 
+        {isMobile && (
+          <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        )}
+
         <PostDialog
-          isOpen={isPostDialogOpen}
-          onOpenChange={setIsPostDialogOpen}
+          isOpen={isDialogOpen}
+          onOpenChange={(open) => onDialogClose(open, setNewPost)}
           newPost={newPost}
           setNewPost={setNewPost}
-          handleAddPost={handleAddPost}
-          handleSaveAsDraft={handleSaveAsDraft}
+          handleAddPost={() => onAddPost(editingPost, selectedDate)}
+          handleSaveAsDraft={() => onSaveAsDraft(handleSaveAsDraft)}
           handlePlatformToggle={handlePlatformToggle}
           selectedDate={selectedDate}
+          editMode={!!editingPost}
         />
 
         <AICampaignDialog
-          isOpen={isAICampaignDialogOpen}
-          onOpenChange={setIsAICampaignDialogOpen}
+          isOpen={isCampaignDialogOpen}
+          onOpenChange={setIsCampaignDialogOpen}
           onGenerateCampaign={handleGenerateCampaign}
         />
       </div>

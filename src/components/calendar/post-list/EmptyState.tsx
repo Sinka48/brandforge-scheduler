@@ -24,14 +24,13 @@ export function EmptyState({ onCreatePost, onCreateCampaign, onHowItWorks }: Pos
           label: "AI Campaign",
           onClick: onCreateCampaign,
           icon: Sparkles,
-          variant: "default",
-          badge: "BETA"
+          variant: "default"  // Changed from outline to default (primary)
         },
         {
           label: "How it Works",
           onClick: onHowItWorks,
           icon: HelpCircle,
-          variant: "default"  // Changed from outline to default
+          variant: "outline"
         }
       ]}
     />
