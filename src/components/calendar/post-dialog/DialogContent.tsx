@@ -19,7 +19,6 @@ interface DialogContentProps {
   editMode?: boolean;
   onGenerateContent?: () => void;
   isGenerating?: boolean;
-  previewMode: 'mobile' | 'desktop';
 }
 
 export function DialogContent({
@@ -28,8 +27,7 @@ export function DialogContent({
   handlePlatformToggle,
   editMode = false,
   onGenerateContent,
-  isGenerating = false,
-  previewMode
+  isGenerating = false
 }: DialogContentProps) {
   const isMobile = useIsMobile();
 
@@ -44,10 +42,7 @@ export function DialogContent({
     <div className="space-y-4 py-4">
       <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-2 gap-8'}`}>
         {/* Left Column - Preview */}
-        <div className={cn(
-          "w-full",
-          previewMode === 'mobile' ? 'max-w-[375px] mx-auto' : 'max-w-none'
-        )}>
+        <div>
           {newPost.platforms.length > 0 ? (
             <PlatformPreview 
               content={newPost.content}
