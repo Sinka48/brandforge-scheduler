@@ -19,13 +19,13 @@ function validateEnvironmentVariables() {
   if (!ACCESS_TOKEN_SECRET) throw new Error("Missing TWITTER_ACCESS_TOKEN_SECRET");
 }
 
-async function generateOAuthSignature(
+function generateOAuthSignature(
   method: string,
   url: string,
   oauthParams: Record<string, string>,
   consumerSecret: string,
   tokenSecret: string
-): Promise<string> {
+): string {
   const signatureBaseString = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(
     Object.entries(oauthParams)
       .sort()
@@ -39,16 +39,19 @@ async function generateOAuthSignature(
   const key = encoder.encode(signingKey);
   const message = encoder.encode(signatureBaseString);
   
-  const hmacKey = await crypto.subtle.importKey(
+  const hmacKey = crypto.subtle.importKey(
     "raw",
     key,
     { name: "HMAC", hash: "SHA-1" },
     false,
     ["sign"]
   );
-  
-  const signature = await crypto.subtle.sign("HMAC", hmacKey, message);
-  return encodeBase64(new Uint8Array(signature));
+
+  return hmacKey.then(key => {
+    return crypto.subtle.sign("HMAC", key, message);
+  }).then(signature => {
+    return encodeBase64(new Uint8Array(signature));
+  });
 }
 
 async function generateOAuthHeader(method: string, url: string): Promise<string> {
@@ -81,12 +84,47 @@ async function generateOAuthHeader(method: string, url: string): Promise<string>
     .join(', ');
 }
 
+async function getTwitterUsername(): Promise<string> {
+  const url = "https://api.twitter.com/2/users/me";
+  const method = "GET";
+
+  const oauthHeader = await generateOAuthHeader(method, url);
+  console.log("Getting Twitter username with OAuth Header:", oauthHeader);
+
+  const response = await fetch(url, {
+    method: method,
+    headers: {
+      'Authorization': oauthHeader,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Twitter API Error:", {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: errorText
+    });
+    throw new Error(`Failed to get Twitter username: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log("Twitter user data:", data);
+  
+  if (!data.data?.username) {
+    throw new Error("Could not retrieve username from Twitter response");
+  }
+
+  return data.data.username;
+}
+
 async function publishTweet(content: string): Promise<any> {
   const url = "https://api.twitter.com/2/tweets";
   const method = "POST";
 
   const oauthHeader = await generateOAuthHeader(method, url);
-  console.log("Generated OAuth Header:", oauthHeader);
+  console.log("Publishing tweet with OAuth Header:", oauthHeader);
 
   const response = await fetch(url, {
     method: method,
@@ -99,12 +137,12 @@ async function publishTweet(content: string): Promise<any> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Twitter API Response:", {
+    console.error("Twitter API Error:", {
       status: response.status,
       headers: Object.fromEntries(response.headers.entries()),
       body: errorText
     });
-    throw new Error(`Twitter API error: ${response.status} - ${errorText}`);
+    throw new Error(`Failed to publish tweet: ${response.status} - ${errorText}`);
   }
 
   return await response.json();
@@ -122,6 +160,15 @@ serve(async (req) => {
 
     const { content, test = false } = await req.json();
     
+    if (test) {
+      console.log("Test mode - verifying credentials and getting username");
+      const username = await getTwitterUsername();
+      return new Response(
+        JSON.stringify({ username, status: "ok" }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!content) {
       throw new Error("Tweet content is required");
     }
@@ -130,19 +177,13 @@ serve(async (req) => {
       throw new Error("Tweet content exceeds 280 characters");
     }
 
-    if (test) {
-      console.log("Test mode - verifying credentials only");
-      return new Response(JSON.stringify({ status: "ok" }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     console.log("Publishing tweet:", { content });
     const result = await publishTweet(content);
     
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify(result), 
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error: any) {
     console.error("Error in Edge Function:", error);
     return new Response(
