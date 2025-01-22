@@ -71,7 +71,7 @@ export function SocialMediaSettings() {
         return;
       }
 
-      // Test Twitter connection
+      // Test Twitter connection and get account details
       const { data: testResult, error: testError } = await supabase.functions.invoke('publish-tweet', {
         body: { 
           content: "Testing Twitter connection...",
@@ -84,14 +84,20 @@ export function SocialMediaSettings() {
         throw new Error('Failed to verify Twitter credentials');
       }
 
-      // Save the connection
+      // Extract Twitter username from the test response
+      const twitterUsername = testResult?.username;
+      if (!twitterUsername) {
+        throw new Error('Could not retrieve Twitter username');
+      }
+
+      // Save the connection with the correct Twitter username
       const { error: saveError } = await supabase
         .from('social_connections')
         .insert({
           user_id: session.user.id,
           platform: platform.toLowerCase(),
           access_token: 'connected',
-          platform_username: session.user.email
+          platform_username: twitterUsername
         });
 
       if (saveError) throw saveError;
