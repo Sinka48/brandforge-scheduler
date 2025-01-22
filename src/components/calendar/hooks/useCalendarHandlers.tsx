@@ -8,6 +8,7 @@ interface Post {
   image: string;
   time: string;
   status: 'draft' | 'scheduled';
+  date?: Date;
 }
 
 interface CalendarHandlersProps {
@@ -34,7 +35,6 @@ export function useCalendarHandlers({
     const errors: string[] = [];
     
     try {
-      // Check authentication
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -47,10 +47,15 @@ export function useCalendarHandlers({
 
       for (const post of campaignPosts) {
         try {
-          // Create a proper timestamp by combining the selected date with the time
-          const [hours, minutes] = post.time.split(':').map(Number);
-          const scheduledDate = new Date(selectedDate!);
-          scheduledDate.setHours(hours, minutes, 0, 0);
+          // Use the formatted date from the post if available, otherwise create it from time
+          let scheduledDate: Date;
+          if (post.date) {
+            scheduledDate = post.date;
+          } else {
+            const [hours, minutes] = post.time.split(':').map(Number);
+            scheduledDate = new Date(selectedDate!);
+            scheduledDate.setHours(hours, minutes, 0, 0);
+          }
 
           // Validate scheduled time
           if (scheduledDate < new Date()) {
@@ -62,7 +67,7 @@ export function useCalendarHandlers({
             content: post.content,
             platform: post.platform.toLowerCase(),
             image_url: post.imageUrl || '',
-            scheduled_for: scheduledDate.toISOString(), // Convert to ISO string format
+            scheduled_for: scheduledDate.toISOString(),
             status: 'scheduled' as const,
             user_id: session.user.id
           };
