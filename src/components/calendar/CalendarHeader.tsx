@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNextPostTimer } from "@/hooks/useNextPostTimer";
-import { Wand2 } from "lucide-react";
+import { Wand2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CalendarHeaderProps {
@@ -27,17 +27,18 @@ export function CalendarHeader({
       </div>
       <div className="flex items-center gap-2">
         <Button
-          variant="outline"
-          onClick={onNewPost}
-        >
-          Create Post
-        </Button>
-        <Button
           onClick={onNewCampaign}
         >
           <Wand2 className="mr-2 h-4 w-4" />
           AI Campaign
           <Badge variant="secondary" className="ml-2">BETA</Badge>
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onNewPost}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Create Post
         </Button>
       </div>
     </div>
