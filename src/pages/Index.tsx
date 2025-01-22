@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthSection } from "@/components/landing/AuthSection";
 import { FeaturesAnimation } from "@/components/landing/FeaturesAnimation";
 import { GradientBackground } from "@/components/landing/GradientBackground";
+import { QuickActions } from "@/components/dashboard/QuickActions";
 
 interface IndexPageProps {
   session: Session | null;
@@ -18,7 +19,9 @@ export default function IndexPage({ session }: IndexPageProps) {
       if (!session?.user?.id) return null;
       
       // Force refresh analytics before fetching
-      await supabase.rpc('update_dashboard_analytics');
+      await supabase.rpc('ensure_dashboard_analytics_exists', {
+        input_user_id: session.user.id
+      });
       
       const { data, error } = await supabase
         .from('dashboard_analytics')
