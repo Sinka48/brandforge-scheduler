@@ -2,6 +2,13 @@ import { Card } from "@/components/ui/card";
 import { PostList } from "../PostList";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { Post } from "../types";
+import { LucideIcon } from "lucide-react";
+
+interface Platform {
+  id: PlatformId;
+  name: string;
+  icon: LucideIcon;
+}
 
 interface CalendarContentProps {
   posts: Post[];
@@ -24,8 +31,8 @@ export function CalendarContent({
   
   const platforms = PLATFORMS.map(platform => ({
     ...platform,
-    icon: <platform.icon className="h-4 w-4" />
-  }));
+    icon: platform.icon
+  })) as readonly Platform[];
 
   return (
     <Card className="p-4 md:p-6">

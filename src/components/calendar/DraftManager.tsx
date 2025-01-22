@@ -1,18 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PostList } from "./PostList";
-import { PlatformId } from "@/constants/platforms";
+import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { FileText, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { DraftFilters } from "./draft-manager/DraftFilters";
 import { supabase } from "@/integrations/supabase/client";
+import { LucideIcon } from "lucide-react";
 
 interface Platform {
   id: PlatformId;
   name: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
 }
 
 interface Post {
@@ -27,7 +28,7 @@ interface Post {
 
 interface DraftManagerProps {
   posts: Post[];
-  platforms: Platform[];
+  platforms: readonly Platform[];
   handleDeletePost: (postId: string) => void;
   handleEditPost: (post: Post) => void;
   isLoading?: boolean;
