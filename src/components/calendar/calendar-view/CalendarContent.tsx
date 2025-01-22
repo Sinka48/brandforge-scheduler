@@ -3,6 +3,9 @@ import { PostList } from "../PostList";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { Post } from "../types";
 import { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Wand2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Platform {
   id: PlatformId;
@@ -17,6 +20,8 @@ interface CalendarContentProps {
   handleEditPost: (post: Post) => void;
   handlePublishPost: (postId: string) => void;
   isLoading: boolean;
+  onNewPost: () => void;
+  onNewCampaign: () => void;
 }
 
 export function CalendarContent({
@@ -25,28 +30,38 @@ export function CalendarContent({
   handleDeletePost,
   handleEditPost,
   handlePublishPost,
-  isLoading
+  isLoading,
+  onNewPost,
+  onNewCampaign
 }: CalendarContentProps) {
-  console.log('CalendarContent - Received posts:', posts);
-  
-  const platforms = PLATFORMS.map(platform => ({
-    ...platform,
-    icon: platform.icon
-  })) as readonly Platform[];
-
   return (
-    <Card className="p-4 md:p-6">
-      <div className="space-y-4">
-        <PostList
-          selectedDate={selectedDate}
-          posts={posts}
-          platforms={platforms}
-          handleDeletePost={handleDeletePost}
-          handleEditPost={handleEditPost}
-          handlePublishPost={handlePublishPost}
-          isLoading={isLoading}
-        />
+    <div className="p-4 md:p-6 space-y-4">
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          onClick={onNewCampaign}
+          className="flex items-center gap-2"
+        >
+          <Wand2 className="h-4 w-4" />
+          AI Campaign
+          <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
+            BETA
+          </Badge>
+        </Button>
+        <Button onClick={onNewPost} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          New Post
+        </Button>
       </div>
-    </Card>
+      <PostList
+        selectedDate={selectedDate}
+        posts={posts}
+        platforms={PLATFORMS}
+        handleDeletePost={handleDeletePost}
+        handleEditPost={handleEditPost}
+        handlePublishPost={handlePublishPost}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }
