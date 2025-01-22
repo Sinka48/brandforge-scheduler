@@ -96,16 +96,21 @@ export function DraftManager({
         return;
       }
 
+      // Update the post status and platform
       const { error } = await supabase
         .from('posts')
         .update({ 
           status: 'scheduled',
           published_at: new Date().toISOString(),
-          platform: post.platforms[0] // Use the first selected platform
+          platform: post.platforms[0], // Use the first selected platform
+          scheduled_for: post.date.toISOString() // Ensure scheduled_for is set
         })
         .eq('id', postId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
       toast({
         title: "Success",
