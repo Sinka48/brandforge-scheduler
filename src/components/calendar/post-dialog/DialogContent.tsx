@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { Image, ImagePlus, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { MediaLibrary } from "./MediaLibrary";
 import { useState } from "react";
@@ -104,9 +103,9 @@ export function DialogContent({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
       {/* Platform Selector */}
-      <div>
+      <div className="py-2">
         <PlatformSelector
           selectedPlatforms={newPost.platforms}
           onPlatformToggle={handlePlatformToggle}
@@ -114,7 +113,7 @@ export function DialogContent({
       </div>
 
       {/* Goal Selector */}
-      <div>
+      <div className="py-2">
         <Select
           value={newPost.goal || ""}
           onValueChange={(value) => setNewPost({ ...newPost, goal: value })}
@@ -133,7 +132,7 @@ export function DialogContent({
       </div>
 
       {/* Content Area */}
-      <div>
+      <div className="py-2">
         <PostContent
           content={newPost.content}
           onContentChange={(content) => setNewPost({ ...newPost, content })}
@@ -145,9 +144,9 @@ export function DialogContent({
       </div>
 
       {/* Image Section */}
-      <div className="space-y-2">
+      <div className="py-2">
         {newPost.image && (
-          <div className="relative w-full h-12 rounded-lg overflow-hidden">
+          <div className="relative w-full h-12 rounded-lg overflow-hidden mb-2">
             <img
               src={newPost.image}
               alt="Post preview"
@@ -164,7 +163,7 @@ export function DialogContent({
           </div>
         )}
         
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {!showImageUrl ? (
             <>
               <Button
@@ -209,7 +208,7 @@ export function DialogContent({
                 placeholder="Enter image URL"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                className="h-8 text-xs"
+                className="h-8 text-xs flex-1"
               />
               <Button
                 variant="outline"
@@ -234,8 +233,8 @@ export function DialogContent({
       </div>
 
       {/* Date and Time Section */}
-      <div>
-        <div className="flex items-center gap-1.5">
+      <div className="py-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Popover>
             <PopoverTrigger asChild>
               <Button
