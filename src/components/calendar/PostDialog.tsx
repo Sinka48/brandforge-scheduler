@@ -53,7 +53,8 @@ export function PostDialog({
       ...newPost,
       date: publishDate,
       status: 'scheduled',
-      time: format(publishDate, 'HH:mm')
+      time: format(publishDate, 'HH:mm'),
+      campaign_id: null // Ensure no campaign association for single posts
     });
 
     // Handle immediate Twitter publishing
@@ -69,14 +70,15 @@ export function PostDialog({
 
         if (tweetError) throw tweetError;
 
-        // Update post status in database using a direct update query
+        // Update post status in database
         const { error: updateError } = await supabase
           .from('posts')
           .update({
             status: 'scheduled',
             published_at: publishDate.toISOString(),
             platform: newPost.platforms[0],
-            scheduled_for: publishDate.toISOString()
+            scheduled_for: publishDate.toISOString(),
+            campaign_id: null // Ensure no campaign association
           })
           .match({ id: newPost.id });
 
@@ -114,6 +116,14 @@ export function PostDialog({
       return;
     }
 
+    // Ensure the draft is saved without a campaign association
+    const draftPost = {
+      ...newPost,
+      campaign_id: null,
+      status: 'draft'
+    };
+    
+    setNewPost(draftPost);
     handleSaveAsDraft();
   };
 

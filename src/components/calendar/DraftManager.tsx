@@ -37,8 +37,8 @@ export function DraftManager({
 }: DraftManagerProps) {
   const { toast } = useToast();
   
-  // Filter to show only draft posts
-  const draftPosts = posts.filter(post => post.status === 'draft');
+  // Filter to show only non-campaign draft posts
+  const draftPosts = posts.filter(post => post.status === 'draft' && !post.campaign);
 
   const handlePublishPost = async (postId: string) => {
     try {
