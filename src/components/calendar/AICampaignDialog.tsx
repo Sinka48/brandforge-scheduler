@@ -235,8 +235,14 @@ export function AICampaignDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={`sm:max-w-[850px] h-[85vh] p-0 overflow-hidden ${generatedPosts.length > 0 ? 'grid grid-cols-2 gap-4' : ''}`}>
-        <div className="h-full flex flex-col">
+      <DialogContent 
+        className={`${
+          generatedPosts.length > 0 
+            ? 'sm:max-w-[900px] grid grid-cols-[45%_55%]' 
+            : 'sm:max-w-[600px]'
+        } h-[85vh] p-0 overflow-hidden gap-0`}
+      >
+        <div className="h-full flex flex-col border-r">
           <div className="p-4 border-b">
             <h2 className="text-lg font-semibold">Create AI Campaign</h2>
             <p className="text-sm text-muted-foreground">
@@ -332,7 +338,7 @@ export function AICampaignDialog({
         </div>
 
         {generatedPosts.length > 0 && (
-          <div className="border-l h-full overflow-hidden">
+          <div className="h-full overflow-hidden">
             <div className="p-4 border-b">
               <h3 className="font-semibold">Generated Posts</h3>
               <p className="text-sm text-muted-foreground">
