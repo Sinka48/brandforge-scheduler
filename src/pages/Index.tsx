@@ -7,6 +7,7 @@ import { AuthSection } from "@/components/landing/AuthSection";
 import { FeaturesAnimation } from "@/components/landing/FeaturesAnimation";
 import { GradientBackground } from "@/components/landing/GradientBackground";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { Feed } from "@/components/dashboard/Feed";
 
 interface IndexPageProps {
   session: Session | null;
@@ -18,7 +19,6 @@ export default function IndexPage({ session }: IndexPageProps) {
     queryFn: async () => {
       if (!session?.user?.id) return null;
       
-      // Force refresh analytics before fetching
       await supabase.rpc('ensure_dashboard_analytics_exists', {
         input_user_id: session.user.id
       });
@@ -33,7 +33,7 @@ export default function IndexPage({ session }: IndexPageProps) {
       return data;
     },
     enabled: !!session?.user?.id,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
   if (session) {
@@ -47,7 +47,10 @@ export default function IndexPage({ session }: IndexPageProps) {
             </p>
           </div>
           <StatsCards analytics={analytics} />
-          <QuickActions />
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-4">
+            <Feed />
+            <QuickActions />
+          </div>
         </div>
       </Layout>
     );
