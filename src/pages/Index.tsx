@@ -7,6 +7,7 @@ import { AuthSection } from "@/components/landing/AuthSection";
 import { FeaturesAnimation } from "@/components/landing/FeaturesAnimation";
 import { GradientBackground } from "@/components/landing/GradientBackground";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { Feed } from "@/components/dashboard/Feed";
 
 interface IndexPageProps {
   session: Session | null;
@@ -48,6 +49,7 @@ export default function IndexPage({ session }: IndexPageProps) {
           </div>
           <StatsCards analytics={analytics} />
           <QuickActions />
+          <Feed />
         </div>
       </Layout>
     );
