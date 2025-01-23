@@ -10,8 +10,6 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { PostDialog } from "@/components/calendar/PostDialog";
 import { format } from "date-fns";
-import { usePostData } from "@/hooks/post/usePostData";
-import { Post } from "@/components/calendar/types";
 
 interface DraftsPageProps {
   session: Session | null;
@@ -19,20 +17,18 @@ interface DraftsPageProps {
 
 export default function DraftsPage({ session }: DraftsPageProps) {
   const {
+    posts,
     handleDeletePost,
     handleEditPost,
     handleAddPost,
-    isLoading: isManagementLoading
+    isLoading
   } = usePostManagement();
 
-  const { data: posts = [], isLoading: isPostsLoading } = usePostData(session);
-
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [newPost, setNewPost] = useState({
     content: "",
     platforms: [],
-    status: "draft" as const,
+    status: "draft",
     time: format(new Date(), 'HH:mm'),
     date: new Date(),
   });
@@ -65,20 +61,6 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     });
   };
 
-  const onEditPost = (post: Post) => {
-    setEditingPost(post);
-    setNewPost({
-      content: post.content,
-      platforms: post.platforms,
-      status: post.status,
-      time: post.time || format(new Date(), 'HH:mm'),
-      date: post.date,
-    });
-    setIsPostDialogOpen(true);
-  };
-
-  const isLoading = isManagementLoading || isPostsLoading;
-
   return (
     <Layout session={session}>
       <div className="space-y-6">
@@ -90,17 +72,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
             </p>
           </div>
           <Button 
-            onClick={() => {
-              setEditingPost(null);
-              setNewPost({
-                content: "",
-                platforms: [],
-                status: "draft",
-                time: format(new Date(), 'HH:mm'),
-                date: new Date(),
-              });
-              setIsPostDialogOpen(true);
-            }}
+            onClick={() => setIsPostDialogOpen(true)}
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -120,7 +92,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
               posts={scheduledPosts}
               platforms={PLATFORMS}
               handleDeletePost={handleDeletePost}
-              handleEditPost={onEditPost}
+              handleEditPost={handleEditPost}
               handlePublishPost={() => {}}
               isLoading={isLoading}
             />
@@ -131,7 +103,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
               posts={draftPosts}
               platforms={PLATFORMS}
               handleDeletePost={handleDeletePost}
-              handleEditPost={onEditPost}
+              handleEditPost={handleEditPost}
               isLoading={isLoading}
             />
           </TabsContent>
@@ -146,7 +118,6 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           handleSaveAsDraft={handleSaveAsDraft}
           handlePlatformToggle={handlePlatformToggle}
           selectedDate={newPost.date}
-          editMode={!!editingPost}
         />
       </div>
     </Layout>

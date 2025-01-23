@@ -3,6 +3,7 @@ import { PostList } from "./PostList";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { FileText, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LucideIcon } from "lucide-react";
@@ -38,7 +39,49 @@ export function DraftManager({
   handleEditPost,
   isLoading
 }: DraftManagerProps) {
+  const [selectedDrafts, setSelectedDrafts] = useState<string[]>([]);
   const { toast } = useToast();
+
+  const handleSelectDraft = (postId: string) => {
+    setSelectedDrafts(prev => 
+      prev.includes(postId) 
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedDrafts.length === posts.length) {
+      setSelectedDrafts([]);
+    } else {
+      setSelectedDrafts(posts.map(post => post.id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedDrafts.length === 0) return;
+
+    toast({
+      title: `Delete ${selectedDrafts.length} drafts?`,
+      description: "This action cannot be undone.",
+      action: (
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => {
+            selectedDrafts.forEach(id => handleDeletePost(id));
+            setSelectedDrafts([]);
+            toast({
+              title: "Drafts deleted",
+              description: `${selectedDrafts.length} drafts have been deleted.`
+            });
+          }}
+        >
+          Delete
+        </Button>
+      ),
+    });
+  };
 
   const handlePublishPost = async (postId: string) => {
     try {
@@ -102,6 +145,34 @@ export function DraftManager({
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        {selectedDrafts.length > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleBulkDelete}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete ({selectedDrafts.length})
+          </Button>
+        )}
+      </div>
+
+      {posts.length > 0 && (
+        <div className="flex items-center gap-2 py-2">
+          <Checkbox
+            checked={selectedDrafts.length === posts.length}
+            onCheckedChange={handleSelectAll}
+          />
+          <span className="text-sm text-muted-foreground">
+            {selectedDrafts.length === 0 
+              ? "Select all"
+              : `${selectedDrafts.length} selected`}
+          </span>
+        </div>
+      )}
+
       <PostList
         selectedDate={undefined}
         posts={posts}
@@ -110,6 +181,8 @@ export function DraftManager({
         handleEditPost={handleEditPost}
         handlePublishPost={handlePublishPost}
         isLoading={isLoading}
+        selectedPosts={selectedDrafts}
+        onSelectPost={handleSelectDraft}
       />
     </div>
   );
