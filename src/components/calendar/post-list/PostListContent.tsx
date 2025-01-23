@@ -32,21 +32,17 @@ export function PostListContent({
   showAllPosts,
   setShowAllPosts,
 }: PostListContentProps) {
-  console.log('PostListContent - All posts:', posts);
-  console.log('PostListContent - selectedDate:', selectedDate);
-
-  // If selectedDate is undefined, show all posts
+  // Filter posts based on selected date if it exists
   const filteredPosts = selectedDate
     ? posts.filter(post => isSameDay(new Date(post.date), selectedDate))
     : posts;
-
-  console.log('PostListContent - filteredPosts:', filteredPosts);
 
   if (!posts || posts.length === 0) {
     return <EmptyState />;
   }
 
-  const displayPosts = showAllPosts ? filteredPosts : filteredPosts.slice(0, 3);
+  // Show all posts if showAllPosts is true, otherwise show only the first 5
+  const displayPosts = showAllPosts ? filteredPosts : filteredPosts.slice(0, 5);
 
   return (
     <div className="space-y-4">
@@ -60,6 +56,14 @@ export function PostListContent({
           onPublish={handlePublishPost}
         />
       ))}
+      {filteredPosts.length > 5 && !showAllPosts && (
+        <button
+          onClick={() => setShowAllPosts(true)}
+          className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          Show more posts...
+        </button>
+      )}
       {filteredPosts.length === 0 && selectedDate && (
         <EmptyState />
       )}

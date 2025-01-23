@@ -19,6 +19,7 @@ interface PostListProps {
   handleEditPost: (post: Post) => void;
   handlePublishPost: (postId: string) => void;
   isLoading?: boolean;
+  showScheduledOnly?: boolean;
 }
 
 export function PostList({ 
@@ -29,6 +30,7 @@ export function PostList({
   handleEditPost,
   handlePublishPost,
   isLoading,
+  showScheduledOnly = false,
 }: PostListProps) {
   const [showAllPosts, setShowAllPosts] = useState(false);
   
@@ -36,7 +38,12 @@ export function PostList({
     return <LoadingState />;
   }
 
-  const sortedPosts = [...posts].sort((a, b) => 
+  // Filter posts based on status if showScheduledOnly is true
+  const filteredPosts = showScheduledOnly 
+    ? posts.filter(post => post.status === 'scheduled')
+    : posts;
+
+  const sortedPosts = [...filteredPosts].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
