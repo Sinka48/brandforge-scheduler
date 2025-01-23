@@ -3,6 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AuthSection } from "@/components/landing/AuthSection";
+import { GradientBackground } from "@/components/landing/GradientBackground";
 
 interface IndexPageProps {
   session: Session | null;
@@ -29,8 +30,9 @@ export default function IndexPage({ session }: IndexPageProps) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+    <div className="relative flex min-h-screen overflow-hidden">
+      <GradientBackground />
+      <div className="relative flex-1 flex items-center justify-center">
         <div className="max-w-2xl p-8">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Welcome to Social Media Manager
