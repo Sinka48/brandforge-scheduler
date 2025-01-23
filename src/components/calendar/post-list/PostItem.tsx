@@ -120,7 +120,7 @@ export function PostItem({
               className="flex items-center gap-2"
             >
               <Send className="h-4 w-4" />
-              Publish
+              Publish now
             </Button>
           )}
 
