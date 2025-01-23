@@ -16,12 +16,19 @@ export function usePostData(session: Session | null) {
       }
 
       try {
-        console.log('Fetching posts from Supabase...');
+        console.log('Fetching posts...');
         
+        // Get both scheduled and draft posts
         const { data: allPosts, error: postsError } = await supabase
           .from('posts')
           .select(`
-            *,
+            id,
+            content,
+            scheduled_for,
+            platform,
+            image_url,
+            status,
+            campaign_id,
             campaigns (
               id,
               name,
@@ -30,10 +37,8 @@ export function usePostData(session: Session | null) {
             )
           `)
           .eq('user_id', session.user.id)
-          .eq('status', 'draft')
-          .order('created_at', { ascending: false });
-
-        console.log('Raw posts data from Supabase:', allPosts);
+          .in('status', ['scheduled', 'draft'])
+          .order('scheduled_for', { ascending: true });
 
         if (postsError) {
           console.error('Supabase error fetching posts:', postsError);
@@ -64,6 +69,6 @@ export function usePostData(session: Session | null) {
       }
     },
     enabled: !!session?.user,
-    refetchInterval: 5000, // Refresh every 5 seconds to catch newly created drafts
+    refetchInterval: 5000, // Refresh every 5 seconds to catch newly scheduled posts
   });
 }

@@ -2,7 +2,7 @@ import { PostItem } from "./PostItem";
 import { EmptyState } from "./EmptyState";
 import { PlatformId } from "@/constants/platforms";
 import { Post } from "../types";
-import { isSameDay, startOfDay } from "date-fns";
+import { isSameDay } from "date-fns";
 import { LucideIcon } from "lucide-react";
 
 interface Platform {
@@ -39,14 +39,10 @@ export function PostListContent({
   console.log('PostListContent - All posts:', posts);
   console.log('PostListContent - selectedDate:', selectedDate);
 
-  // Filter posts based on selectedDate or show upcoming posts
+  // If selectedDate is undefined, show all posts
   const filteredPosts = selectedDate
     ? posts.filter(post => isSameDay(new Date(post.date), selectedDate))
-    : posts.filter(post => {
-        const postDate = new Date(post.date);
-        const today = startOfDay(new Date());
-        return postDate >= today;
-      });
+    : posts;
 
   console.log('PostListContent - filteredPosts:', filteredPosts);
 

@@ -4,18 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Twitter, Smartphone } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export function AuthSection() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    // This will show your current domain in the browser console
-    console.log("Your current domain is:", window.location.origin);
-  }, []);
 
   const handleSocialLogin = async (provider: 'twitter' | 'email' | 'mobile') => {
     setIsLoading(true);
@@ -24,8 +19,7 @@ export function AuthSection() {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'twitter',
           options: {
-            redirectTo: window.location.origin,
-            skipBrowserRedirect: false,
+            redirectTo: `${window.location.origin}/auth/callback`
           }
         });
 
