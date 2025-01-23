@@ -1,4 +1,3 @@
-import { PlatformSelector } from "../post-dialog/PlatformSelector";
 import { CampaignSettings } from "./campaign-form/CampaignSettings";
 
 interface CampaignConfigurationProps {
@@ -11,8 +10,6 @@ interface CampaignConfigurationProps {
 }
 
 export function CampaignConfiguration({
-  platforms,
-  onPlatformToggle,
   duration,
   setDuration,
   tone,
@@ -20,11 +17,6 @@ export function CampaignConfiguration({
 }: CampaignConfigurationProps) {
   return (
     <div className="space-y-4">
-      <PlatformSelector
-        selectedPlatforms={platforms}
-        onPlatformToggle={onPlatformToggle}
-      />
-
       <CampaignSettings
         duration={duration}
         setDuration={setDuration}
