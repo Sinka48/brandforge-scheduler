@@ -36,6 +36,9 @@ export function DraftManager({
   isLoading
 }: DraftManagerProps) {
   const { toast } = useToast();
+  
+  // Filter to show only draft posts
+  const draftPosts = posts.filter(post => post.status === 'draft');
 
   const handlePublishPost = async (postId: string) => {
     try {
@@ -70,7 +73,7 @@ export function DraftManager({
         .update({ 
           status: 'scheduled',
           published_at: publishDate.toISOString(),
-          platform: post.platforms[0], // Ensure we're setting a valid platform
+          platform: post.platforms[0], // Use the first selected platform
           scheduled_for: publishDate.toISOString()
         })
         .eq('id', postId);
@@ -95,7 +98,7 @@ export function DraftManager({
     <div className="space-y-4">
       <PostList
         selectedDate={undefined}
-        posts={posts}
+        posts={draftPosts}
         platforms={platforms}
         handleDeletePost={handleDeletePost}
         handleEditPost={handleEditPost}
