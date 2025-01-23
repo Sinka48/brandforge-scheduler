@@ -2,8 +2,6 @@ import { Session } from "@supabase/supabase-js";
 import { Layout } from "@/components/layout/Layout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { AuthSection } from "@/components/landing/AuthSection";
-import { GradientBackground } from "@/components/landing/GradientBackground";
 
 interface IndexPageProps {
   session: Session | null;
@@ -29,20 +27,5 @@ export default function IndexPage({ session }: IndexPageProps) {
     );
   }
 
-  return (
-    <div className="relative flex min-h-screen overflow-hidden">
-      <GradientBackground />
-      <div className="relative flex-1 flex items-center justify-center">
-        <div className="max-w-2xl p-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Welcome to Social Media Manager
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Manage all your social media content in one place.
-          </p>
-        </div>
-      </div>
-      <AuthSection />
-    </div>
-  );
+  return null;
 }
