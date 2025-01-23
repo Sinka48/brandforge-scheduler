@@ -3,21 +3,12 @@ import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LucideIcon } from "lucide-react";
+import { Post } from "./types";
 
 interface Platform {
   id: PlatformId;
   name: string;
   icon: LucideIcon;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  date: Date;
-  platforms: PlatformId[];
-  image?: string;
-  status: 'draft' | 'scheduled';
-  time?: string;
 }
 
 interface DraftManagerProps {
@@ -37,8 +28,8 @@ export function DraftManager({
 }: DraftManagerProps) {
   const { toast } = useToast();
   
-  // Filter to show only non-campaign draft posts
-  const draftPosts = posts.filter(post => post.status === 'draft' && !post.campaign_id);
+  // Filter to show only draft posts (both campaign and non-campaign)
+  const draftPosts = posts.filter(post => post.status === 'draft');
 
   const handlePublishPost = async (postId: string) => {
     try {

@@ -8,6 +8,7 @@ export interface Post {
   image?: string;
   status: 'draft' | 'scheduled';
   time?: string;
+  campaign_id?: string;
   campaign?: {
     id: string;
     name: string;
