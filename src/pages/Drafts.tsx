@@ -59,7 +59,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     setNewPost({
       content: "",
       platforms: [],
-      status: "draft" as const,
+      status: "draft",
       time: format(new Date(), 'HH:mm'),
       date: new Date(),
     });
@@ -95,7 +95,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
               setNewPost({
                 content: "",
                 platforms: [],
-                status: "draft" as const,
+                status: "draft",
                 time: format(new Date(), 'HH:mm'),
                 date: new Date(),
               });
