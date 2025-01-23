@@ -1,21 +1,20 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { PlatformId } from "@/constants/platforms";
+import { Rss } from "lucide-react";
 
-const platformIcons = {
-  facebook: Facebook,
-  instagram: Instagram,
-  linkedin: Linkedin,
-  twitter: Twitter,
-};
+interface FeedItem {
+  id: string;
+  content: string;
+  platform: string;
+  scheduled_for: string;
+  status: string;
+}
 
 export function Feed() {
-  const { data: posts, isLoading } = useQuery({
+  const { data: feedItems } = useQuery({
     queryKey: ['dashboard-feed'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,70 +24,48 @@ export function Feed() {
         .limit(5);
 
       if (error) throw error;
-      return data;
+      return data as FeedItem[];
     },
   });
 
-  if (isLoading) {
-    return (
-      <Card className="col-span-full">
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                <div className="space-y-2 flex-1">
-                  <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
-                  <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="col-span-full">
-      <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+    <Card className="col-span-4 lg:col-span-3">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-2xl font-bold flex items-center gap-2">
+          <Rss className="h-6 w-6" />
+          Recent Activity
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px] pr-4">
-          <div className="space-y-4">
-            {posts?.map((post) => {
-              const PlatformIcon = platformIcons[post.platform as keyof typeof platformIcons];
-              
-              return (
-                <div key={post.id} className="flex items-start space-x-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="mt-1">
-                    {PlatformIcon && (
-                      <PlatformIcon className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm leading-none">
-                      {post.content.length > 100
-                        ? `${post.content.slice(0, 100)}...`
-                        : post.content}
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(post.scheduled_for), 'MMM d, yyyy')}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {post.status}
-                      </Badge>
-                    </div>
-                  </div>
+        <ScrollArea className="h-[350px] w-full">
+          {feedItems?.map((item) => (
+            <div
+              key={item.id}
+              className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
+            >
+              <span className="flex h-2 w-2 translate-y-1.5 rounded-full bg-sky-500" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">
+                  {item.content.length > 100
+                    ? `${item.content.slice(0, 100)}...`
+                    : item.content}
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground capitalize">
+                    {item.platform}
+                  </span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(item.scheduled_for), 'MMM d, yyyy')}
+                  </span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs text-muted-foreground capitalize">
+                    {item.status}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </div>
+          ))}
         </ScrollArea>
       </CardContent>
     </Card>
