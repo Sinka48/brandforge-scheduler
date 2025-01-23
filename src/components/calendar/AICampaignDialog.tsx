@@ -34,6 +34,7 @@ export function AICampaignDialog({
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
   const [tone, setTone] = useState("professional");
+  const [postsCount, setPostsCount] = useState(7); // Default to match duration
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedPosts, setGeneratedPosts] = useState<any[]>([]);
@@ -137,6 +138,7 @@ export function AICampaignDialog({
           settings: {
             duration,
             tone,
+            postsCount
           },
           user_id: session.user.id
         })
@@ -152,6 +154,7 @@ export function AICampaignDialog({
           platforms: platforms.map(p => p.toLowerCase()),
           duration: parseInt(duration),
           tone,
+          postsCount // Pass the posts count to the edge function
         },
       });
 
@@ -294,6 +297,8 @@ export function AICampaignDialog({
                 setDuration={setDuration}
                 tone={tone}
                 setTone={setTone}
+                postsCount={postsCount}
+                setPostsCount={setPostsCount}
               />
             </div>
           </div>
