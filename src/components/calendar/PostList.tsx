@@ -19,8 +19,6 @@ interface PostListProps {
   handleEditPost: (post: Post) => void;
   handlePublishPost: (postId: string) => void;
   isLoading?: boolean;
-  selectedPosts?: string[];
-  onSelectPost?: (postId: string) => void;
 }
 
 export function PostList({ 
@@ -31,8 +29,6 @@ export function PostList({
   handleEditPost,
   handlePublishPost,
   isLoading,
-  selectedPosts = [],
-  onSelectPost
 }: PostListProps) {
   const [showAllPosts, setShowAllPosts] = useState(false);
   
@@ -55,8 +51,6 @@ export function PostList({
         handlePublishPost={handlePublishPost}
         showAllPosts={showAllPosts}
         setShowAllPosts={setShowAllPosts}
-        selectedPosts={selectedPosts}
-        onSelectPost={onSelectPost}
       />
     </div>
   );
