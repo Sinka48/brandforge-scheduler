@@ -20,8 +20,6 @@ interface PostListContentProps {
   handlePublishPost: (postId: string) => void;
   showAllPosts: boolean;
   setShowAllPosts: (show: boolean) => void;
-  selectedPosts?: string[];
-  onSelectPost?: (postId: string) => void;
 }
 
 export function PostListContent({
@@ -33,8 +31,6 @@ export function PostListContent({
   handlePublishPost,
   showAllPosts,
   setShowAllPosts,
-  selectedPosts = [],
-  onSelectPost
 }: PostListContentProps) {
   console.log('PostListContent - All posts:', posts);
   console.log('PostListContent - selectedDate:', selectedDate);
@@ -62,8 +58,6 @@ export function PostListContent({
           onEdit={handleEditPost}
           onDelete={handleDeletePost}
           onPublish={handlePublishPost}
-          isSelected={selectedPosts.includes(post.id)}
-          onSelect={onSelectPost}
         />
       ))}
       {filteredPosts.length === 0 && selectedDate && (

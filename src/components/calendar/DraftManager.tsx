@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { PostList } from "./PostList";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
-import { FileText, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LucideIcon } from "lucide-react";
@@ -72,7 +70,7 @@ export function DraftManager({
         .update({ 
           status: 'scheduled',
           published_at: publishDate.toISOString(),
-          platform: post.platforms[0],
+          platform: post.platforms[0], // Ensure we're setting a valid platform
           scheduled_for: publishDate.toISOString()
         })
         .eq('id', postId);
