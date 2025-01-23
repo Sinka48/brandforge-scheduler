@@ -82,41 +82,30 @@ export default function DraftsPage({ session }: DraftsPageProps) {
 
         <Tabs defaultValue="drafts" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="published">Published</TabsTrigger>
+            <TabsTrigger value="posts">Published</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="published" className="space-y-4">
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Published Posts</h3>
-                <PostList
-                  selectedDate={undefined}
-                  posts={scheduledPosts}
-                  platforms={PLATFORMS}
-                  handleDeletePost={handleDeletePost}
-                  handleEditPost={handleEditPost}
-                  handlePublishPost={() => {}}
-                  isLoading={isLoading}
-                  showScheduledOnly={true}
-                />
-              </div>
-            </div>
+          <TabsContent value="posts" className="space-y-4">
+            <PostList
+              selectedDate={undefined}
+              posts={scheduledPosts}
+              platforms={PLATFORMS}
+              handleDeletePost={handleDeletePost}
+              handleEditPost={handleEditPost}
+              handlePublishPost={() => {}}
+              isLoading={isLoading}
+            />
           </TabsContent>
 
           <TabsContent value="drafts">
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Draft Posts</h3>
-                <DraftManager
-                  posts={draftPosts}
-                  platforms={PLATFORMS}
-                  handleDeletePost={handleDeletePost}
-                  handleEditPost={handleEditPost}
-                  isLoading={isLoading}
-                />
-              </div>
-            </div>
+            <DraftManager
+              posts={draftPosts}
+              platforms={PLATFORMS}
+              handleDeletePost={handleDeletePost}
+              handleEditPost={handleEditPost}
+              isLoading={isLoading}
+            />
           </TabsContent>
         </Tabs>
 
