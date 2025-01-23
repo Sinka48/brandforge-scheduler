@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
+import { PlatformSelector } from "./post-dialog/PlatformSelector";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -237,16 +238,27 @@ export function AICampaignDialog({
       <DialogContent className={`sm:max-w-[850px] h-[85vh] p-0 overflow-hidden ${generatedPosts.length > 0 ? 'grid grid-cols-2 gap-4' : ''}`}>
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
-            <DialogHeader editMode={false} />
+            <h2 className="text-lg font-semibold">Create AI Campaign</h2>
+            <p className="text-sm text-muted-foreground">
+              Generate a series of coordinated posts for your marketing campaign
+            </p>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Campaign Name</Label>
+                <Label htmlFor="platforms">Social Media Platforms</Label>
+                <PlatformSelector
+                  selectedPlatforms={platforms}
+                  onPlatformToggle={handlePlatformToggle}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Campaign Name or Idea</Label>
                 <Input
                   id="name"
-                  placeholder="Enter campaign name"
+                  placeholder="Enter your campaign name or main idea"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
