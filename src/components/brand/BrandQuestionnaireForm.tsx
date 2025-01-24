@@ -101,7 +101,7 @@ export function BrandQuestionnaireForm() {
       });
 
       // Navigate to the brand preview with the newly created brand selected
-      navigate(`/brands?tab=library&selectedBrand=${brandAsset.id}`);
+      navigate(`/brands?tab=library&selectedBrand=${brandAsset.id}`, { replace: true });
       
     } catch (error) {
       console.error("Error generating brand:", error);
