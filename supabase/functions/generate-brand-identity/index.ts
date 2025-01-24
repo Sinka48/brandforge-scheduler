@@ -182,7 +182,7 @@ Return a complete brand identity including:
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in generate-brand-identity:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
