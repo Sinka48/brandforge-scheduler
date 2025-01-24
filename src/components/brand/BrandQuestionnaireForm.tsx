@@ -11,11 +11,12 @@ import { Wand2, Loader2 } from "lucide-react"
 import { IndustrySelector } from "./questionnaire/IndustrySelector"
 import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
 import { useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
-  businessName: z.string().optional(),
-  industry: z.string().optional(),
-  brandPersonality: z.array(z.string()).optional().default([]),
+  businessName: z.string().min(1, "Business name is required"),
+  industry: z.string().min(1, "Industry is required"),
+  brandPersonality: z.array(z.string()).min(1, "Select at least one personality trait"),
 })
 
 export function BrandQuestionnaireForm() {
@@ -53,10 +54,10 @@ export function BrandQuestionnaireForm() {
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName || "",
-          industry: values.industry || "",
+          business_name: values.businessName,
+          industry: values.industry,
           description: "", // Empty string as description is no longer used
-          brand_personality: values.brandPersonality || [],
+          brand_personality: values.brandPersonality,
           color_preferences: [], // Empty array since we removed color selection
           target_audience: {}, // Simplified, removed detailed targeting
         })
@@ -79,12 +80,12 @@ export function BrandQuestionnaireForm() {
       if (brandError) throw brandError
 
       toast({
-        title: "Success!",
-        description: "Your brand identity has been generated successfully.",
+        title: "Brand Generated!",
+        description: "Your brand identity has been created. View it in the Brand Library.",
       })
 
-      // Navigate to brand identity page after generation
-      navigate("/brand/identity")
+      // Navigate to brand library tab after generation
+      navigate("/brand?tab=library&brandCreated=true")
     } catch (error) {
       console.error("Error generating brand:", error)
       toast({
@@ -98,48 +99,67 @@ export function BrandQuestionnaireForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Basic Information</h3>
-          <Input
-            placeholder="Enter your business name (optional)"
-            {...form.register("businessName")}
-          />
-        </div>
+    <Card>
+      <CardContent className="pt-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Business Information</h3>
+              <Input
+                placeholder="Enter your business name"
+                {...form.register("businessName")}
+              />
+              {form.formState.errors.businessName && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.businessName.message}
+                </p>
+              )}
+            </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Industry</h3>
-          <IndustrySelector
-            selected={form.watch("industry")}
-            onSelect={(industry) => form.setValue("industry", industry)}
-          />
-        </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Industry</h3>
+              <IndustrySelector
+                selected={form.watch("industry")}
+                onSelect={(industry) => form.setValue("industry", industry)}
+              />
+              {form.formState.errors.industry && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.industry.message}
+                </p>
+              )}
+            </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Brand Personality</h3>
-          <PersonalitySelector
-            selected={form.watch("brandPersonality")}
-            onSelect={(traits) => form.setValue("brandPersonality", traits)}
-          />
-        </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Brand Personality</h3>
+              <PersonalitySelector
+                selected={form.watch("brandPersonality")}
+                onSelect={(traits) => form.setValue("brandPersonality", traits)}
+              />
+              {form.formState.errors.brandPersonality && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.brandPersonality.message}
+                </p>
+              )}
+            </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isGenerating}>
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Wand2 className="mr-2 h-4 w-4" />
-                Generate Brand
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isGenerating}>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Brand...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Generate Brand
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }
