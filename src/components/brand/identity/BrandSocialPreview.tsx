@@ -64,7 +64,7 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
             </CardHeader>
             <CardContent>
               <FacebookPreview
-                content={brand.metadata.socialBio || ""}
+                content={brand.social_bio || brand.metadata.socialBio || ""}
                 imageUrl={socialAssets.profileImage}
               />
             </CardContent>
@@ -76,7 +76,7 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
             </CardHeader>
             <CardContent>
               <LinkedinPreview
-                content={brand.metadata.socialBio || ""}
+                content={brand.social_bio || brand.metadata.socialBio || ""}
                 imageUrl={socialAssets.profileImage}
               />
             </CardContent>

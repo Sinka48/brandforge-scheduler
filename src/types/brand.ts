@@ -3,11 +3,6 @@ export interface Brand {
   asset_type: string;
   created_at: string;
   metadata: {
-    colors: string[];
-    typography: {
-      headingFont: string;
-      bodyFont: string;
-    };
     socialAssets?: {
       profileImage?: string;
       coverImage?: string;
