@@ -8,6 +8,11 @@ export interface Brand {
       headingFont: string;
       bodyFont: string;
     };
+    socialAssets?: {
+      profileImage?: string;
+      coverImage?: string;
+    };
+    socialBio?: string;
   };
   questionnaire_id: string;
   url: string;
