@@ -7,11 +7,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log("Function invoked - starting execution");
+    
     const { generateNameOnly, questionnaire } = await req.json();
     console.log("Request params:", { generateNameOnly, questionnaire });
 
@@ -41,6 +44,12 @@ serve(async (req) => {
           temperature: 0.7,
         }),
       });
+
+      if (!completion.ok) {
+        const errorData = await completion.text();
+        console.error("OpenAI API error:", errorData);
+        throw new Error(`OpenAI API error: ${completion.status}`);
+      }
 
       const nameData = await completion.json();
       console.log("OpenAI response:", nameData);
@@ -77,6 +86,8 @@ serve(async (req) => {
     // Generate logo using DALL-E
     const logoPrompt = `Create a professional, modern logo for ${finalBusinessName} in the ${finalIndustry} industry. The logo should be simple, memorable, and work well at different sizes. Use a clean design with minimal colors.`;
     
+    console.log("Sending request to DALL-E with prompt:", logoPrompt);
+
     const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -90,20 +101,27 @@ serve(async (req) => {
       }),
     });
 
-    const logoData = await logoResponse.json();
-    const logoUrl = logoData.data?.[0]?.url;
-
-    if (!logoUrl) {
-      throw new Error("Failed to generate logo");
+    if (!logoResponse.ok) {
+      const errorData = await logoResponse.text();
+      console.error("DALL-E API error:", errorData);
+      throw new Error(`DALL-E API error: ${logoResponse.status}`);
     }
 
-    // Default color palette if no colors are extracted
+    const logoData = await logoResponse.json();
+    console.log("DALL-E response received");
+    
+    const logoUrl = logoData.data?.[0]?.url;
+    if (!logoUrl) {
+      throw new Error("Failed to generate logo URL");
+    }
+
+    // Default color palette
     const defaultColors = [
-      "#4A90E2", // Default blue
-      "#50E3C2", // Default teal
-      "#F5A623", // Default orange
-      "#9013FE", // Default purple
-      "#D0021B"  // Default red
+      "#4A90E2", // Blue
+      "#50E3C2", // Teal
+      "#F5A623", // Orange
+      "#9013FE", // Purple
+      "#D0021B"  // Red
     ];
 
     const result = {
@@ -126,8 +144,7 @@ serve(async (req) => {
       }
     };
 
-    console.log("Returning result:", JSON.stringify(result, null, 2));
-
+    console.log("Returning successful response");
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
@@ -135,7 +152,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in generate-brand-identity:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || "Internal server error",
+      details: error.toString()
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
