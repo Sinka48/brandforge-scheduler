@@ -28,9 +28,9 @@ const formSchema = z.object({
 })
 
 export function BrandQuestionnaireForm() {
-  const { toast } = useToast()
-  const navigate = useNavigate()
-  const [isGenerating, setIsGenerating] = useState(false)
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,32 +43,30 @@ export function BrandQuestionnaireForm() {
       brandStory: "",
       colorPreferences: [],
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setIsGenerating(true)
+      setIsGenerating(true);
       const {
         data: { user },
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getUser();
 
       if (!user) {
         toast({
           title: "Authentication required",
           description: "Please sign in to save your brand questionnaire.",
           variant: "destructive",
-        })
-        return
+        });
+        return;
       }
 
-      console.log("Saving questionnaire with values:", values)
+      console.log("Saving questionnaire with values:", values);
 
-      // Generate a default business name if none provided
-      const defaultBusinessName = "AI Generated Brand"
-      const businessName = values.businessName?.trim() || defaultBusinessName
-      const description = values.businessName ? `Brand for ${values.businessName}` : defaultBusinessName
+      const defaultBusinessName = "AI Generated Brand";
+      const businessName = values.businessName?.trim() || defaultBusinessName;
+      const description = values.businessName ? `Brand for ${values.businessName}` : defaultBusinessName;
 
-      // Save questionnaire with optional fields
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
@@ -86,20 +84,19 @@ export function BrandQuestionnaireForm() {
           }
         })
         .select()
-        .single()
+        .single();
 
       if (questionnaireError) {
-        console.error("Error saving questionnaire:", questionnaireError)
-        throw questionnaireError
+        console.error("Error saving questionnaire:", questionnaireError);
+        throw questionnaireError;
       }
 
       if (!questionnaire) {
-        throw new Error("Failed to create questionnaire")
+        throw new Error("Failed to create questionnaire");
       }
 
-      console.log("Sending questionnaire to edge function:", questionnaire)
+      console.log("Sending questionnaire to edge function:", questionnaire);
 
-      // Generate brand identity with properly structured data
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
         "generate-brand-identity",
         {
@@ -116,44 +113,49 @@ export function BrandQuestionnaireForm() {
             }
           }
         }
-      )
+      );
 
       if (brandError) {
-        console.error("Error generating brand:", brandError)
-        throw brandError
+        console.error("Error generating brand:", brandError);
+        throw brandError;
       }
 
-      console.log("Received brand data:", brandData)
+      console.log("Received brand data:", brandData);
 
-      // If AI generated parameters were returned, update the questionnaire
-      if (brandData.ai_generated_parameters) {
-        const { error: updateError } = await supabase
-          .from("brand_questionnaires")
-          .update({ ai_generated_parameters: brandData.ai_generated_parameters })
-          .eq("id", questionnaire.id)
+      // Save the brand asset
+      const { error: assetError } = await supabase
+        .from("brand_assets")
+        .insert({
+          user_id: user.id,
+          questionnaire_id: questionnaire.id,
+          asset_type: 'brand_identity',
+          url: brandData.logoUrl,
+          metadata: brandData.metadata,
+          asset_category: 'brand'
+        });
 
-        if (updateError) {
-          console.error("Error updating AI parameters:", updateError)
-        }
+      if (assetError) {
+        console.error("Error saving brand asset:", assetError);
+        throw assetError;
       }
 
-      // Navigate to brand identity page for customization
-      navigate("/brand-identity")
+      // Navigate to brand library tab
+      navigate("/brand?tab=library&brandCreated=true");
       
       toast({
         title: "Brand Generated!",
         description: "Your brand identity has been created. You can now customize it.",
-      })
+      });
 
     } catch (error) {
-      console.error("Error generating brand:", error)
+      console.error("Error generating brand:", error);
       toast({
         title: "Error",
         description: "Failed to generate your brand. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
   }
 

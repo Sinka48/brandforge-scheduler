@@ -30,37 +30,20 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const checkAuthAndFetchBrands = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          toast({
-            title: "Authentication required",
-            description: "Please sign in to view your brands.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-        fetchBrands();
-      } catch (error) {
-        console.error("Auth check error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to verify authentication status",
-          variant: "destructive",
-        });
-        setLoading(false);
-      }
-    };
-
-    checkAuthAndFetchBrands();
-  }, [toast]);
-
   const fetchBrands = async () => {
     try {
       console.log("Fetching brands...");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to view your brands.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("brand_assets")
         .select("*")
@@ -102,6 +85,11 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
       setLoading(false);
     }
   };
+
+  // Fetch brands on mount and when selectedBrandId changes
+  useEffect(() => {
+    fetchBrands();
+  }, [selectedBrandId]);
 
   const handleDeleteBrand = async (brandId: string) => {
     try {
