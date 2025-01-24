@@ -134,15 +134,6 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
         </Card>
       ) : (
         <>
-          {selectedBrand && (
-            <BrandReviewSection
-              brandName={selectedBrand.metadata.name}
-              logoUrl={selectedBrand.url}
-              brand={selectedBrand}
-              onRegenerateAsset={handleRegenerateAsset}
-            />
-          )}
-
           <Card className="bg-muted/50">
             <CardHeader>
               <CardTitle>Your Brands</CardTitle>
@@ -159,6 +150,15 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
               />
             </CardContent>
           </Card>
+
+          {selectedBrand && (
+            <BrandReviewSection
+              brandName={selectedBrand.metadata.name}
+              logoUrl={selectedBrand.url}
+              brand={selectedBrand}
+              onRegenerateAsset={handleRegenerateAsset}
+            />
+          )}
         </>
       )}
 
