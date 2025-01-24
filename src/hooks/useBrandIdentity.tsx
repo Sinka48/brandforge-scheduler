@@ -5,10 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { Brand } from "@/types/brand";
 
 interface BrandIdentity {
-  colors: string[];
-  typography: {
-    headingFont: string;
-    bodyFont: string;
+  metadata: {
+    name?: string;
+    socialBio?: string;
+    socialAssets?: {
+      profileImage?: string;
+      coverImage?: string;
+    };
   };
   logoUrl: string;
 }
@@ -36,10 +39,10 @@ export function useBrandIdentity() {
       if (assets) {
         const metadata = assets.metadata as Brand['metadata'];
         setBrandIdentity({
-          colors: metadata.colors || [],
-          typography: metadata.typography || {
-            headingFont: "",
-            bodyFont: "",
+          metadata: {
+            name: metadata.name,
+            socialBio: metadata.socialBio,
+            socialAssets: metadata.socialAssets
           },
           logoUrl: assets.url || "",
         });
@@ -136,8 +139,9 @@ export function useBrandIdentity() {
           asset_type: "logo",
           url: brandIdentity.logoUrl,
           metadata: {
-            colors: brandIdentity.colors,
-            typography: brandIdentity.typography
+            socialAssets: brandIdentity.metadata.socialAssets,
+            socialBio: brandIdentity.metadata.socialBio,
+            name: brandIdentity.metadata.name
           }
         });
 

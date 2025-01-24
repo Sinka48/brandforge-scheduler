@@ -5,6 +5,7 @@ import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHe
 import { useBrandIdentity } from "@/hooks/useBrandIdentity";
 import { useEffect } from "react";
 import { Session } from "@supabase/supabase-js";
+import { Brand } from "@/types/brand";
 
 interface BrandIdentityPageProps {
   session: Session;
@@ -37,6 +38,18 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     );
   }
 
+  // Convert BrandIdentity to Brand type for the BrandReviewSection
+  const brandData: Brand | undefined = brandIdentity ? {
+    id: "",
+    asset_type: "logo",
+    created_at: new Date().toISOString(),
+    metadata: brandIdentity.metadata,
+    questionnaire_id: "",
+    url: brandIdentity.logoUrl,
+    user_id: "",
+    version: 1,
+  } : undefined;
+
   return (
     <Layout session={session}>
       <div className="space-y-6">
@@ -61,7 +74,7 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
           <BrandReviewSection
             brandName={brandIdentity.metadata?.name}
             logoUrl={brandIdentity.logoUrl}
-            brand={brandIdentity}
+            brand={brandData}
           />
         )}
       </div>
