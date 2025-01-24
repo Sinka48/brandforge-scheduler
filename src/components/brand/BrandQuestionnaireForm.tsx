@@ -73,7 +73,7 @@ export function BrandQuestionnaireForm() {
         throw new Error("Failed to create questionnaire")
       }
 
-      console.log("Sending questionnaire to generate-brand-identity:", questionnaire)
+      console.log("Sending questionnaire to generate-brand-identity:", { questionnaire })
 
       // Generate brand identity
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
