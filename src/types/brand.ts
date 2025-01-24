@@ -13,4 +13,8 @@ export interface Brand {
   url: string;
   user_id: string;
   version: number;
+  social_name?: string;
+  social_bio?: string;
+  asset_category?: string;
+  social_asset_type?: string;
 }

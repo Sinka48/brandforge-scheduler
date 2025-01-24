@@ -30,21 +30,19 @@ interface BrandManagerProps {
   selectedBrandId?: string;
 }
 
-interface BrandAsset {
+interface DatabaseBrandAsset {
   id: string;
   url: string;
-  metadata: {
-    colors: string[];
-    typography: {
-      headingFont: string;
-      bodyFont: string;
-    };
-  };
+  metadata: unknown;
   version: number;
   created_at: string;
   asset_type: string;
   questionnaire_id: string;
   user_id: string;
+  social_name?: string;
+  social_bio?: string;
+  asset_category?: string;
+  social_asset_type?: string;
 }
 
 export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerProps) {
@@ -88,7 +86,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
       const { data, error } = await supabase
         .from("brand_assets")
         .select("*")
-        .eq("asset_type", "logo")
+        .eq("asset_type", "brand_identity")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -97,26 +95,36 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
       }
 
       // Transform the data to match the Brand type with proper type checking
-      const transformedBrands: Brand[] = (data || []).map((item: BrandAsset) => ({
-        id: item.id,
-        url: item.url,
-        metadata: {
-          colors: Array.isArray(item.metadata?.colors) ? item.metadata.colors : [],
+      const transformedBrands: Brand[] = (data as DatabaseBrandAsset[]).map((item) => {
+        const metadata = item.metadata as {
+          colors: string[];
           typography: {
-            headingFont: typeof item.metadata?.typography?.headingFont === 'string' 
-              ? item.metadata.typography.headingFont 
-              : "",
-            bodyFont: typeof item.metadata?.typography?.bodyFont === 'string'
-              ? item.metadata.typography.bodyFont
-              : ""
-          }
-        },
-        version: item.version || 1,
-        created_at: item.created_at,
-        asset_type: item.asset_type,
-        questionnaire_id: item.questionnaire_id,
-        user_id: item.user_id
-      }));
+            headingFont: string;
+            bodyFont: string;
+          };
+        };
+
+        return {
+          id: item.id,
+          url: item.url,
+          metadata: {
+            colors: Array.isArray(metadata?.colors) ? metadata.colors : [],
+            typography: {
+              headingFont: metadata?.typography?.headingFont || "",
+              bodyFont: metadata?.typography?.bodyFont || "",
+            },
+          },
+          version: item.version || 1,
+          created_at: item.created_at,
+          asset_type: item.asset_type,
+          questionnaire_id: item.questionnaire_id,
+          user_id: item.user_id,
+          social_name: item.social_name,
+          social_bio: item.social_bio,
+          asset_category: item.asset_category,
+          social_asset_type: item.social_asset_type,
+        };
+      });
 
       setBrands(transformedBrands);
     } catch (error) {
@@ -263,6 +271,8 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
                   colors={selectedBrand.metadata.colors}
                   typography={selectedBrand.metadata.typography}
                   logoUrl={selectedBrand.url}
+                  brandName={selectedBrand.social_name}
+                  socialBio={selectedBrand.social_bio}
                 />
               </CardContent>
             </Card>
