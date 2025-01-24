@@ -27,6 +27,9 @@ export function useBrandIdentity() {
 
   const fetchBrandIdentity = async () => {
     try {
+      setLoading(true);
+      console.log("Fetching brand identity...");
+      
       const { data: assets, error } = await supabase
         .from("brand_assets")
         .select("*")
@@ -37,6 +40,7 @@ export function useBrandIdentity() {
       if (error) throw error;
 
       if (assets) {
+        console.log("Found brand assets:", assets);
         const metadata = assets.metadata as Brand['metadata'];
         setBrandIdentity({
           metadata: {
@@ -47,6 +51,7 @@ export function useBrandIdentity() {
           logoUrl: assets.url || "",
         });
       } else {
+        console.log("No brand assets found");
         setBrandIdentity(null);
       }
     } catch (error) {
@@ -64,6 +69,8 @@ export function useBrandIdentity() {
   const generateBrandIdentity = async () => {
     setGenerating(true);
     try {
+      console.log("Starting brand generation process...");
+      
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .select("*")
@@ -79,9 +86,11 @@ export function useBrandIdentity() {
           description: "Please complete the brand questionnaire first",
           variant: "destructive",
         });
-        navigate("/brand"); // Redirect to questionnaire page
+        navigate("/brand");
         return;
       }
+
+      console.log("Sending questionnaire to edge function:", questionnaire);
 
       const { data, error } = await supabase.functions.invoke(
         "generate-brand-identity",
@@ -92,6 +101,7 @@ export function useBrandIdentity() {
 
       if (error) throw error;
 
+      console.log("Received brand data:", data);
       setBrandIdentity(data);
 
       toast({
@@ -102,10 +112,9 @@ export function useBrandIdentity() {
       console.error("Error generating brand identity:", error);
       toast({
         title: "Error",
-        description: "Failed to generate brand identity",
+        description: "Failed to generate brand identity. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setGenerating(false);
     }
   };
@@ -115,6 +124,8 @@ export function useBrandIdentity() {
 
     setSaving(true);
     try {
+      console.log("Saving brand assets...");
+      
       const { data: questionnaire } = await supabase
         .from("brand_questionnaires")
         .select("id")
@@ -170,6 +181,8 @@ export function useBrandIdentity() {
 
     setDeleting(true);
     try {
+      console.log("Deleting brand identity...");
+      
       const { error: deleteError } = await supabase
         .from("brand_assets")
         .delete()
