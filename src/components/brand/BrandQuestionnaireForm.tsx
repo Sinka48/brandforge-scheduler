@@ -13,21 +13,10 @@ import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
 import { ColorSelector } from "./questionnaire/ColorSelector"
 
 const formSchema = z.object({
-  businessName: z.string().min(2, {
-    message: "Business name must be at least 2 characters.",
-  }),
-  industry: z.string({
-    required_error: "Please select an industry.",
-  }),
-  description: z.string().min(10, {
-    message: "Business description must be at least 10 characters.",
-  }),
-  brandPersonality: z.array(z.string()).min(1, {
-    message: "Select at least one personality trait.",
-  }),
-  colorPreferences: z.array(z.string()).min(1, {
-    message: "Select at least one color.",
-  }),
+  businessName: z.string().optional(),
+  industry: z.string().optional(),
+  brandPersonality: z.array(z.string()).optional().default([]),
+  colorPreferences: z.array(z.string()).optional().default([]),
 })
 
 export function BrandQuestionnaireForm() {
@@ -39,7 +28,6 @@ export function BrandQuestionnaireForm() {
     defaultValues: {
       businessName: "",
       industry: "",
-      description: "",
       brandPersonality: [],
       colorPreferences: [],
     },
@@ -62,11 +50,11 @@ export function BrandQuestionnaireForm() {
 
       const { data, error } = await supabase.from("brand_questionnaires").insert({
         user_id: user.id,
-        business_name: values.businessName,
-        industry: values.industry,
-        description: values.description,
-        brand_personality: values.brandPersonality,
-        color_preferences: values.colorPreferences,
+        business_name: values.businessName || "",
+        industry: values.industry || "",
+        description: "", // Empty string as description is no longer used
+        brand_personality: values.brandPersonality || [],
+        color_preferences: values.colorPreferences || [],
         target_audience: {}, // Simplified, removed detailed targeting
       })
       .select()
@@ -97,14 +85,9 @@ export function BrandQuestionnaireForm() {
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Basic Information</h3>
           <Input
-            placeholder="Enter your business name"
+            placeholder="Enter your business name (optional)"
             {...form.register("businessName")}
           />
-          {form.formState.errors.businessName && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.businessName.message}
-            </p>
-          )}
         </div>
 
         <div className="space-y-4">
@@ -113,24 +96,6 @@ export function BrandQuestionnaireForm() {
             selected={form.watch("industry")}
             onSelect={(industry) => form.setValue("industry", industry)}
           />
-          {form.formState.errors.industry && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.industry.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Brief Description</h3>
-          <Input
-            placeholder="Briefly describe your business..."
-            {...form.register("description")}
-          />
-          {form.formState.errors.description && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.description.message}
-            </p>
-          )}
         </div>
 
         <div className="space-y-4">
@@ -139,11 +104,6 @@ export function BrandQuestionnaireForm() {
             selected={form.watch("brandPersonality")}
             onSelect={(traits) => form.setValue("brandPersonality", traits)}
           />
-          {form.formState.errors.brandPersonality && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.brandPersonality.message}
-            </p>
-          )}
         </div>
 
         <div className="space-y-4">
@@ -152,11 +112,6 @@ export function BrandQuestionnaireForm() {
             selected={form.watch("colorPreferences")}
             onSelect={(colors) => form.setValue("colorPreferences", colors)}
           />
-          {form.formState.errors.colorPreferences && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.colorPreferences.message}
-            </p>
-          )}
         </div>
 
         <div className="flex justify-end">
