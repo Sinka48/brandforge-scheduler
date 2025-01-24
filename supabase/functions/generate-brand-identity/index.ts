@@ -7,12 +7,14 @@ const corsHeaders = {
 };
 
 interface Questionnaire {
+  id: string;
   business_name: string;
   industry: string;
   brand_personality?: string[];
   target_audience?: {
     primary: string;
   };
+  is_ai_generated: boolean;
 }
 
 serve(async (req) => {
@@ -36,10 +38,10 @@ serve(async (req) => {
     const openai = new OpenAIApi(configuration);
 
     let prompt = `Generate a brand identity for:
-    Business Name: "${questionnaire.business_name}"
-    Industry: "${questionnaire.industry}"
-    ${questionnaire.brand_personality?.length ? `Brand Personality: ${questionnaire.brand_personality.join(', ')}` : ''}
-    ${questionnaire.target_audience?.primary ? `Target Audience: ${questionnaire.target_audience.primary}` : ''}`;
+Business Name: "${questionnaire.business_name}"
+Industry: "${questionnaire.industry}"
+${questionnaire.brand_personality?.length ? `Brand Personality: ${questionnaire.brand_personality.join(', ')}` : ''}
+${questionnaire.target_audience?.primary ? `Target Audience: ${questionnaire.target_audience.primary}` : ''}`;
 
     if (regenerateOnly) {
       switch (regenerateOnly) {
@@ -63,19 +65,19 @@ serve(async (req) => {
       }
     } else {
       prompt += `
-      Return a complete brand identity including:
-      - A color palette of exactly 5 hex colors that work well together and align with the brand personality
-      - A detailed logo description
-      - A creative brand name (if AI generated)
-      - A compelling social media bio (max 160 characters)
-      - Profile image prompt for DALL-E
-      - Cover image prompt for DALL-E`;
+Return a complete brand identity including:
+- A color palette of exactly 5 hex colors that work well together and align with the brand personality
+- A detailed logo description
+- A creative brand name (if AI generated)
+- A compelling social media bio (max 160 characters)
+- Profile image prompt for DALL-E
+- Cover image prompt for DALL-E`;
     }
 
     console.log("Sending prompt to OpenAI:", prompt);
 
     const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
@@ -151,7 +153,7 @@ serve(async (req) => {
           profileImage: profileImageUrl,
           coverImage: coverImageUrl,
         },
-        isAiGenerated: true,
+        isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
           businessName: questionnaire.business_name,
           industry: questionnaire.industry,
