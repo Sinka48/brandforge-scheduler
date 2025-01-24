@@ -17,14 +17,26 @@ async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries =
       const response = await fetch(url, options);
       
       if (!response.ok) {
-        console.error(`OpenAI API error: ${response.status}`, await response.text());
+        const errorText = await response.text();
+        console.error(`OpenAI API error: ${response.status}`, errorText);
+        
+        // Handle rate limiting
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After') || attempt * 2;
+          console.log(`Rate limited. Waiting ${retryAfter} seconds before retry`);
+          await delay(parseInt(retryAfter) * 1000);
+          continue;
+        }
+        
         throw new Error(`OpenAI API error: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log(`Request successful:`, data);
+      return data;
     } catch (error) {
       if (attempt === maxRetries) throw error;
-      console.log(`Attempt ${attempt} failed, retrying...`);
+      console.log(`Attempt ${attempt} failed, retrying after delay...`);
       await delay(2000 * attempt); // Exponential backoff
     }
   }
@@ -99,7 +111,7 @@ serve(async (req) => {
     }
 
     // Generate logo using DALL-E
-    const logoPrompt = `Create a minimalist logo for a ${finalIndustry} business. Simple, clean design with basic shapes. White background. No text.`;
+    const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
     
     console.log("Sending logo generation request to DALL-E");
     const logoData = await makeOpenAIRequest(
@@ -111,11 +123,12 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          model: "dall-e-3",
           prompt: logoPrompt,
           n: 1,
           size: "1024x1024",
-          model: "dall-e-3",
           quality: "standard",
+          style: "natural",
         }),
       }
     );
