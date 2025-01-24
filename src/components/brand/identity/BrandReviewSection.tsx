@@ -53,7 +53,10 @@ export function BrandReviewSection({
           {brand?.metadata?.colors && (
             <>
               <div className="space-y-4">
-                <ColorPaletteCard colors={brand.metadata.colors} />
+                <ColorPaletteCard 
+                  colors={brand.metadata.colors} 
+                  onRegenerateAsset={onRegenerateAsset}
+                />
               </div>
               <Separator />
             </>

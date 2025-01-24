@@ -1,13 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Palette } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Palette, RefreshCw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ColorPaletteCardProps {
   colors: string[];
   onCustomize?: (colors: string[]) => void;
+  onRegenerateAsset?: (assetType: string) => void;
 }
 
-export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps) {
+export function ColorPaletteCard({ colors, onCustomize, onRegenerateAsset }: ColorPaletteCardProps) {
   const handleColorChange = (index: number, newColor: string) => {
     if (onCustomize && colors) {
       const updatedColors = [...colors];
@@ -19,10 +21,23 @@ export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Palette className="h-5 w-5" />
-          Color Palette
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Color Palette
+          </CardTitle>
+          {onRegenerateAsset && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRegenerateAsset('colors')}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Regenerate
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {colors ? (
@@ -32,9 +47,13 @@ export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps)
                 <Popover>
                   <PopoverTrigger>
                     <div
-                      className="w-full aspect-square rounded-lg border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      className="w-full aspect-square rounded-lg border cursor-pointer hover:ring-2 hover:ring-primary transition-all relative group"
                       style={{ backgroundColor: color }}
-                    />
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-lg">
+                        <span className="text-xs text-white font-medium">Edit</span>
+                      </div>
+                    </div>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3">
                     <input
@@ -45,7 +64,12 @@ export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps)
                     />
                   </PopoverContent>
                 </Popover>
-                <p className="text-xs text-center font-mono">{color}</p>
+                <div className="space-y-1">
+                  <p className="text-xs text-center font-mono">{color}</p>
+                  <div className="text-xs text-center text-muted-foreground">
+                    {index === 0 ? "Primary" : index === 1 ? "Secondary" : `Accent ${index - 1}`}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
