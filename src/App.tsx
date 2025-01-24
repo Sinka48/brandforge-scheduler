@@ -19,11 +19,16 @@ function App() {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('Error getting session:', error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem with your session. Please try logging in again.",
-          variant: "destructive",
-        });
+        // Clear the session if there's an error
+        setSession(null);
+        // Only show toast for non-refresh token errors
+        if (error.message !== "Invalid Refresh Token: Refresh Token Not Found") {
+          toast({
+            title: "Session Error",
+            description: "Please sign in again to continue.",
+            variant: "destructive",
+          });
+        }
         return;
       }
       setSession(session);
@@ -32,12 +37,19 @@ function App() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (_event === 'SIGNED_OUT') {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         // Clear any cached data when user signs out
         queryClient.clear();
+        setSession(null);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setSession(session);
+      } else if (event === 'USER_UPDATED') {
+        // Handle user data update
+        setSession(session);
       }
-      setSession(session);
     });
 
     return () => {
