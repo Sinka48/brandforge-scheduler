@@ -1,11 +1,11 @@
 import { Layout } from "@/components/layout/Layout";
-import { Loader2 } from "lucide-react";
-import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
-import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
-import { useBrandIdentity } from "@/hooks/useBrandIdentity";
-import { useEffect } from "react";
 import { Session } from "@supabase/supabase-js";
-import { Brand } from "@/types/brand";
+import { useBrandIdentity } from "@/hooks/useBrandIdentity";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
+import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
 
 interface BrandIdentityPageProps {
   session: Session;
@@ -16,65 +16,54 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     loading,
     saving,
     generating,
-    deleting,
     brandIdentity,
-    fetchBrandIdentity,
     generateBrandIdentity,
     saveBrandAssets,
-    deleteBrandIdentity,
   } = useBrandIdentity();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchBrandIdentity();
-  }, []);
+  const handleSave = async () => {
+    await saveBrandAssets();
+    // Redirect to brands page with success indicator
+    navigate("/brand?tab=library&brandCreated=true");
+  };
 
   if (loading) {
     return (
       <Layout session={session}>
-        <div className="flex items-center justify-center h-[50vh]">
+        <div className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       </Layout>
     );
   }
 
-  // Convert BrandIdentity to Brand type for the BrandReviewSection
-  const brandData: Brand | undefined = brandIdentity ? {
-    id: "",
-    asset_type: "logo",
-    created_at: new Date().toISOString(),
-    metadata: brandIdentity.metadata,
-    questionnaire_id: "",
-    url: brandIdentity.logoUrl,
-    user_id: "",
-    version: 1,
-  } : undefined;
-
   return (
     <Layout session={session}>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Brand Identity</h1>
-          <p className="text-muted-foreground">
-            Review and customize your brand identity
-          </p>
-        </div>
-
+      <div className="container mx-auto max-w-5xl space-y-8 p-8">
         <BrandIdentityHeader
-          brandExists={!!brandIdentity}
-          isGenerating={generating}
-          isSaving={saving}
-          isDeleting={deleting}
-          onGenerate={generateBrandIdentity}
-          onSave={saveBrandAssets}
-          onDelete={deleteBrandIdentity}
+          brandName={brandIdentity?.metadata?.name}
+          onSave={handleSave}
+          onRegenerate={generateBrandIdentity}
+          saving={saving}
+          generating={generating}
         />
 
         {brandIdentity && (
           <BrandReviewSection
             brandName={brandIdentity.metadata?.name}
             logoUrl={brandIdentity.logoUrl}
-            brand={brandData}
+            brand={{
+              id: "",
+              url: brandIdentity.logoUrl,
+              metadata: brandIdentity.metadata,
+              version: 1,
+              created_at: new Date().toISOString(),
+              asset_type: "brand_identity",
+              questionnaire_id: "",
+              user_id: session.user.id,
+              asset_category: "brand"
+            }}
           />
         )}
       </div>
