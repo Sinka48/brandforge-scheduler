@@ -5,17 +5,12 @@ import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Form } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Wand2, Loader2, Building2, Users, Palette, MessageSquare } from "lucide-react"
-import { IndustrySelector } from "./questionnaire/IndustrySelector"
-import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
-import { TargetAudienceSelector } from "./questionnaire/TargetAudienceSelector"
-import { ColorSelector } from "./questionnaire/ColorSelector"
+import { Wand2, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { BusinessInfoSection } from "./questionnaire/BusinessInfoSection"
+import { BrandAttributesSection } from "./questionnaire/BrandAttributesSection"
 
 const formSchema = z.object({
   businessName: z.string().optional(),
@@ -61,8 +56,6 @@ export function BrandQuestionnaireForm() {
         return;
       }
 
-      console.log("Saving questionnaire with values:", values);
-
       // Check if this should be AI-generated based on empty fields
       const isAiGenerated = !values.businessName && 
                            !values.industry && 
@@ -90,16 +83,8 @@ export function BrandQuestionnaireForm() {
         .select()
         .single();
 
-      if (questionnaireError) {
-        console.error("Error saving questionnaire:", questionnaireError);
-        throw questionnaireError;
-      }
-
-      if (!questionnaire) {
-        throw new Error("Failed to create questionnaire");
-      }
-
-      console.log("Sending questionnaire to edge function:", questionnaire);
+      if (questionnaireError) throw questionnaireError;
+      if (!questionnaire) throw new Error("Failed to create questionnaire");
 
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
         "generate-brand-identity",
@@ -108,12 +93,7 @@ export function BrandQuestionnaireForm() {
         }
       );
 
-      if (brandError) {
-        console.error("Error generating brand:", brandError);
-        throw brandError;
-      }
-
-      console.log("Received brand data:", brandData);
+      if (brandError) throw brandError;
 
       const { error: assetError } = await supabase
         .from("brand_assets")
@@ -126,10 +106,7 @@ export function BrandQuestionnaireForm() {
           asset_category: 'brand'
         });
 
-      if (assetError) {
-        console.error("Error saving brand asset:", assetError);
-        throw assetError;
-      }
+      if (assetError) throw assetError;
 
       navigate("/brands?tab=library&brandCreated=true");
       
@@ -152,11 +129,6 @@ export function BrandQuestionnaireForm() {
     }
   }
 
-  const selectedPersonality = form.watch("brandPersonality") || []
-  const selectedIndustry = form.watch("industry")
-  const selectedTargetAudience = form.watch("targetAudience")
-  const selectedColors = form.watch("colorPreferences") || []
-
   return (
     <Card>
       <CardHeader>
@@ -165,115 +137,8 @@ export function BrandQuestionnaireForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                <h3 className="text-lg font-medium">Business Information</h3>
-              </div>
-              <div>
-                <Input
-                  placeholder="Enter your business name"
-                  {...form.register("businessName")}
-                />
-              </div>
-              <div>
-                <Textarea
-                  placeholder="Enter a brief social media bio (max 160 characters)"
-                  {...form.register("socialBio")}
-                  className="resize-none"
-                  maxLength={160}
-                />
-              </div>
-              <div>
-                <Textarea
-                  placeholder="Share your brand's story (max 500 characters)"
-                  {...form.register("brandStory")}
-                  className="resize-none"
-                  maxLength={500}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                <h3 className="text-lg font-medium">Industry</h3>
-              </div>
-              <div>
-                <IndustrySelector
-                  selected={selectedIndustry}
-                  onSelect={(industry) => form.setValue("industry", industry)}
-                />
-              </div>
-              {selectedIndustry && (
-                <div className="mt-2">
-                  <Badge variant="secondary">{selectedIndustry}</Badge>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                <h3 className="text-lg font-medium">Target Audience</h3>
-              </div>
-              <div>
-                <TargetAudienceSelector
-                  selected={selectedTargetAudience}
-                  onSelect={(audience) => form.setValue("targetAudience", audience)}
-                />
-              </div>
-              {selectedTargetAudience && (
-                <div className="mt-2">
-                  <Badge variant="secondary">{selectedTargetAudience}</Badge>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                <h3 className="text-lg font-medium">Brand Personality</h3>
-              </div>
-              <div>
-                <PersonalitySelector
-                  selected={selectedPersonality}
-                  onSelect={(traits) => form.setValue("brandPersonality", traits)}
-                />
-              </div>
-              {selectedPersonality.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedPersonality.map((trait, index) => (
-                    <Badge key={index} variant="secondary">
-                      {trait}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                <h3 className="text-lg font-medium">Color Preferences</h3>
-              </div>
-              <div>
-                <ColorSelector
-                  selected={selectedColors}
-                  onSelect={(colors) => form.setValue("colorPreferences", colors)}
-                />
-              </div>
-              {selectedColors.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedColors.map((color, index) => (
-                    <Badge key={index} variant="secondary">
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
+            <BusinessInfoSection form={form} />
+            <BrandAttributesSection form={form} />
             <div className="flex justify-end">
               <Button 
                 type="submit" 
