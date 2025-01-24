@@ -63,21 +63,23 @@ export function BrandQuestionnaireForm() {
 
       console.log("Saving questionnaire with values:", values);
 
-      const defaultBusinessName = "AI Generated Brand";
-      const businessName = values.businessName?.trim() || defaultBusinessName;
-      const description = values.businessName ? `Brand for ${values.businessName}` : defaultBusinessName;
+      // Check if this should be AI-generated based on empty fields
+      const isAiGenerated = !values.businessName && 
+                           !values.industry && 
+                           (!values.brandPersonality || values.brandPersonality.length === 0) &&
+                           !values.targetAudience;
 
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: businessName,
+          business_name: values.businessName || "AI Generated Brand",
           industry: values.industry || "General",
-          description: description,
+          description: values.businessName ? `Brand for ${values.businessName}` : "AI Generated Brand",
           brand_personality: values.brandPersonality || [],
           target_audience: values.targetAudience ? { primary: values.targetAudience } : {},
           color_preferences: values.colorPreferences || [],
-          is_ai_generated: !values.businessName && !values.industry && (!values.brandPersonality || values.brandPersonality.length === 0),
+          is_ai_generated: isAiGenerated,
           social_bio: values.socialBio || null,
           brand_story: values.brandStory || null,
           ai_generated_parameters: {
@@ -132,8 +134,10 @@ export function BrandQuestionnaireForm() {
       navigate("/brands?tab=library&brandCreated=true");
       
       toast({
-        title: "Brand Generated!",
-        description: "Your brand identity has been created. You can now customize it.",
+        title: isAiGenerated ? "AI Brand Generated!" : "Brand Generated!",
+        description: isAiGenerated 
+          ? "Your AI-powered brand identity has been created with generated attributes."
+          : "Your brand identity has been created. You can now customize it.",
       });
 
     } catch (error) {
