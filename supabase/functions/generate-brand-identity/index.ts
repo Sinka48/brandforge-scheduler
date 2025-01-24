@@ -13,24 +13,36 @@ async function generateLogoWithHuggingFace(prompt: string) {
     const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
     console.log("Generating logo with prompt:", prompt);
 
-    const image = await hf.textToImage({
+    const response = await hf.textToImage({
       inputs: prompt,
-      model: 'black-forest-labs/FLUX.1-schnell',
+      model: 'stabilityai/stable-diffusion-2',
       parameters: {
         negative_prompt: "text, words, letters, watermark, signature, blurry, low quality",
-        num_inference_steps: 50,
+        num_inference_steps: 30,
+        guidance_scale: 7.5,
       }
     });
 
-    const arrayBuffer = await image.arrayBuffer();
+    if (!response) {
+      throw new Error("No response from Hugging Face API");
+    }
+
+    console.log("Image generation successful, converting to base64");
+    
+    // Convert the response to a base64 string
+    const arrayBuffer = await response.arrayBuffer();
+    if (!arrayBuffer) {
+      throw new Error("Failed to get array buffer from response");
+    }
+
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
     const logoUrl = `data:image/png;base64,${base64}`;
 
-    console.log("Logo generated successfully");
+    console.log("Logo generated and converted successfully");
     return logoUrl;
   } catch (error) {
-    console.error("Error generating logo:", error);
-    throw error;
+    console.error("Error in generateLogoWithHuggingFace:", error);
+    throw new Error(`Logo generation failed: ${error.message}`);
   }
 }
 
@@ -89,7 +101,7 @@ serve(async (req) => {
     const socialBio = `Professional ${finalIndustry} services tailored for ${finalTargetAudience}`;
 
     // Generate logo using Hugging Face
-    const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business named ${finalBusinessName}. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
+    const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
     
     console.log("Generating logo with Hugging Face");
     const logoUrl = await generateLogoWithHuggingFace(logoPrompt);
