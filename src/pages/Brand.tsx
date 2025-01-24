@@ -31,15 +31,20 @@ export default function BrandPage({ session }: BrandPageProps) {
         if (error) throw error;
 
         if (data) {
+          // Parse metadata as an object if it's a string
+          const parsedMetadata = typeof data.metadata === 'string' 
+            ? JSON.parse(data.metadata) 
+            : data.metadata;
+
           // Transform the data to match the Brand type
           const brandData: Brand = {
             id: data.id,
             asset_type: data.asset_type,
             created_at: data.created_at,
             metadata: {
-              name: data.metadata?.name || undefined,
-              socialAssets: data.metadata?.socialAssets || undefined,
-              socialBio: data.metadata?.socialBio || undefined
+              name: parsedMetadata?.name,
+              socialAssets: parsedMetadata?.socialAssets,
+              socialBio: parsedMetadata?.socialBio
             },
             questionnaire_id: data.questionnaire_id,
             url: data.url,
