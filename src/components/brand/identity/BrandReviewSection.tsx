@@ -5,6 +5,7 @@ import { BrandSocialPreview } from "./BrandSocialPreview";
 import { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface BrandReviewSectionProps {
   brandName?: string;
@@ -42,6 +43,86 @@ export function BrandReviewSection({
               <p className="text-muted-foreground">
                 {brand?.metadata?.story || "Share your brand's story and journey"}
               </p>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Brand Attributes Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Brand Attributes</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Industry & Business Info */}
+              <Card className="p-4">
+                <h4 className="font-medium mb-2">Business Information</h4>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Industry:</span>
+                    <p className="font-medium">{brand?.metadata?.industry || "Not specified"}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">Target Audience:</span>
+                    <p className="font-medium">{brand?.metadata?.targetAudience || "Not specified"}</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Brand Personality */}
+              <Card className="p-4">
+                <h4 className="font-medium mb-2">Brand Personality</h4>
+                <div className="flex flex-wrap gap-2">
+                  {brand?.metadata?.brandPersonality ? (
+                    Array.isArray(brand.metadata.brandPersonality) ? (
+                      brand.metadata.brandPersonality.map((trait, index) => (
+                        <Badge key={index} variant="secondary">
+                          {trait}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="secondary">{brand.metadata.brandPersonality}</Badge>
+                    )
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No personality traits specified</span>
+                  )}
+                </div>
+              </Card>
+
+              {/* Color Preferences */}
+              <Card className="p-4">
+                <h4 className="font-medium mb-2">Color Preferences</h4>
+                <div className="flex flex-wrap gap-2">
+                  {brand?.metadata?.colorPreferences ? (
+                    Array.isArray(brand.metadata.colorPreferences) ? (
+                      brand.metadata.colorPreferences.map((color, index) => (
+                        <Badge key={index} variant="secondary">
+                          {color}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="secondary">{brand.metadata.colorPreferences}</Badge>
+                    )
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No color preferences specified</span>
+                  )}
+                </div>
+              </Card>
+
+              {/* AI Generated Parameters */}
+              {brand?.metadata?.isAiGenerated && (
+                <Card className="p-4">
+                  <h4 className="font-medium mb-2">AI Generated Parameters</h4>
+                  <div className="space-y-2">
+                    {brand?.metadata?.aiGeneratedParameters && Object.entries(brand.metadata.aiGeneratedParameters).map(([key, value]) => (
+                      <div key={key}>
+                        <span className="text-sm text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                        <p className="font-medium">
+                          {Array.isArray(value) ? value.join(', ') : value?.toString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
 
