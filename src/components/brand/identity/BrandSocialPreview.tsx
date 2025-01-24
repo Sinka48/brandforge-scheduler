@@ -18,7 +18,8 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
       icon: Twitter,
       profileSize: '400x400px',
       coverSize: '1500x500px',
-      supportsCover: true
+      supportsCover: true,
+      profileRecommendation: 'Square image, max 2MB'
     },
     { 
       id: 'facebook', 
@@ -26,14 +27,16 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
       icon: Facebook,
       profileSize: '170x170px',
       coverSize: '820x312px',
-      supportsCover: true
+      supportsCover: true,
+      profileRecommendation: 'Will be cropped to circle'
     },
     { 
       id: 'instagram', 
       name: 'Instagram', 
       icon: Instagram,
       profileSize: '320x320px',
-      supportsCover: false
+      supportsCover: false,
+      profileRecommendation: 'Square image recommended'
     },
     { 
       id: 'linkedin', 
@@ -41,7 +44,8 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
       icon: Linkedin,
       profileSize: '400x400px',
       coverSize: '1584x396px',
-      supportsCover: true
+      supportsCover: true,
+      profileRecommendation: 'Professional headshot recommended'
     },
   ];
   
@@ -79,6 +83,9 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
                     <h3 className="text-lg font-semibold">Profile Image</h3>
                     <p className="text-sm text-muted-foreground">
                       Recommended size: {platform.profileSize}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {platform.profileRecommendation}
                     </p>
                   </div>
                   <div className="flex gap-2">
