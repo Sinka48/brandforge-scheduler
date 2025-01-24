@@ -27,16 +27,25 @@ async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries =
           await delay(parseInt(retryAfter) * 1000);
           continue;
         }
+
+        // Log detailed error for debugging
+        console.error('Request details:', {
+          url,
+          method: options.method,
+          headers: options.headers,
+          body: options.body,
+        });
         
-        throw new Error(`OpenAI API error: ${response.status}`);
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
       console.log(`Request successful:`, data);
       return data;
     } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error);
       if (attempt === maxRetries) throw error;
-      console.log(`Attempt ${attempt} failed, retrying after delay...`);
+      console.log(`Retrying after delay...`);
       await delay(2000 * attempt); // Exponential backoff
     }
   }
