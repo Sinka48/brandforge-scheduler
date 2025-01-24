@@ -102,6 +102,7 @@ export type Database = {
       }
       brand_questionnaires: {
         Row: {
+          ai_generated_parameters: Json | null
           brand_personality: string[]
           business_name: string
           color_preferences: string[]
@@ -109,12 +110,14 @@ export type Database = {
           description: string
           id: string
           industry: string
+          is_ai_generated: boolean | null
           target_audience: Json
           updated_at: string
           user_id: string
           version: number | null
         }
         Insert: {
+          ai_generated_parameters?: Json | null
           brand_personality?: string[]
           business_name: string
           color_preferences?: string[]
@@ -122,12 +125,14 @@ export type Database = {
           description: string
           id?: string
           industry: string
+          is_ai_generated?: boolean | null
           target_audience?: Json
           updated_at?: string
           user_id: string
           version?: number | null
         }
         Update: {
+          ai_generated_parameters?: Json | null
           brand_personality?: string[]
           business_name?: string
           color_preferences?: string[]
@@ -135,6 +140,7 @@ export type Database = {
           description?: string
           id?: string
           industry?: string
+          is_ai_generated?: boolean | null
           target_audience?: Json
           updated_at?: string
           user_id?: string

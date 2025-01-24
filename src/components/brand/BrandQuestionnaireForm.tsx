@@ -14,9 +14,9 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
-  businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  industry: z.string().min(1, "Industry selection is required"),
-  brandPersonality: z.array(z.string()).min(1, "At least one personality trait is required").max(5, "Maximum 5 personality traits allowed"),
+  businessName: z.string().optional(),
+  industry: z.string().optional(),
+  brandPersonality: z.array(z.string()).optional(),
 })
 
 export function BrandQuestionnaireForm() {
@@ -51,17 +51,19 @@ export function BrandQuestionnaireForm() {
 
       console.log("Saving questionnaire with values:", values)
 
-      // Save questionnaire with required fields
+      // Save questionnaire with optional fields
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName,
-          industry: values.industry,
-          description: `Brand for ${values.businessName} in the ${values.industry} industry`, 
-          brand_personality: values.brandPersonality,
+          business_name: values.businessName || null,
+          industry: values.industry || null,
+          description: values.businessName ? `Brand for ${values.businessName}` : "AI Generated Brand",
+          brand_personality: values.brandPersonality || [],
           color_preferences: [],
           target_audience: {},
+          is_ai_generated: !values.businessName && !values.industry && (!values.brandPersonality || values.brandPersonality.length === 0),
+          ai_generated_parameters: {}
         })
         .select()
         .single()
@@ -88,6 +90,7 @@ export function BrandQuestionnaireForm() {
               business_name: questionnaire.business_name,
               industry: questionnaire.industry,
               brand_personality: questionnaire.brand_personality,
+              is_ai_generated: questionnaire.is_ai_generated
             }
           }
         }
@@ -99,6 +102,18 @@ export function BrandQuestionnaireForm() {
       }
 
       console.log("Received brand data:", brandData)
+
+      // If AI generated parameters were returned, update the questionnaire
+      if (brandData.ai_generated_parameters) {
+        const { error: updateError } = await supabase
+          .from("brand_questionnaires")
+          .update({ ai_generated_parameters: brandData.ai_generated_parameters })
+          .eq("id", questionnaire.id)
+
+        if (updateError) {
+          console.error("Error updating AI parameters:", updateError)
+        }
+      }
 
       // Navigate to brand identity page for customization
       navigate("/brand-identity")
@@ -126,49 +141,39 @@ export function BrandQuestionnaireForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Business Information</h3>
+              <h3 className="text-lg font-medium">Business Information (Optional)</h3>
               <div>
                 <Input
                   placeholder="Enter your business name"
                   {...form.register("businessName")}
-                  className={form.formState.errors.businessName ? "border-red-500" : ""}
                 />
-                {form.formState.errors.businessName && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.businessName.message}</p>
-                )}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Industry</h3>
+              <h3 className="text-lg font-medium">Industry (Optional)</h3>
               <div>
                 <IndustrySelector
                   selected={form.watch("industry")}
                   onSelect={(industry) => form.setValue("industry", industry)}
                 />
-                {form.formState.errors.industry && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.industry.message}</p>
-                )}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Brand Personality (Select up to 5)</h3>
+              <h3 className="text-lg font-medium">Brand Personality (Optional)</h3>
               <div>
                 <PersonalitySelector
-                  selected={form.watch("brandPersonality")}
+                  selected={form.watch("brandPersonality") || []}
                   onSelect={(traits) => form.setValue("brandPersonality", traits)}
                 />
-                {form.formState.errors.brandPersonality && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.brandPersonality.message}</p>
-                )}
               </div>
             </div>
 
             <div className="flex justify-end">
               <Button 
                 type="submit" 
-                disabled={isGenerating || !form.formState.isValid}
+                disabled={isGenerating}
                 className="w-full sm:w-auto"
               >
                 {isGenerating ? (
