@@ -14,9 +14,9 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
-  businessName: z.string().optional(),
-  industry: z.string().optional(),
-  brandPersonality: z.array(z.string()).optional(),
+  businessName: z.string().min(1, "Business name is required"),
+  industry: z.string().min(1, "Industry is required"),
+  brandPersonality: z.array(z.string()).min(1, "At least one personality trait is required"),
 })
 
 export function BrandQuestionnaireForm() {
@@ -49,22 +49,31 @@ export function BrandQuestionnaireForm() {
         return
       }
 
-      // Save questionnaire with optional fields
+      // Save questionnaire with required fields
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName || "My Brand",
-          industry: values.industry || "General",
+          business_name: values.businessName,
+          industry: values.industry,
           description: "", 
-          brand_personality: values.brandPersonality || [],
+          brand_personality: values.brandPersonality,
           color_preferences: [],
           target_audience: {},
         })
         .select()
         .single()
 
-      if (questionnaireError) throw questionnaireError
+      if (questionnaireError) {
+        console.error("Error saving questionnaire:", questionnaireError)
+        throw questionnaireError
+      }
+
+      if (!questionnaire) {
+        throw new Error("Failed to create questionnaire")
+      }
+
+      console.log("Sending questionnaire to generate-brand-identity:", questionnaire)
 
       // Generate brand identity
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
@@ -77,7 +86,10 @@ export function BrandQuestionnaireForm() {
         }
       )
 
-      if (brandError) throw brandError
+      if (brandError) {
+        console.error("Error generating brand:", brandError)
+        throw brandError
+      }
 
       // Navigate to brand identity page for customization
       navigate("/brand-identity")
@@ -105,27 +117,36 @@ export function BrandQuestionnaireForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Business Information (Optional)</h3>
+              <h3 className="text-lg font-medium">Business Information</h3>
               <Input
                 placeholder="Enter your business name"
                 {...form.register("businessName")}
               />
+              {form.formState.errors.businessName && (
+                <p className="text-sm text-red-500">{form.formState.errors.businessName.message}</p>
+              )}
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Industry (Optional)</h3>
+              <h3 className="text-lg font-medium">Industry</h3>
               <IndustrySelector
                 selected={form.watch("industry")}
                 onSelect={(industry) => form.setValue("industry", industry)}
               />
+              {form.formState.errors.industry && (
+                <p className="text-sm text-red-500">{form.formState.errors.industry.message}</p>
+              )}
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Brand Personality (Optional)</h3>
+              <h3 className="text-lg font-medium">Brand Personality</h3>
               <PersonalitySelector
                 selected={form.watch("brandPersonality")}
                 onSelect={(traits) => form.setValue("brandPersonality", traits)}
               />
+              {form.formState.errors.brandPersonality && (
+                <p className="text-sm text-red-500">{form.formState.errors.brandPersonality.message}</p>
+              )}
             </div>
 
             <div className="flex justify-end">
