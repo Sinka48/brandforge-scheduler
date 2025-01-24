@@ -14,6 +14,12 @@ async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries =
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Making OpenAI request to ${url}, attempt ${attempt}`);
+      console.log('Request options:', {
+        method: options.method,
+        headers: options.headers,
+        body: options.body,
+      });
+      
       const response = await fetch(url, options);
       
       if (!response.ok) {
@@ -27,25 +33,16 @@ async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries =
           await delay(parseInt(retryAfter) * 1000);
           continue;
         }
-
-        // Log detailed error for debugging
-        console.error('Request details:', {
-          url,
-          method: options.method,
-          headers: options.headers,
-          body: options.body,
-        });
         
         throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log(`Request successful:`, data);
+      console.log('Response data:', data);
       return data;
     } catch (error) {
       console.error(`Attempt ${attempt} failed:`, error);
       if (attempt === maxRetries) throw error;
-      console.log(`Retrying after delay...`);
       await delay(2000 * attempt); // Exponential backoff
     }
   }
@@ -104,6 +101,7 @@ serve(async (req) => {
             { role: 'user', content: contentPrompt }
           ],
           temperature: 0.7,
+          max_tokens: 500,
         }),
       }
     );
@@ -120,7 +118,7 @@ serve(async (req) => {
     }
 
     // Generate logo using DALL-E
-    const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
+    const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business named ${finalBusinessName}. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
     
     console.log("Sending logo generation request to DALL-E");
     const logoData = await makeOpenAIRequest(
@@ -132,12 +130,12 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "dall-e-3",
           prompt: logoPrompt,
+          model: "dall-e-3",
           n: 1,
           size: "1024x1024",
           quality: "standard",
-          style: "natural",
+          response_format: "url",
         }),
       }
     );
@@ -178,7 +176,7 @@ serve(async (req) => {
       }
     };
 
-    console.log("Returning successful response");
+    console.log("Returning successful response:", result);
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
