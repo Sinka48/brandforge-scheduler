@@ -17,22 +17,42 @@ import {
 import { Brand } from "@/types/brand";
 import { BrandList } from "./BrandList";
 import { useBrandFetching } from "@/hooks/useBrandFetching";
+import { useNavigate } from "react-router-dom";
 
 interface BrandManagerProps {
-  onSelectBrand?: (brand: Brand) => void;
   selectedBrandId?: string;
 }
 
-export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerProps) {
+export function BrandManager({ selectedBrandId }: BrandManagerProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [brandToDelete, setBrandToDelete] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { brands, loading, fetchBrands } = useBrandFetching();
 
   useEffect(() => {
+    // Check authentication
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/');
+        return;
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  useEffect(() => {
     fetchBrands();
-  }, [selectedBrandId]);
+    // If selectedBrandId is provided, find and select that brand
+    if (selectedBrandId && brands.length > 0) {
+      const brand = brands.find(b => b.id === selectedBrandId);
+      if (brand) {
+        setSelectedBrand(brand);
+      }
+    }
+  }, [selectedBrandId, brands]);
 
   const handleDeleteBrand = async (brandId: string) => {
     try {
@@ -65,7 +85,6 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
 
   const handleBrandSelect = (brand: Brand) => {
     setSelectedBrand(brand);
-    onSelectBrand?.(brand);
   };
 
   const handleRegenerateAsset = async (assetType: string) => {
