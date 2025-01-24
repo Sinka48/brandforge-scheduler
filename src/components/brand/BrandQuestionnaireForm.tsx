@@ -14,9 +14,9 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
-  businessName: z.string().min(1, "Business name is required"),
-  industry: z.string().min(1, "Industry is required"),
-  brandPersonality: z.array(z.string()).min(1, "Select at least one personality trait"),
+  businessName: z.string().optional(),
+  industry: z.string().optional(),
+  brandPersonality: z.array(z.string()).optional(),
 })
 
 export function BrandQuestionnaireForm() {
@@ -49,17 +49,17 @@ export function BrandQuestionnaireForm() {
         return
       }
 
-      // Save questionnaire
+      // Save questionnaire with optional fields
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName,
-          industry: values.industry,
-          description: "", // Empty string as description is no longer used
-          brand_personality: values.brandPersonality,
-          color_preferences: [], // Empty array since we removed color selection
-          target_audience: {}, // Simplified, removed detailed targeting
+          business_name: values.businessName || "My Brand",
+          industry: values.industry || "General",
+          description: "", 
+          brand_personality: values.brandPersonality || [],
+          color_preferences: [],
+          target_audience: {},
         })
         .select()
         .single()
@@ -79,13 +79,14 @@ export function BrandQuestionnaireForm() {
 
       if (brandError) throw brandError
 
+      // Navigate to brand identity page for customization
+      navigate("/brand-identity")
+      
       toast({
         title: "Brand Generated!",
-        description: "Your brand identity has been created. View it in the Brand Library.",
+        description: "Your brand identity has been created. You can now customize it.",
       })
 
-      // Navigate to brand library tab after generation
-      navigate("/brand?tab=library&brandCreated=true")
     } catch (error) {
       console.error("Error generating brand:", error)
       toast({
@@ -104,42 +105,27 @@ export function BrandQuestionnaireForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Business Information</h3>
+              <h3 className="text-lg font-medium">Business Information (Optional)</h3>
               <Input
                 placeholder="Enter your business name"
                 {...form.register("businessName")}
               />
-              {form.formState.errors.businessName && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.businessName.message}
-                </p>
-              )}
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Industry</h3>
+              <h3 className="text-lg font-medium">Industry (Optional)</h3>
               <IndustrySelector
                 selected={form.watch("industry")}
                 onSelect={(industry) => form.setValue("industry", industry)}
               />
-              {form.formState.errors.industry && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.industry.message}
-                </p>
-              )}
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Brand Personality</h3>
+              <h3 className="text-lg font-medium">Brand Personality (Optional)</h3>
               <PersonalitySelector
                 selected={form.watch("brandPersonality")}
                 onSelect={(traits) => form.setValue("brandPersonality", traits)}
               />
-              {form.formState.errors.brandPersonality && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.brandPersonality.message}
-                </p>
-              )}
             </div>
 
             <div className="flex justify-end">
