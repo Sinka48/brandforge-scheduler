@@ -80,7 +80,7 @@ export function BrandQuestionnaireForm() {
 
       if (brandError) throw brandError;
 
-      const { error: assetError } = await supabase
+      const { data: brandAsset, error: assetError } = await supabase
         .from("brand_assets")
         .insert({
           user_id: user.id,
@@ -89,7 +89,9 @@ export function BrandQuestionnaireForm() {
           url: brandData.logoUrl,
           metadata: brandData.metadata,
           asset_category: 'brand'
-        });
+        })
+        .select()
+        .single();
 
       if (assetError) throw assetError;
 
@@ -98,7 +100,8 @@ export function BrandQuestionnaireForm() {
         description: "Your AI-powered brand identity has been created. View it in the Brand Library.",
       });
 
-      navigate(`/brands?tab=library&selectedBrand=${questionnaire.id}`);
+      // Navigate to the brand preview with the newly created brand selected
+      navigate(`/brands?tab=library&selectedBrand=${brandAsset.id}`);
       
     } catch (error) {
       console.error("Error generating brand:", error);
