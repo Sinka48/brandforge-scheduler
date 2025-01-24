@@ -16,14 +16,204 @@ interface BrandIdentity {
   logoUrl: string;
 }
 
+interface GenerationProgress {
+  percentage: number;
+  message: string;
+  completedSteps: string[];
+}
+
 export function useBrandIdentity() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
+  const [generationProgress, setGenerationProgress] = useState<GenerationProgress>({
+    percentage: 0,
+    message: "Initializing brand generation...",
+    completedSteps: [],
+  });
+  
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const updateProgress = (progress: Partial<GenerationProgress>) => {
+    setGenerationProgress(prev => ({
+      ...prev,
+      ...progress,
+    }));
+  };
+
+  const generateBrandIdentity = async () => {
+    setGenerating(true);
+    try {
+      updateProgress({
+        percentage: 10,
+        message: "Fetching questionnaire data...",
+        completedSteps: ["Initialized generation process"],
+      });
+
+      const { data: questionnaire, error: questionnaireError } = await supabase
+        .from("brand_questionnaires")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (questionnaireError) throw questionnaireError;
+
+      if (!questionnaire) {
+        toast({
+          title: "Error",
+          description: "Please complete the brand questionnaire first",
+          variant: "destructive",
+        });
+        navigate("/brand");
+        return;
+      }
+
+      updateProgress({
+        percentage: 30,
+        message: "Generating brand identity...",
+        completedSteps: [
+          "Initialized generation process",
+          "Retrieved questionnaire data",
+        ],
+      });
+
+      const { data, error } = await supabase.functions.invoke(
+        "generate-brand-identity",
+        {
+          body: { questionnaire },
+        }
+      );
+
+      if (error) throw error;
+
+      updateProgress({
+        percentage: 90,
+        message: "Finalizing brand assets...",
+        completedSteps: [
+          "Initialized generation process",
+          "Retrieved questionnaire data",
+          "Generated brand identity",
+          "Created visual assets",
+        ],
+      });
+
+      setBrandIdentity(data);
+
+      updateProgress({
+        percentage: 100,
+        message: "Brand identity generated successfully!",
+        completedSteps: [
+          "Initialized generation process",
+          "Retrieved questionnaire data",
+          "Generated brand identity",
+          "Created visual assets",
+          "Completed generation",
+        ],
+      });
+
+      toast({
+        title: "Success",
+        description: "Brand identity generated successfully!",
+      });
+    } catch (error) {
+      console.error("Error generating brand identity:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate brand identity. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const regenerateAsset = async (assetType: string) => {
+    try {
+      const { data: questionnaire } = await supabase
+        .from("brand_questionnaires")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!questionnaire) {
+        toast({
+          title: "Error",
+          description: "No brand questionnaire found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Regenerating",
+        description: `Regenerating ${assetType}...`,
+      });
+
+      const { data, error } = await supabase.functions.invoke(
+        "generate-brand-identity",
+        {
+          body: { 
+            questionnaire,
+            regenerateOnly: assetType,
+          },
+        }
+      );
+
+      if (error) throw error;
+
+      // Update only the regenerated asset in the brand identity
+      setBrandIdentity(prev => {
+        if (!prev) return data;
+        
+        const updated = { ...prev };
+        switch (assetType) {
+          case 'logo':
+            updated.logoUrl = data.logoUrl;
+            break;
+          case 'colors':
+            updated.metadata = {
+              ...updated.metadata,
+              colors: data.metadata.colors,
+            };
+            break;
+          case 'typography':
+            updated.metadata = {
+              ...updated.metadata,
+              typography: data.metadata.typography,
+            };
+            break;
+          default:
+            if (assetType.includes('social')) {
+              updated.metadata = {
+                ...updated.metadata,
+                socialAssets: {
+                  ...updated.metadata.socialAssets,
+                  ...data.metadata.socialAssets,
+                },
+              };
+            }
+        }
+        return updated;
+      });
+
+      toast({
+        title: "Success",
+        description: `Successfully regenerated ${assetType}`,
+      });
+    } catch (error) {
+      console.error("Error regenerating asset:", error);
+      toast({
+        title: "Error",
+        description: `Failed to regenerate ${assetType}`,
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchBrandIdentity = async () => {
     try {
@@ -63,59 +253,6 @@ export function useBrandIdentity() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const generateBrandIdentity = async () => {
-    setGenerating(true);
-    try {
-      console.log("Starting brand generation process...");
-      
-      const { data: questionnaire, error: questionnaireError } = await supabase
-        .from("brand_questionnaires")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (questionnaireError) throw questionnaireError;
-
-      if (!questionnaire) {
-        toast({
-          title: "Error",
-          description: "Please complete the brand questionnaire first",
-          variant: "destructive",
-        });
-        navigate("/brand");
-        return;
-      }
-
-      console.log("Sending questionnaire to edge function:", questionnaire);
-
-      const { data, error } = await supabase.functions.invoke(
-        "generate-brand-identity",
-        {
-          body: { questionnaire },
-        }
-      );
-
-      if (error) throw error;
-
-      console.log("Received brand data:", data);
-      setBrandIdentity(data);
-
-      toast({
-        title: "Success",
-        description: "Brand identity generated successfully!",
-      });
-    } catch (error) {
-      console.error("Error generating brand identity:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate brand identity. Please try again.",
-        variant: "destructive",
-      });
-      setGenerating(false);
     }
   };
 
@@ -214,9 +351,11 @@ export function useBrandIdentity() {
     generating,
     deleting,
     brandIdentity,
+    generationProgress,
     fetchBrandIdentity,
     generateBrandIdentity,
     saveBrandAssets,
     deleteBrandIdentity,
+    regenerateAsset,
   };
 }

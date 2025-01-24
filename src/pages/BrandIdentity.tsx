@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
 import { BrandReviewSection } from "@/components/brand/identity/BrandReviewSection";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 interface BrandIdentityPageProps {
   session: Session;
@@ -18,15 +19,22 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     generating,
     deleting,
     brandIdentity,
+    generationProgress,
     generateBrandIdentity,
     saveBrandAssets,
     deleteBrandIdentity,
+    regenerateAsset,
   } = useBrandIdentity();
+
   const navigate = useNavigate();
 
   const handleSave = async () => {
     await saveBrandAssets();
     navigate("/brand?tab=library&brandCreated=true");
+  };
+
+  const handleRegenerateAsset = async (assetType: string) => {
+    await regenerateAsset(assetType);
   };
 
   if (loading) {
@@ -54,13 +62,22 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
 
         {generating ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center p-12 space-y-4">
+            <CardContent className="flex flex-col items-center justify-center p-12 space-y-6">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-lg text-center text-muted-foreground">
-                Generating your brand identity...
-                <br />
-                This may take a few moments
-              </p>
+              <div className="space-y-4 w-full max-w-md">
+                <Progress value={generationProgress.percentage} className="w-full" />
+                <p className="text-lg text-center text-muted-foreground">
+                  {generationProgress.message}
+                </p>
+                <div className="space-y-2">
+                  {generationProgress.completedSteps.map((step, index) => (
+                    <div key={index} className="flex items-center text-sm text-muted-foreground">
+                      <span className="mr-2">✓</span>
+                      {step}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : brandIdentity ? (
@@ -78,6 +95,7 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
               user_id: session.user.id,
               asset_category: "brand"
             }}
+            onRegenerateAsset={handleRegenerateAsset}
           />
         ) : (
           <Card>
