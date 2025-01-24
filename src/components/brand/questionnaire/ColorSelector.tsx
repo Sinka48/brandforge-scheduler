@@ -14,6 +14,10 @@ export function ColorSelector({ selected, onSelect }: ColorSelectorProps) {
     { name: "Purple", bg: "bg-purple-500" },
     { name: "Yellow", bg: "bg-yellow-500" },
     { name: "Orange", bg: "bg-orange-500" },
+    { name: "Pink", bg: "bg-pink-500" },
+    { name: "Indigo", bg: "bg-indigo-500" },
+    { name: "Teal", bg: "bg-teal-500" },
+    { name: "Gray", bg: "bg-gray-500" },
   ];
 
   const toggleColor = (color: string) => {
