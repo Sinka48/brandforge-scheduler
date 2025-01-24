@@ -1,8 +1,8 @@
 import { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface BrandSocialPreviewProps {
   brand: Brand;
@@ -11,42 +11,85 @@ interface BrandSocialPreviewProps {
 
 export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPreviewProps) {
   const socialAssets = brand.metadata.socialAssets || {};
+  
   const platforms = [
     { 
       id: 'twitter', 
       name: 'Twitter', 
       icon: Twitter,
-      profileSize: '400x400px',
-      coverSize: '1500x500px',
-      supportsCover: true,
-      profileRecommendation: 'Square image, max 2MB'
+      assets: [
+        {
+          type: 'profile',
+          size: '400x400px',
+          recommendation: 'Square image, max 2MB',
+          imageUrl: socialAssets.twitterProfileImage || socialAssets.profileImage,
+          regenerateType: 'twitter_profile'
+        },
+        {
+          type: 'cover',
+          size: '1500x500px',
+          recommendation: 'Recommended size for header image',
+          imageUrl: socialAssets.twitterCoverImage || socialAssets.coverImage,
+          regenerateType: 'twitter_cover'
+        }
+      ]
     },
     { 
       id: 'facebook', 
       name: 'Facebook', 
       icon: Facebook,
-      profileSize: '170x170px',
-      coverSize: '820x312px',
-      supportsCover: true,
-      profileRecommendation: 'Will be cropped to circle'
+      assets: [
+        {
+          type: 'profile',
+          size: '170x170px',
+          recommendation: 'Will be cropped to circle',
+          imageUrl: socialAssets.facebookProfileImage || socialAssets.profileImage,
+          regenerateType: 'facebook_profile'
+        },
+        {
+          type: 'cover',
+          size: '820x312px',
+          recommendation: 'Cover photo for your page',
+          imageUrl: socialAssets.facebookCoverImage || socialAssets.coverImage,
+          regenerateType: 'facebook_cover'
+        }
+      ]
     },
     { 
       id: 'instagram', 
       name: 'Instagram', 
       icon: Instagram,
-      profileSize: '320x320px',
-      supportsCover: false,
-      profileRecommendation: 'Square image recommended'
+      assets: [
+        {
+          type: 'profile',
+          size: '320x320px',
+          recommendation: 'Square image recommended',
+          imageUrl: socialAssets.instagramProfileImage || socialAssets.profileImage,
+          regenerateType: 'instagram_profile'
+        }
+      ]
     },
     { 
       id: 'linkedin', 
       name: 'LinkedIn', 
       icon: Linkedin,
-      profileSize: '400x400px',
-      coverSize: '1584x396px',
-      supportsCover: true,
-      profileRecommendation: 'Professional headshot recommended'
-    },
+      assets: [
+        {
+          type: 'profile',
+          size: '400x400px',
+          recommendation: 'Professional headshot recommended',
+          imageUrl: socialAssets.linkedinProfileImage || socialAssets.profileImage,
+          regenerateType: 'linkedin_profile'
+        },
+        {
+          type: 'cover',
+          size: '1584x396px',
+          recommendation: 'Company page banner image',
+          imageUrl: socialAssets.linkedinCoverImage || socialAssets.coverImage,
+          regenerateType: 'linkedin_cover'
+        }
+      ]
+    }
   ];
   
   const handleDownload = (url: string, platform: string, type: string) => {
@@ -59,40 +102,28 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
   };
 
   return (
-    <Tabs defaultValue="twitter" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
-        {platforms.map((platform) => (
-          <TabsTrigger 
-            key={platform.id}
-            value={platform.id} 
-            className="flex items-center gap-2"
-          >
-            <platform.icon className="h-4 w-4" />
-            {platform.name}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
+    <div className="space-y-6">
       {platforms.map((platform) => (
-        <TabsContent key={platform.id} value={platform.id} className="space-y-6">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-4">
+        <Card key={platform.id} className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <platform.icon className="h-5 w-5" />
+            <h3 className="text-lg font-semibold">{platform.name}</h3>
+          </div>
+          <div className="space-y-6">
+            {platform.assets.map((asset) => (
+              <div key={asset.type} className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold">Profile Image</h3>
+                    <h4 className="font-medium capitalize">{asset.type} Image</h4>
                     <p className="text-sm text-muted-foreground">
-                      Recommended size: {platform.profileSize}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {platform.profileRecommendation}
+                      {asset.size} - {asset.recommendation}
                     </p>
                   </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onRegenerateAsset?.(`${platform.id}_profile`)}
+                      onClick={() => onRegenerateAsset?.(asset.regenerateType)}
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Regenerate
@@ -101,9 +132,9 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
                       variant="outline"
                       size="sm"
                       onClick={() => handleDownload(
-                        socialAssets[`${platform.id}ProfileImage`] || socialAssets.profileImage || '',
+                        asset.imageUrl || '',
                         platform.name,
-                        'profile'
+                        asset.type
                       )}
                     >
                       <Download className="h-4 w-4 mr-2" />
@@ -112,56 +143,22 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
                   </div>
                 </div>
                 <img
-                  src={socialAssets[`${platform.id}ProfileImage`] || socialAssets.profileImage}
-                  alt={`${platform.name} Profile`}
-                  className="h-32 w-32 rounded-full object-cover border shadow-sm"
+                  src={asset.imageUrl}
+                  alt={`${platform.name} ${asset.type}`}
+                  className={`border shadow-sm rounded-lg ${
+                    asset.type === 'profile' 
+                      ? 'h-32 w-32 object-cover rounded-full' 
+                      : 'w-full h-[200px] object-cover'
+                  }`}
                 />
+                {asset !== platform.assets[platform.assets.length - 1] && (
+                  <Separator className="my-4" />
+                )}
               </div>
-
-              {platform.supportsCover && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">Cover Image</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Recommended size: {platform.coverSize}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onRegenerateAsset?.(`${platform.id}_cover`)}
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Regenerate
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(
-                          socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage || '',
-                          platform.name,
-                          'cover'
-                        )}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
-                    </div>
-                  </div>
-                  <img
-                    src={socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage}
-                    alt={`${platform.name} Cover`}
-                    className="w-full rounded-lg object-cover border shadow-sm"
-                    style={{ height: '200px' }}
-                  />
-                </div>
-              )}
-            </div>
-          </Card>
-        </TabsContent>
+            ))}
+          </div>
+        </Card>
       ))}
-    </Tabs>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Share2, RefreshCw } from "lucide-react";
+import { RefreshCw, Download } from "lucide-react";
 import { LogoCard } from "./LogoCard";
 import { BrandSocialPreview } from "./BrandSocialPreview";
 import { Brand } from "@/types/brand";
@@ -26,7 +26,7 @@ export function BrandReviewSection({
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Brand Overview</CardTitle>
+          <CardTitle>Brand Identity Overview</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -37,7 +37,7 @@ export function BrandReviewSection({
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Logo Concept</h3>
+              <h3 className="text-lg font-semibold">Logo</h3>
               <Button
                 variant="outline"
                 size="sm"
@@ -55,27 +55,20 @@ export function BrandReviewSection({
               compact
             />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
-            Social Media Assets
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {brand ? (
-            <BrandSocialPreview
-              brand={brand}
-              onRegenerateAsset={onRegenerateAsset}
-            />
-          ) : (
-            <div className="text-center text-muted-foreground">
-              No social media assets found. Generate a brand identity first.
-            </div>
-          )}
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Social Media Assets</h3>
+            {brand ? (
+              <BrandSocialPreview
+                brand={brand}
+                onRegenerateAsset={onRegenerateAsset}
+              />
+            ) : (
+              <div className="text-center text-muted-foreground">
+                No social media assets found. Generate a brand identity first.
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
