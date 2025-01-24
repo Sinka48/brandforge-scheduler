@@ -10,11 +10,16 @@ const corsHeaders = {
 async function generateLogoWithDallE(prompt: string) {
   try {
     console.log("Generating logo with DALL-E, prompt:", prompt);
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    
+    if (!openaiKey) {
+      throw new Error("OpenAI API key is not configured");
+    }
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openaiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -29,6 +34,7 @@ async function generateLogoWithDallE(prompt: string) {
 
     if (!response.ok) {
       const error = await response.json();
+      console.error("DALL-E API error response:", error);
       throw new Error(`DALL-E API error: ${JSON.stringify(error)}`);
     }
 
@@ -48,11 +54,16 @@ async function generateLogoWithDallE(prompt: string) {
 async function generateBrandContent(businessName: string, industry: string, personality: string[], targetAudience: string) {
   try {
     console.log("Generating brand content with GPT-4");
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    
+    if (!openaiKey) {
+      throw new Error("OpenAI API key is not configured");
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openaiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -73,6 +84,7 @@ async function generateBrandContent(businessName: string, industry: string, pers
 
     if (!response.ok) {
       const error = await response.json();
+      console.error("GPT API error response:", error);
       throw new Error(`GPT API error: ${JSON.stringify(error)}`);
     }
 
@@ -100,6 +112,12 @@ serve(async (req) => {
 
   try {
     console.log("Function invoked - starting execution");
+
+    // Verify OpenAI API key is configured
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiKey) {
+      throw new Error("OpenAI API key is not configured. Please add it in the Supabase dashboard.");
+    }
 
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
@@ -140,7 +158,7 @@ serve(async (req) => {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Authorization': `Bearer ${openaiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -160,7 +178,9 @@ serve(async (req) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate business name');
+        const error = await response.json();
+        console.error("GPT API error response:", error);
+        throw new Error(`GPT API error: ${JSON.stringify(error)}`);
       }
 
       const data = await response.json();
@@ -236,6 +256,18 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in generate-brand-identity:", error);
+    
+    // Check for specific OpenAI errors
+    if (error.message?.includes('insufficient_quota')) {
+      return new Response(JSON.stringify({ 
+        error: "OpenAI API quota exceeded. Please check your billing details or use a different API key.",
+        details: error.toString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 402 // Payment Required
+      });
+    }
+    
     return new Response(JSON.stringify({ 
       error: error.message || "Internal server error",
       details: error.toString()
