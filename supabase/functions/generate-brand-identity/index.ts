@@ -41,6 +41,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Function invoked - starting execution");
+
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -60,19 +62,17 @@ serve(async (req) => {
       }
     );
 
-    // Set auth header
-    await supabaseClient.auth.setSession({
-      access_token: authHeader.replace('Bearer ', ''),
-      refresh_token: '',
-    });
+    // Set auth header and verify user
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
 
-    // Get the user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
+      console.error("Authentication error:", userError);
       throw new Error('Unauthorized');
     }
 
-    console.log("Function invoked - starting execution");
+    console.log("User authenticated:", user.id);
     
     const { questionnaire } = await req.json();
     console.log("Received questionnaire:", questionnaire);
@@ -128,8 +128,7 @@ serve(async (req) => {
     console.log("Returning successful response");
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+      
 
   } catch (error) {
     console.error("Error in generate-brand-identity:", error);
@@ -138,7 +137,7 @@ serve(async (req) => {
       details: error.toString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
+      status: error.message === 'Unauthorized' ? 401 : 500,
     });
   }
 });
