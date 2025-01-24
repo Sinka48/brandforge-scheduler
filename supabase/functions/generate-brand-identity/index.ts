@@ -47,26 +47,27 @@ serve(async (req) => {
   }
 
   try {
-    // Validate request body exists
-    if (!req.body) {
-      throw new Error('Request body is required');
+    // Parse and validate request body
+    const requestBody = await req.json();
+    console.log("Received request body:", requestBody);
+
+    if (!requestBody) {
+      throw new Error("Request body is required");
     }
 
-    const { questionnaire } = await req.json();
-    console.log('Received questionnaire data:', questionnaire);
+    const { questionnaire } = requestBody;
+    console.log("Extracted questionnaire:", questionnaire);
 
-    // Validate questionnaire data
-    if (!questionnaire) {
-      throw new Error('Questionnaire object is required');
+    if (!questionnaire || typeof questionnaire !== 'object') {
+      throw new Error("Questionnaire object is required and must be an object");
     }
 
-    if (!questionnaire.business_name || !questionnaire.industry || !questionnaire.brand_personality) {
-      console.error('Invalid questionnaire data:', questionnaire);
-      throw new Error('Questionnaire data is incomplete. Required fields: business_name, industry, and brand_personality');
-    }
-
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key is not configured');
+    // Validate required questionnaire fields
+    const requiredFields = ['business_name', 'industry', 'brand_personality'];
+    for (const field of requiredFields) {
+      if (!questionnaire[field]) {
+        throw new Error(`Missing required field: ${field}`);
+      }
     }
 
     // Generate brand identity using OpenAI
@@ -78,7 +79,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
