@@ -10,6 +10,7 @@ import BrandListPage from "./pages/BrandList";
 import HowItWorksPage from "./pages/HowItWorks";
 import DraftsPage from "./pages/Drafts";
 import { Session } from "@supabase/supabase-js";
+import BrandGeneratorPage from "./pages/BrandGenerator";
 
 interface RoutesProps {
   session: Session | null;
@@ -20,6 +21,10 @@ export function Routes({ session }: RoutesProps) {
     {
       path: "/",
       element: <IndexPage session={session} />,
+      errorElement: <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Oops! Something went wrong</h2>
+        <p className="text-muted-foreground">Please try again or contact support if the problem persists.</p>
+      </div>
     },
     {
       path: "/calendar",
@@ -36,6 +41,10 @@ export function Routes({ session }: RoutesProps) {
     {
       path: "/brands",
       element: <BrandsPage session={session} />,
+    },
+    {
+      path: "/brand/new",
+      element: <BrandGeneratorPage session={session} />,
     },
     {
       path: "/brand/:id",
@@ -60,10 +69,6 @@ export function Routes({ session }: RoutesProps) {
     {
       path: "/brand-identity",
       element: <BrandIdentityPage session={session} />,
-      errorElement: <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Oops! Something went wrong</h2>
-        <p className="text-muted-foreground">Please try again or contact support if the problem persists.</p>
-      </div>
     },
   ]);
 }
