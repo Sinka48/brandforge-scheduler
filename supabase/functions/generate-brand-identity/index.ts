@@ -13,16 +13,11 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      console.log(`Making OpenAI request to ${url}, attempt ${attempt}`);
       const response = await fetch(url, options);
       
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After') || attempt * 2;
-        console.log(`Rate limited. Waiting ${retryAfter} seconds before retry ${attempt}/${maxRetries}`);
-        await delay(parseInt(retryAfter) * 1000);
-        continue;
-      }
-
       if (!response.ok) {
+        console.error(`OpenAI API error: ${response.status}`, await response.text());
         throw new Error(`OpenAI API error: ${response.status}`);
       }
 
@@ -43,54 +38,15 @@ serve(async (req) => {
   try {
     console.log("Function invoked - starting execution");
     
-    const { generateNameOnly, questionnaire } = await req.json();
-    console.log("Request params:", { generateNameOnly, questionnaire });
+    const { questionnaire } = await req.json();
+    console.log("Received questionnaire:", questionnaire);
 
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) {
       throw new Error("OpenAI API key not found");
     }
 
-    // Handle name generation only
-    if (generateNameOnly) {
-      console.log("Generating business name only...");
-      
-      const namePrompt = `Generate a creative and memorable business name. Return ONLY the name, no additional text or explanation.`;
-
-      const nameData = await makeOpenAIRequest(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'You are a business name generator. Return only the name, no additional text.' },
-              { role: 'user', content: namePrompt }
-            ],
-            temperature: 0.7,
-          }),
-        }
-      );
-
-      const generatedName = nameData.choices[0]?.message?.content?.trim();
-      
-      if (!generatedName) {
-        throw new Error("Failed to generate business name");
-      }
-
-      return new Response(
-        JSON.stringify({
-          metadata: { name: generatedName }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Use either provided or default attributes for full brand generation
+    // Use either provided or default attributes
     const finalBusinessName = questionnaire.business_name || "AI Generated Brand";
     const finalIndustry = questionnaire.industry || "General";
     const finalPersonality = questionnaire.brand_personality || [];
@@ -143,10 +99,9 @@ serve(async (req) => {
     }
 
     // Generate logo using DALL-E
-    const logoPrompt = `Create a simple logo for ${finalIndustry} business. Minimal design with clean shapes on white background. No text.`;
+    const logoPrompt = `Create a minimalist logo for a ${finalIndustry} business. Simple, clean design with basic shapes. White background. No text.`;
     
-    console.log("Sending request to DALL-E with prompt:", logoPrompt);
-
+    console.log("Sending logo generation request to DALL-E");
     const logoData = await makeOpenAIRequest(
       'https://api.openai.com/v1/images/generations',
       {
@@ -190,7 +145,7 @@ serve(async (req) => {
         story: brandContent.brandStory,
         colors: defaultColors,
         socialAssets: {
-          profileImage: "",
+          profileImage: logoUrl,
           coverImage: "",
         },
         isAiGenerated: questionnaire.is_ai_generated,
