@@ -5,9 +5,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 interface ColorPaletteCardProps {
   colors: string[];
   onCustomize?: (colors: string[]) => void;
+  showFullDisplay?: boolean;
 }
 
-export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps) {
+export function ColorPaletteCard({ 
+  colors, 
+  onCustomize,
+  showFullDisplay = false 
+}: ColorPaletteCardProps) {
   const handleColorChange = (index: number, newColor: string) => {
     if (onCustomize && colors) {
       const updatedColors = [...colors];
@@ -26,7 +31,7 @@ export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps)
       </CardHeader>
       <CardContent>
         {colors ? (
-          <div className="grid grid-cols-5 gap-2">
+          <div className={`grid ${showFullDisplay ? 'grid-cols-3 md:grid-cols-5' : 'grid-cols-5'} gap-2`}>
             {colors.map((color, index) => (
               <div key={index} className="space-y-2">
                 <Popover>
@@ -46,6 +51,14 @@ export function ColorPaletteCard({ colors, onCustomize }: ColorPaletteCardProps)
                   </PopoverContent>
                 </Popover>
                 <p className="text-xs text-center font-mono">{color}</p>
+                {showFullDisplay && (
+                  <div className="space-y-2">
+                    <div className="text-xs text-center">
+                      <p>RGB: {color}</p>
+                      <p>HEX: {color}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
