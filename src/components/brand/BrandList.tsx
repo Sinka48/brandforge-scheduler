@@ -24,19 +24,19 @@ export function BrandList({
           <div
             key={brand.id}
             className={cn(
-              "group relative cursor-pointer rounded-full border transition-all hover:shadow-md",
+              "group relative cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md",
               selectedBrand?.id === brand.id
                 ? "border-[#9b87f5] bg-[#9b87f5]/10"
                 : "hover:border-[#7E69AB]"
             )}
             onClick={() => onSelectBrand(brand)}
           >
-            <div className="flex items-center space-x-2 px-4 py-2">
-              <div className="relative h-8 w-8">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="relative">
                 <img
                   src={brand.url}
-                  alt={`Brand v${brand.version}`}
-                  className="h-full w-full rounded-full object-cover"
+                  alt={brand.metadata.name || `Brand v${brand.version}`}
+                  className="h-16 w-16 rounded-full object-cover"
                 />
                 {selectedBrand?.id === brand.id && (
                   <div className="absolute -right-1 -top-1 rounded-full bg-[#9b87f5] p-0.5">
@@ -44,7 +44,10 @@ export function BrandList({
                   </div>
                 )}
               </div>
-              <span className="font-medium">v{brand.version}</span>
+              <div className="text-center">
+                <h3 className="font-medium">{brand.metadata.name || "Untitled"}</h3>
+                <p className="text-sm text-muted-foreground">v{brand.version}</p>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"

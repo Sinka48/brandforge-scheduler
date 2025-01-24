@@ -1,9 +1,7 @@
 import { Brand } from "@/types/brand";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import { FacebookPreview } from "@/components/calendar/post-dialog/platform-previews/FacebookPreview";
-import { LinkedinPreview } from "@/components/calendar/post-dialog/platform-previews/LinkedinPreview";
+import { RefreshCw, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface BrandSocialPreviewProps {
   brand: Brand;
@@ -12,77 +10,71 @@ interface BrandSocialPreviewProps {
 
 export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPreviewProps) {
   const socialAssets = brand.metadata.socialAssets || {};
+  const platforms = [
+    { id: 'twitter', name: 'Twitter', icon: Twitter },
+    { id: 'facebook', name: 'Facebook', icon: Facebook },
+    { id: 'instagram', name: 'Instagram', icon: Instagram },
+    { id: 'linkedin', name: 'LinkedIn', icon: Linkedin },
+  ];
   
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Profile Image</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onRegenerateAsset?.('profile')}
+    <Tabs defaultValue="twitter" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        {platforms.map((platform) => (
+          <TabsTrigger 
+            key={platform.id}
+            value={platform.id} 
             className="flex items-center gap-2"
           >
-            <RefreshCw className="h-4 w-4" />
-            Regenerate
-          </Button>
-        </div>
-        <img
-          src={socialAssets.profileImage}
-          alt="Profile"
-          className="h-32 w-32 rounded-full object-cover border"
-        />
-      </div>
+            <platform.icon className="h-4 w-4" />
+            {platform.name}
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Cover Image</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onRegenerateAsset?.('cover')}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Regenerate
-          </Button>
-        </div>
-        <img
-          src={socialAssets.coverImage}
-          alt="Cover"
-          className="w-full h-48 rounded-lg object-cover border"
-        />
-      </div>
+      {platforms.map((platform) => (
+        <TabsContent key={platform.id} value={platform.id} className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Profile Image</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onRegenerateAsset?.(`${platform.id}_profile`)}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Regenerate
+              </Button>
+            </div>
+            <img
+              src={socialAssets[`${platform.id}ProfileImage`] || socialAssets.profileImage}
+              alt={`${platform.name} Profile`}
+              className="h-32 w-32 rounded-full object-cover border"
+            />
+          </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Platform Previews</h3>
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Facebook Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FacebookPreview
-                content={brand.social_bio || brand.metadata.socialBio || ""}
-                imageUrl={socialAssets.profileImage}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">LinkedIn Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LinkedinPreview
-                content={brand.social_bio || brand.metadata.socialBio || ""}
-                imageUrl={socialAssets.profileImage}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Cover Image</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onRegenerateAsset?.(`${platform.id}_cover`)}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Regenerate
+              </Button>
+            </div>
+            <img
+              src={socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage}
+              alt={`${platform.name} Cover`}
+              className="w-full h-48 rounded-lg object-cover border"
+            />
+          </div>
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 }

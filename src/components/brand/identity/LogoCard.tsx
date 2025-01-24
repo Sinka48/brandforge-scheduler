@@ -1,29 +1,24 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Image as ImageIcon, Download } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LogoCardProps {
   logoUrl: string;
   onDownload?: () => void;
   onCustomize?: () => void;
+  compact?: boolean;
 }
 
-export function LogoCard({ logoUrl, onDownload, onCustomize }: LogoCardProps) {
+export function LogoCard({ logoUrl, onDownload, onCustomize, compact = false }: LogoCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ImageIcon className="h-5 w-5" />
-          Logo Concept
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className={compact ? "border-0 shadow-none" : undefined}>
+      <CardContent className={compact ? "px-0" : undefined}>
         {logoUrl ? (
           <div className="space-y-4">
             <img
               src={logoUrl}
               alt="Generated logo concept"
-              className="w-full rounded-lg border"
+              className="w-full max-w-[200px] rounded-lg border mx-auto"
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={onCustomize}>

@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Image as ImageIcon, Share2 } from "lucide-react";
+import { Eye, Share2, RefreshCw } from "lucide-react";
 import { LogoCard } from "./LogoCard";
 import { BrandSocialPreview } from "./BrandSocialPreview";
 import { Brand } from "@/types/brand";
+import { Button } from "@/components/ui/button";
 
 interface BrandReviewSectionProps {
   brandName?: string;
@@ -24,14 +25,10 @@ export function BrandReviewSection({
 }: BrandReviewSectionProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-8">
+      <TabsList className="grid w-full grid-cols-2 mb-8">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <Eye className="h-4 w-4" />
           Overview
-        </TabsTrigger>
-        <TabsTrigger value="logo" className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4" />
-          Logo
         </TabsTrigger>
         <TabsTrigger value="assets" className="flex items-center gap-2">
           <Share2 className="h-4 w-4" />
@@ -51,21 +48,28 @@ export function BrandReviewSection({
                 {brand?.metadata?.socialBio || "Add a social media bio to describe your brand"}
               </p>
             </div>
-            <LogoCard
-              logoUrl={logoUrl}
-              onCustomize={onLogoCustomize}
-              onDownload={onDownload}
-            />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Logo Concept</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onRegenerateAsset?.('logo')}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Regenerate
+                </Button>
+              </div>
+              <LogoCard
+                logoUrl={logoUrl}
+                onCustomize={onLogoCustomize}
+                onDownload={onDownload}
+                compact
+              />
+            </div>
           </CardContent>
         </Card>
-      </TabsContent>
-
-      <TabsContent value="logo">
-        <LogoCard
-          logoUrl={logoUrl}
-          onCustomize={onLogoCustomize}
-          onDownload={onDownload}
-        />
       </TabsContent>
 
       <TabsContent value="assets">
