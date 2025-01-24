@@ -12,6 +12,7 @@ interface BrandIdentity {
       profileImage?: string;
       coverImage?: string;
     };
+    colors?: string[];
   };
   logoUrl: string;
 }
