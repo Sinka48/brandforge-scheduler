@@ -5,8 +5,8 @@ import { ColorPaletteCard } from "./ColorPaletteCard";
 import { TypographyCard } from "./TypographyCard";
 import { LogoCard } from "./LogoCard";
 import { LogoGuidelinesCard } from "./LogoGuidelinesCard";
-import { FacebookPreview } from "../../calendar/post-dialog/platform-previews/FacebookPreview";
-import { LinkedinPreview } from "../../calendar/post-dialog/platform-previews/LinkedinPreview";
+import { BrandSocialPreview } from "./BrandSocialPreview";
+import { Brand } from "@/types/brand";
 
 interface BrandReviewSectionProps {
   brandName?: string;
@@ -18,9 +18,11 @@ interface BrandReviewSectionProps {
     bodyFont: string;
   };
   logoUrl: string;
+  brand?: Brand;
   onColorUpdate?: (colors: string[]) => void;
   onLogoCustomize?: () => void;
   onDownload?: () => void;
+  onRegenerateAsset?: (assetType: string) => void;
 }
 
 export function BrandReviewSection({
@@ -30,9 +32,11 @@ export function BrandReviewSection({
   colors,
   typography,
   logoUrl,
+  brand,
   onColorUpdate,
   onLogoCustomize,
   onDownload,
+  onRegenerateAsset,
 }: BrandReviewSectionProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
@@ -144,22 +148,16 @@ export function BrandReviewSection({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-6">
-              <div>
-                <h4 className="text-sm font-semibold mb-4">Facebook Preview</h4>
-                <FacebookPreview
-                  content={`${brandName}\n${tagline}`}
-                  imageUrl={logoUrl}
-                />
+            {brand ? (
+              <BrandSocialPreview
+                brand={brand}
+                onRegenerateAsset={onRegenerateAsset}
+              />
+            ) : (
+              <div className="text-center text-muted-foreground">
+                No social media assets found. Generate a brand identity first.
               </div>
-              <div>
-                <h4 className="text-sm font-semibold mb-4">LinkedIn Preview</h4>
-                <LinkedinPreview
-                  content={`${brandName}\n${tagline}`}
-                  imageUrl={logoUrl}
-                />
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>

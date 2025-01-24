@@ -130,6 +130,36 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
     onSelectBrand?.(brand);
   };
 
+  const handleRegenerateAsset = async (assetType: string) => {
+    if (!selectedBrand) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-brand-identity', {
+        body: {
+          brandId: selectedBrand.id,
+          regenerateType: assetType,
+        },
+      });
+
+      if (error) throw error;
+
+      // Refresh the brands list to show the updated assets
+      await fetchBrands();
+
+      toast({
+        title: "Success",
+        description: `${assetType} image regenerated successfully`,
+      });
+    } catch (error) {
+      console.error("Error regenerating asset:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate asset. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -175,6 +205,8 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
                   colors={selectedBrand.metadata.colors}
                   typography={selectedBrand.metadata.typography}
                   logoUrl={selectedBrand.url}
+                  brand={selectedBrand}
+                  onRegenerateAsset={handleRegenerateAsset}
                 />
               </CardContent>
             </Card>
