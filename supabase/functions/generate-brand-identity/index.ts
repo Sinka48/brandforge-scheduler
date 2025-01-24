@@ -7,9 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function generateLogoWithDallE(prompt: string) {
+async function generateImage(prompt: string, size: string = "1024x1024") {
   try {
-    console.log("Generating logo with DALL-E, prompt:", prompt);
+    console.log(`Generating image with prompt: ${prompt}, size: ${size}`);
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!openaiKey) {
@@ -24,9 +24,9 @@ async function generateLogoWithDallE(prompt: string) {
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: `${prompt}. Create a minimalist, professional logo. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`,
+        prompt: `${prompt}. Create a minimalist, professional design. Simple, clean design with basic shapes. Pure white background. High contrast, suitable for business use.`,
         n: 1,
-        size: "1024x1024",
+        size: size,
         quality: "standard",
         response_format: "b64_json"
       }),
@@ -43,10 +43,10 @@ async function generateLogoWithDallE(prompt: string) {
       throw new Error("No image data received from DALL-E");
     }
 
-    console.log("Logo generated successfully");
+    console.log("Image generated successfully");
     return `data:image/png;base64,${data.data[0].b64_json}`;
   } catch (error) {
-    console.error("Error in generateLogoWithDallE:", error);
+    console.error("Error in generateImage:", error);
     throw error;
   }
 }
@@ -102,6 +102,33 @@ async function generateBrandContent(businessName: string, industry: string, pers
     console.error("Error in generateBrandContent:", error);
     throw error;
   }
+}
+
+async function generateSocialAssets(businessName: string, industry: string) {
+  const assets = {
+    profileImage: '',
+    coverImage: '',
+    twitterCover: '',
+    facebookCover: '',
+    linkedinCover: '',
+  };
+
+  // Generate profile image (logo)
+  const logoPrompt = `Professional logo for ${businessName}, a ${industry} business`;
+  assets.profileImage = await generateImage(logoPrompt, "1024x1024");
+
+  // Generate cover images for different platforms
+  const coverPrompt = `Modern, professional cover image for ${businessName}, a ${industry} business. Abstract, minimalist design that represents the brand's identity.`;
+  
+  // Generate different sizes for different platforms
+  assets.twitterCover = await generateImage(coverPrompt, "1024x512");
+  assets.facebookCover = await generateImage(coverPrompt, "1024x512");
+  assets.linkedinCover = await generateImage(coverPrompt, "1024x512");
+  
+  // Use one of them as the default cover
+  assets.coverImage = assets.linkedinCover;
+
+  return assets;
 }
 
 serve(async (req) => {
@@ -205,12 +232,8 @@ serve(async (req) => {
       finalTargetAudience
     );
 
-    const logoPrompt = `Professional logo for ${finalBusinessName}, a ${finalIndustry} business`;
-    console.log("Generating logo with DALL-E");
-    const logoUrl = await generateLogoWithDallE(logoPrompt);
-
-    // Select a cover image based on industry and personality
-    const coverImage = "https://images.unsplash.com/photo-1485827404703-89b55fcc595e";
+    console.log("Generating social assets");
+    const socialAssets = await generateSocialAssets(finalBusinessName, finalIndustry);
 
     // Default color palette
     const defaultColors = [
@@ -222,7 +245,7 @@ serve(async (req) => {
     ];
 
     const result = {
-      logoUrl,
+      logoUrl: socialAssets.profileImage,
       metadata: {
         name: finalBusinessName,
         industry: finalIndustry,
@@ -232,8 +255,11 @@ serve(async (req) => {
         story: brandStory,
         colors: defaultColors,
         socialAssets: {
-          profileImage: logoUrl,
-          coverImage: coverImage,
+          profileImage: socialAssets.profileImage,
+          coverImage: socialAssets.coverImage,
+          twitterCover: socialAssets.twitterCover,
+          facebookCover: socialAssets.facebookCover,
+          linkedinCover: socialAssets.linkedinCover,
         },
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
