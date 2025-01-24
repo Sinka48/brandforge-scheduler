@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,11 +35,37 @@ async function generateLogoWithHuggingFace(prompt: string) {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false
+        }
+      }
+    );
+
+    // Set auth header
+    supabaseClient.auth.setSession({
+      access_token: authHeader.replace('Bearer ', ''),
+      refresh_token: '',
+    });
+
     console.log("Function invoked - starting execution");
     
     const { questionnaire } = await req.json();
@@ -92,7 +119,7 @@ serve(async (req) => {
       }
     };
 
-    console.log("Returning successful response:", result);
+    console.log("Returning successful response");
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
