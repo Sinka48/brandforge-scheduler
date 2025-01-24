@@ -1,42 +1,93 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function generateLogoWithHuggingFace(prompt: string) {
+async function generateLogoWithDallE(prompt: string) {
   try {
-    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
-    console.log("Generating logo with prompt:", prompt);
+    console.log("Generating logo with DALL-E, prompt:", prompt);
 
-    const response = await hf.textToImage({
-      inputs: `${prompt}, minimalist design, white background, high contrast, vector style, clean lines`,
-      model: 'stabilityai/stable-diffusion-2',
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: `${prompt}. Create a minimalist, professional logo. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+        response_format: "b64_json"
+      }),
     });
 
-    if (!response) {
-      throw new Error("No response from Hugging Face API");
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`DALL-E API error: ${JSON.stringify(error)}`);
     }
 
-    console.log("Image generation successful, converting to base64");
-    
-    const arrayBuffer = await response.arrayBuffer();
-    if (!arrayBuffer) {
-      throw new Error("Failed to get array buffer from response");
+    const data = await response.json();
+    if (!data.data?.[0]?.b64_json) {
+      throw new Error("No image data received from DALL-E");
     }
 
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    const logoUrl = `data:image/png;base64,${base64}`;
-
-    console.log("Logo generated and converted successfully");
-    return logoUrl;
+    console.log("Logo generated successfully");
+    return `data:image/png;base64,${data.data[0].b64_json}`;
   } catch (error) {
-    console.error("Error in generateLogoWithHuggingFace:", error);
-    throw new Error(`Logo generation failed: ${error.message}`);
+    console.error("Error in generateLogoWithDallE:", error);
+    throw error;
+  }
+}
+
+async function generateBrandContent(businessName: string, industry: string, personality: string[], targetAudience: string) {
+  try {
+    console.log("Generating brand content with GPT-4");
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional brand identity expert. Generate concise, engaging brand content."
+          },
+          {
+            role: "user",
+            content: `Create a brand story and social media bio for a ${industry} business named "${businessName}" with these personality traits: ${personality.join(', ')}. The target audience is ${targetAudience}.`
+          }
+        ],
+        temperature: 0.7
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`GPT API error: ${JSON.stringify(error)}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    // Parse the content to extract story and bio
+    const [story, bio] = content.split('\n\n');
+    
+    return {
+      brandStory: story.replace('Brand Story: ', '').trim(),
+      socialBio: bio.replace('Social Bio: ', '').trim()
+    };
+  } catch (error) {
+    console.error("Error in generateBrandContent:", error);
+    throw error;
   }
 }
 
@@ -89,16 +140,19 @@ serve(async (req) => {
     const finalPersonality = questionnaire.brand_personality || [];
     const finalTargetAudience = questionnaire.target_audience?.primary || "General";
 
-    // Generate brand story and social media bio using simple templates
-    const brandStory = `${finalBusinessName} is a leading provider in the ${finalIndustry} industry, dedicated to delivering exceptional value to our customers. We focus on ${finalPersonality.join(' and ')} while serving ${finalTargetAudience}.`;
-    
-    const socialBio = `Professional ${finalIndustry} services tailored for ${finalTargetAudience}`;
+    // Generate brand content using GPT
+    console.log("Generating brand content");
+    const { brandStory, socialBio } = await generateBrandContent(
+      finalBusinessName,
+      finalIndustry,
+      finalPersonality,
+      finalTargetAudience
+    );
 
-    // Generate logo using Hugging Face
+    // Generate logo using DALL-E
     const logoPrompt = `Professional logo for a ${finalIndustry} business`;
-    
-    console.log("Generating logo with Hugging Face");
-    const logoUrl = await generateLogoWithHuggingFace(logoPrompt);
+    console.log("Generating logo with DALL-E");
+    const logoUrl = await generateLogoWithDallE(logoPrompt);
 
     // Default color palette
     const defaultColors = [
