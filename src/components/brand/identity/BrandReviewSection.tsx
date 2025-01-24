@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Type, Palette, BookOpen, Share2 } from "lucide-react";
+import { Eye, Type, Palette, Image as ImageIcon, Share2, BookOpen } from "lucide-react";
 import { ColorPaletteCard } from "./ColorPaletteCard";
 import { TypographyCard } from "./TypographyCard";
 import { LogoCard } from "./LogoCard";
@@ -10,7 +10,8 @@ import { LinkedinPreview } from "../../calendar/post-dialog/platform-previews/Li
 
 interface BrandReviewSectionProps {
   brandName?: string;
-  socialBio?: string;
+  tagline?: string;
+  brandStory?: string;
   colors: string[];
   typography: {
     headingFont: string;
@@ -24,7 +25,8 @@ interface BrandReviewSectionProps {
 
 export function BrandReviewSection({
   brandName = "Your Brand",
-  socialBio = "Your brand story",
+  tagline = "Your brand tagline",
+  brandStory = "Your brand story",
   colors,
   typography,
   logoUrl,
@@ -60,10 +62,17 @@ export function BrandReviewSection({
       <TabsContent value="overview">
         <div className="grid gap-6">
           <Card>
-            <CardContent className="space-y-4 pt-6">
+            <CardHeader>
+              <CardTitle>Brand Identity Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold">{brandName}</h3>
-                <p className="text-muted-foreground">{socialBio}</p>
+                <p className="text-muted-foreground">{tagline}</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Brand Story</h4>
+                <p className="text-sm text-muted-foreground">{brandStory}</p>
               </div>
             </CardContent>
           </Card>
@@ -82,18 +91,37 @@ export function BrandReviewSection({
       </TabsContent>
 
       <TabsContent value="colors">
-        <ColorPaletteCard
-          colors={colors}
-          onCustomize={onColorUpdate}
-          showFullDisplay
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Color Palette Customization
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ColorPaletteCard
+              colors={colors}
+              onCustomize={onColorUpdate}
+            />
+          </CardContent>
+        </Card>
       </TabsContent>
 
       <TabsContent value="typography">
-        <TypographyCard
-          typography={typography}
-          onCustomize={() => {}}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Type className="h-5 w-5" />
+              Typography System
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TypographyCard
+              typography={typography}
+              onCustomize={(typography) => console.log("Customize typography:", typography)}
+            />
+          </CardContent>
+        </Card>
       </TabsContent>
 
       <TabsContent value="logo">
@@ -109,19 +137,25 @@ export function BrandReviewSection({
 
       <TabsContent value="assets">
         <Card>
-          <CardContent className="pt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              Social Media Assets
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-6">
               <div>
                 <h4 className="text-sm font-semibold mb-4">Facebook Preview</h4>
                 <FacebookPreview
-                  content={`${brandName}\n${socialBio}`}
+                  content={`${brandName}\n${tagline}`}
                   imageUrl={logoUrl}
                 />
               </div>
               <div>
                 <h4 className="text-sm font-semibold mb-4">LinkedIn Preview</h4>
                 <LinkedinPreview
-                  content={`${brandName}\n${socialBio}`}
+                  content={`${brandName}\n${tagline}`}
                   imageUrl={logoUrl}
                 />
               </div>
