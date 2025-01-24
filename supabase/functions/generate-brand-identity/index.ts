@@ -8,6 +8,7 @@ const corsHeaders = {
 
 interface Questionnaire {
   id: string;
+  user_id: string;
   business_name: string;
   industry: string;
   brand_personality?: string[];
@@ -22,6 +23,7 @@ interface Questionnaire {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
