@@ -22,14 +22,14 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
           type: 'profile',
           size: '400x400px',
           recommendation: 'Square image, max 2MB',
-          imageUrl: socialAssets.twitterProfileImage || socialAssets.profileImage,
+          imageUrl: socialAssets.profileImage,
           regenerateType: 'twitter_profile'
         },
         {
           type: 'cover',
           size: '1500x500px',
           recommendation: 'Recommended size for header image',
-          imageUrl: socialAssets.twitterCoverImage || socialAssets.coverImage,
+          imageUrl: socialAssets.coverImage,
           regenerateType: 'twitter_cover'
         }
       ]
@@ -43,14 +43,14 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
           type: 'profile',
           size: '170x170px',
           recommendation: 'Will be cropped to circle',
-          imageUrl: socialAssets.facebookProfileImage || socialAssets.profileImage,
+          imageUrl: socialAssets.profileImage,
           regenerateType: 'facebook_profile'
         },
         {
           type: 'cover',
           size: '820x312px',
           recommendation: 'Cover photo for your page',
-          imageUrl: socialAssets.facebookCoverImage || socialAssets.coverImage,
+          imageUrl: socialAssets.coverImage,
           regenerateType: 'facebook_cover'
         }
       ]
@@ -64,7 +64,7 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
           type: 'profile',
           size: '320x320px',
           recommendation: 'Square image recommended',
-          imageUrl: socialAssets.instagramProfileImage || socialAssets.profileImage,
+          imageUrl: socialAssets.profileImage,
           regenerateType: 'instagram_profile'
         }
       ]
@@ -78,14 +78,14 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
           type: 'profile',
           size: '400x400px',
           recommendation: 'Professional headshot recommended',
-          imageUrl: socialAssets.linkedinProfileImage || socialAssets.profileImage,
+          imageUrl: socialAssets.profileImage,
           regenerateType: 'linkedin_profile'
         },
         {
           type: 'cover',
           size: '1584x396px',
           recommendation: 'Company page banner image',
-          imageUrl: socialAssets.linkedinCoverImage || socialAssets.coverImage,
+          imageUrl: socialAssets.coverImage,
           regenerateType: 'linkedin_cover'
         }
       ]
@@ -142,15 +142,17 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
                     </Button>
                   </div>
                 </div>
-                <img
-                  src={asset.imageUrl}
-                  alt={`${platform.name} ${asset.type}`}
-                  className={`border shadow-sm rounded-lg ${
-                    asset.type === 'profile' 
-                      ? 'h-32 w-32 object-cover rounded-full' 
-                      : 'w-full h-[200px] object-cover'
-                  }`}
-                />
+                {asset.imageUrl && (
+                  <img
+                    src={asset.imageUrl}
+                    alt={`${platform.name} ${asset.type}`}
+                    className={`border shadow-sm rounded-lg ${
+                      asset.type === 'profile' 
+                        ? 'h-32 w-32 object-cover rounded-full' 
+                        : 'w-full h-[200px] object-cover'
+                    }`}
+                  />
+                )}
                 {asset !== platform.assets[platform.assets.length - 1] && (
                   <Separator className="my-4" />
                 )}
