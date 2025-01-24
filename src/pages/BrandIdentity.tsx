@@ -1,7 +1,6 @@
 import { Layout } from "@/components/layout/Layout";
 import { Session } from "@supabase/supabase-js";
 import { useBrandIdentity } from "@/hooks/useBrandIdentity";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { BrandIdentityHeader } from "@/components/brand/identity/BrandIdentityHeader";
@@ -16,15 +15,16 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     loading,
     saving,
     generating,
+    deleting,
     brandIdentity,
     generateBrandIdentity,
     saveBrandAssets,
+    deleteBrandIdentity,
   } = useBrandIdentity();
   const navigate = useNavigate();
 
   const handleSave = async () => {
     await saveBrandAssets();
-    // Redirect to brands page with success indicator
     navigate("/brand?tab=library&brandCreated=true");
   };
 
@@ -42,11 +42,13 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
     <Layout session={session}>
       <div className="container mx-auto max-w-5xl space-y-8 p-8">
         <BrandIdentityHeader
-          brandName={brandIdentity?.metadata?.name}
+          brandExists={!!brandIdentity}
           onSave={handleSave}
-          onRegenerate={generateBrandIdentity}
-          saving={saving}
-          generating={generating}
+          onGenerate={generateBrandIdentity}
+          onDelete={deleteBrandIdentity}
+          isSaving={saving}
+          isGenerating={generating}
+          isDeleting={deleting}
         />
 
         {brandIdentity && (
