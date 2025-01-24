@@ -13,6 +13,7 @@ import { BusinessInfoSection } from "./questionnaire/BusinessInfoSection"
 import { BrandAttributesSection } from "./questionnaire/BrandAttributesSection"
 
 const formSchema = z.object({
+  businessName: z.string().optional(),
   industry: z.string().optional(),
   brandPersonality: z.array(z.string()).optional(),
   targetAudience: z.string().optional(),
@@ -27,6 +28,7 @@ export function BrandQuestionnaireForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      businessName: "",
       industry: "",
       brandPersonality: [],
       targetAudience: "",
@@ -57,7 +59,7 @@ export function BrandQuestionnaireForm() {
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: "AI Generated Brand",
+          business_name: values.businessName || "AI Generated Brand",
           industry: values.industry || "General",
           description: "AI Generated Brand",
           brand_personality: values.brandPersonality || [],
