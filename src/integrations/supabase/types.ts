@@ -16,7 +16,9 @@ export type Database = {
           created_at: string
           id: string
           metadata: Json | null
+          platform_sizes: Json | null
           questionnaire_id: string
+          regeneration_type: string | null
           social_asset_type: string | null
           social_bio: string | null
           social_name: string | null
@@ -30,7 +32,9 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json | null
+          platform_sizes?: Json | null
           questionnaire_id: string
+          regeneration_type?: string | null
           social_asset_type?: string | null
           social_bio?: string | null
           social_name?: string | null
@@ -44,7 +48,9 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json | null
+          platform_sizes?: Json | null
           questionnaire_id?: string
+          regeneration_type?: string | null
           social_asset_type?: string | null
           social_bio?: string | null
           social_name?: string | null
@@ -104,6 +110,7 @@ export type Database = {
         Row: {
           ai_generated_parameters: Json | null
           brand_personality: string[]
+          brand_story: string | null
           business_name: string
           color_preferences: string[]
           created_at: string
@@ -111,6 +118,7 @@ export type Database = {
           id: string
           industry: string
           is_ai_generated: boolean | null
+          social_bio: string | null
           target_audience: Json
           updated_at: string
           user_id: string
@@ -119,6 +127,7 @@ export type Database = {
         Insert: {
           ai_generated_parameters?: Json | null
           brand_personality?: string[]
+          brand_story?: string | null
           business_name: string
           color_preferences?: string[]
           created_at?: string
@@ -126,6 +135,7 @@ export type Database = {
           id?: string
           industry: string
           is_ai_generated?: boolean | null
+          social_bio?: string | null
           target_audience?: Json
           updated_at?: string
           user_id: string
@@ -134,6 +144,7 @@ export type Database = {
         Update: {
           ai_generated_parameters?: Json | null
           brand_personality?: string[]
+          brand_story?: string | null
           business_name?: string
           color_preferences?: string[]
           created_at?: string
@@ -141,6 +152,7 @@ export type Database = {
           id?: string
           industry?: string
           is_ai_generated?: boolean | null
+          social_bio?: string | null
           target_audience?: Json
           updated_at?: string
           user_id?: string

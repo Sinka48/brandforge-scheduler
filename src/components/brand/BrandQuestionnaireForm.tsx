@@ -24,7 +24,7 @@ const formSchema = z.object({
   targetAudience: z.string().optional(),
   socialBio: z.string().max(160, "Social bio must be less than 160 characters").optional(),
   brandStory: z.string().max(500, "Brand story must be less than 500 characters").optional(),
-  colorPreferences: z.array(z.string()).optional(),
+  colorPreferences: z.array(z.string()).max(5, "Maximum 5 colors allowed").optional(),
 })
 
 export function BrandQuestionnaireForm() {
@@ -78,6 +78,8 @@ export function BrandQuestionnaireForm() {
           target_audience: values.targetAudience ? { primary: values.targetAudience } : {},
           color_preferences: values.colorPreferences || [],
           is_ai_generated: !values.businessName && !values.industry && (!values.brandPersonality || values.brandPersonality.length === 0),
+          social_bio: values.socialBio || null,
+          brand_story: values.brandStory || null,
           ai_generated_parameters: {
             socialBio: values.socialBio,
             brandStory: values.brandStory,
@@ -111,7 +113,6 @@ export function BrandQuestionnaireForm() {
 
       console.log("Received brand data:", brandData);
 
-      // Save the brand asset
       const { error: assetError } = await supabase
         .from("brand_assets")
         .insert({
@@ -128,8 +129,7 @@ export function BrandQuestionnaireForm() {
         throw assetError;
       }
 
-      // Navigate to brand list page
-      navigate("/brands");
+      navigate("/brands?tab=library&brandCreated=true");
       
       toast({
         title: "Brand Generated!",
@@ -293,5 +293,5 @@ export function BrandQuestionnaireForm() {
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

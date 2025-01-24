@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ColorSelectorProps {
   selected: string[];
@@ -7,6 +8,7 @@ interface ColorSelectorProps {
 }
 
 export function ColorSelector({ selected, onSelect }: ColorSelectorProps) {
+  const { toast } = useToast();
   const colorOptions = [
     { name: "Blue", bg: "bg-blue-500" },
     { name: "Green", bg: "bg-green-500" },
@@ -24,6 +26,14 @@ export function ColorSelector({ selected, onSelect }: ColorSelectorProps) {
     if (selected.includes(color)) {
       onSelect(selected.filter((c) => c !== color));
     } else {
+      if (selected.length >= 5) {
+        toast({
+          title: "Color limit reached",
+          description: "You can select up to 5 colors for your brand palette.",
+          variant: "destructive",
+        });
+        return;
+      }
       onSelect([...selected, color]);
     }
   };
