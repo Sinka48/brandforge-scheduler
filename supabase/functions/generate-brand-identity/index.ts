@@ -41,37 +41,19 @@ async function generateImage(prompt: string, size = "1024x1024") {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse and validate request body
-    const requestBody = await req.json();
-    console.log("Received request body:", requestBody);
+    const { questionnaire } = await req.json();
+    console.log("Received questionnaire:", questionnaire);
 
-    if (!requestBody) {
-      throw new Error("Request body is required");
-    }
-
-    const { questionnaire } = requestBody;
-    console.log("Extracted questionnaire:", questionnaire);
-
-    if (!questionnaire || typeof questionnaire !== 'object') {
-      throw new Error("Questionnaire object is required and must be an object");
-    }
-
-    // Validate required questionnaire fields
-    const requiredFields = ['business_name', 'industry', 'brand_personality'];
-    for (const field of requiredFields) {
-      if (!questionnaire[field]) {
-        throw new Error(`Missing required field: ${field}`);
-      }
+    if (!questionnaire || !questionnaire.business_name || !questionnaire.industry || !questionnaire.brand_personality) {
+      throw new Error("Invalid questionnaire data");
     }
 
     // Generate brand identity using OpenAI
-    console.log('Generating brand identity with OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -91,12 +73,13 @@ serve(async (req) => {
             - socialName: a creative and memorable brand name
             - socialBio: a compelling social media bio (max 160 characters)
             - profileImagePrompt: a detailed prompt for generating a profile image
-            - coverImagePrompt: a detailed prompt for generating a cover image
-            Format the response as a valid JSON object with these exact keys.`
+            - coverImagePrompt: a detailed prompt for generating a cover image`
           },
           {
             role: 'user',
-            content: `Generate brand identity for: ${JSON.stringify(questionnaire)}`
+            content: `Generate brand identity for business name: ${questionnaire.business_name}, 
+            industry: ${questionnaire.industry}, 
+            brand personality: ${questionnaire.brand_personality.join(', ')}`
           }
         ],
         response_format: { type: "json_object" }
@@ -104,26 +87,18 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${error}`);
+      throw new Error('Failed to generate brand identity');
     }
 
     const data = await response.json();
-    console.log('OpenAI response:', data);
-    
     const suggestions = JSON.parse(data.choices[0].message.content);
+    console.log("Generated suggestions:", suggestions);
 
-    // Generate profile image using DALL-E
-    console.log('Generating profile image...');
+    // Generate images
     const profileImageUrl = await generateImage(suggestions.profileImagePrompt);
-
-    // Generate cover image using DALL-E
-    console.log('Generating cover image...');
     const coverImageUrl = await generateImage(suggestions.coverImagePrompt, "1792x1024");
 
-    // Store the brand identity assets
-    console.log('Storing brand assets...');
+    // Save brand assets
     const { data: brandAsset, error: brandAssetError } = await supabase
       .from('brand_assets')
       .insert({
@@ -131,56 +106,23 @@ serve(async (req) => {
         questionnaire_id: questionnaire.id,
         asset_type: 'brand_identity',
         url: profileImageUrl,
-        version: 1,
         metadata: {
           colors: suggestions.colors,
           typography: suggestions.typography,
           logoDescription: suggestions.logoDescription,
+          name: suggestions.socialName,
+          socialBio: suggestions.socialBio,
           socialAssets: {
             profileImage: profileImageUrl,
             coverImage: coverImageUrl
-          },
-          socialBio: suggestions.socialBio,
-          name: suggestions.socialName
-        },
-        asset_category: 'brand'
+          }
+        }
       })
       .select()
       .single();
 
     if (brandAssetError) {
-      console.error('Error storing brand assets:', brandAssetError);
       throw brandAssetError;
-    }
-
-    // Store the social media assets
-    console.log('Storing social assets...');
-    const { error: socialAssetsError } = await supabase
-      .from('brand_assets')
-      .insert([
-        {
-          user_id: questionnaire.user_id,
-          questionnaire_id: questionnaire.id,
-          asset_type: 'image',
-          url: profileImageUrl,
-          version: 1,
-          asset_category: 'social',
-          social_asset_type: 'profile'
-        },
-        {
-          user_id: questionnaire.user_id,
-          questionnaire_id: questionnaire.id,
-          asset_type: 'image',
-          url: coverImageUrl,
-          version: 1,
-          asset_category: 'social',
-          social_asset_type: 'cover'
-        }
-      ]);
-
-    if (socialAssetsError) {
-      console.error('Error storing social assets:', socialAssetsError);
-      throw socialAssetsError;
     }
 
     return new Response(
@@ -205,7 +147,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in generate-brand-identity function:', error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
