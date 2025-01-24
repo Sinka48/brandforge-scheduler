@@ -11,7 +11,8 @@ import { Wand2, Loader2 } from "lucide-react"
 import { IndustrySelector } from "./questionnaire/IndustrySelector"
 import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 
 const formSchema = z.object({
   businessName: z.string().optional(),
@@ -135,9 +136,15 @@ export function BrandQuestionnaireForm() {
     }
   }
 
+  const selectedPersonality = form.watch("brandPersonality") || []
+  const selectedIndustry = form.watch("industry")
+
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardHeader>
+        <CardTitle>Brand Generator</CardTitle>
+      </CardHeader>
+      <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
@@ -154,20 +161,34 @@ export function BrandQuestionnaireForm() {
               <h3 className="text-lg font-medium">Industry (Optional)</h3>
               <div>
                 <IndustrySelector
-                  selected={form.watch("industry")}
+                  selected={selectedIndustry}
                   onSelect={(industry) => form.setValue("industry", industry)}
                 />
               </div>
+              {selectedIndustry && (
+                <div className="mt-2">
+                  <Badge variant="secondary">{selectedIndustry}</Badge>
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Brand Personality (Optional)</h3>
               <div>
                 <PersonalitySelector
-                  selected={form.watch("brandPersonality") || []}
+                  selected={selectedPersonality}
                   onSelect={(traits) => form.setValue("brandPersonality", traits)}
                 />
               </div>
+              {selectedPersonality.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedPersonality.map((trait, index) => (
+                    <Badge key={index} variant="secondary">
+                      {trait}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end">
