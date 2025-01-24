@@ -36,7 +36,7 @@ export function BrandList({
               <div className="relative">
                 <img
                   src={brand.url}
-                  alt={brand.metadata.name || `Brand v${brand.version}`}
+                  alt={brand.metadata.name || "Untitled Brand"}
                   className="h-20 w-20 rounded-full object-cover border-2 border-white shadow-sm"
                 />
                 {selectedBrand?.id === brand.id && (
@@ -49,7 +49,6 @@ export function BrandList({
                 <h3 className="text-lg font-semibold">
                   {brand.metadata.name || "Untitled Brand"}
                 </h3>
-                <p className="text-sm text-muted-foreground">Version {brand.version}</p>
               </div>
               <div className="flex gap-2">
                 <Button

@@ -4,6 +4,7 @@ import { LogoCard } from "./LogoCard";
 import { BrandSocialPreview } from "./BrandSocialPreview";
 import { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 interface BrandReviewSectionProps {
   brandName?: string;
@@ -29,15 +30,26 @@ export function BrandReviewSection({
           <CardTitle>Brand Identity Overview</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold">{brand?.metadata?.name || brandName}</h3>
-            <p className="text-muted-foreground">
-              {brand?.metadata?.socialBio || "Add a social media bio to describe your brand"}
-            </p>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-xl font-semibold mb-2">{brand?.metadata?.name || brandName}</h3>
+              <p className="text-muted-foreground">
+                {brand?.metadata?.socialBio || "Add a social media bio to describe your brand"}
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Brand Story</h4>
+              <p className="text-muted-foreground">
+                {brand?.metadata?.story || "Share your brand's story and journey"}
+              </p>
+            </div>
           </div>
+
+          <Separator />
+          
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Logo</h3>
+              <h3 className="text-lg font-semibold">Brand Logo</h3>
               <Button
                 variant="outline"
                 size="sm"
@@ -55,6 +67,8 @@ export function BrandReviewSection({
               compact
             />
           </div>
+          
+          <Separator />
           
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Social Media Assets</h3>
