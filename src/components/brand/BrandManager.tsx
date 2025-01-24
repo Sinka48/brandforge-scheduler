@@ -60,18 +60,24 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
 
   const fetchBrands = async () => {
     try {
+      console.log("Fetching brands...");
       const { data, error } = await supabase
         .from("brand_assets")
         .select("*")
         .eq("asset_type", "logo")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+
+      console.log("Fetched brands data:", data);
 
       const transformedBrands: Brand[] = (data || []).map((item: BrandAsset) => ({
         id: item.id,
         url: item.url,
-        metadata: item.metadata as Brand['metadata'],
+        metadata: item.metadata || {},
         version: item.version || 1,
         created_at: item.created_at,
         asset_type: item.asset_type,
@@ -83,6 +89,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
         social_bio: item.social_bio
       }));
 
+      console.log("Transformed brands:", transformedBrands);
       setBrands(transformedBrands);
     } catch (error) {
       console.error("Error fetching brands:", error);
