@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +27,7 @@ serve(async (req) => {
       throw new Error("No questionnaire data provided");
     }
 
-    const openAiKey = Deno.env.get("OPENAI_API_KEY");
+    const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) {
       throw new Error("OpenAI API key not found");
     }
@@ -147,7 +146,7 @@ serve(async (req) => {
         brandPersonality: questionnaire.brand_personality,
         targetAudience: questionnaire.target_audience?.primary,
         socialBio: "Professional " + questionnaire.industry + " services tailored to your needs",
-        colors: colors,
+        colors,
         socialAssets: {
           profileImage: profileImageUrl,
           coverImage: coverImageUrl,
