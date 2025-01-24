@@ -8,9 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper function to add delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 async function generateLogoWithHuggingFace(prompt: string) {
   try {
     const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
