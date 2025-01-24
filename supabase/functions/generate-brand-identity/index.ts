@@ -46,14 +46,33 @@ serve(async (req) => {
   }
 
   try {
-    const { questionnaire } = await req.json();
-    console.log("Received questionnaire:", questionnaire);
-
-    if (!questionnaire || !questionnaire.business_name || !questionnaire.industry || !questionnaire.brand_personality) {
-      throw new Error("Invalid questionnaire data");
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
     }
 
-    // Generate brand identity using OpenAI
+    const { questionnaire } = await req.json();
+    console.log("Received questionnaire data:", questionnaire);
+
+    if (!questionnaire || typeof questionnaire !== 'object') {
+      throw new Error('Invalid questionnaire data format');
+    }
+
+    // Validate required fields
+    const requiredFields = ['business_name', 'industry', 'brand_personality'];
+    for (const field of requiredFields) {
+      if (!questionnaire[field]) {
+        console.error(`Missing required field: ${field}`);
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+
+    // Validate brand_personality is an array
+    if (!Array.isArray(questionnaire.brand_personality)) {
+      console.error('brand_personality must be an array');
+      throw new Error('brand_personality must be an array');
+    }
+
+    console.log('Generating brand identity with OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -77,9 +96,9 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Generate brand identity for business name: ${questionnaire.business_name}, 
-            industry: ${questionnaire.industry}, 
-            brand personality: ${questionnaire.brand_personality.join(', ')}`
+            content: `Generate brand identity for business name: "${questionnaire.business_name}", 
+            industry: "${questionnaire.industry}", 
+            brand personality: ${JSON.stringify(questionnaire.brand_personality)}`
           }
         ],
         response_format: { type: "json_object" }
@@ -87,16 +106,25 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate brand identity');
+      const error = await response.text();
+      console.error('OpenAI API error:', error);
+      throw new Error(`OpenAI API error: ${error}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
+    
     const suggestions = JSON.parse(data.choices[0].message.content);
-    console.log("Generated suggestions:", suggestions);
+    console.log('Parsed suggestions:', suggestions);
 
     // Generate images
+    console.log('Generating profile image...');
     const profileImageUrl = await generateImage(suggestions.profileImagePrompt);
+    console.log('Profile image generated:', profileImageUrl);
+
+    console.log('Generating cover image...');
     const coverImageUrl = await generateImage(suggestions.coverImagePrompt, "1792x1024");
+    console.log('Cover image generated:', coverImageUrl);
 
     // Save brand assets
     const { data: brandAsset, error: brandAssetError } = await supabase
@@ -122,32 +150,17 @@ serve(async (req) => {
       .single();
 
     if (brandAssetError) {
+      console.error('Error saving brand asset:', brandAssetError);
       throw brandAssetError;
     }
 
     return new Response(
-      JSON.stringify({
-        colors: suggestions.colors,
-        typography: suggestions.typography,
-        logoUrl: profileImageUrl,
-        metadata: {
-          name: suggestions.socialName,
-          socialBio: suggestions.socialBio,
-          socialAssets: {
-            profileImage: profileImageUrl,
-            coverImage: coverImageUrl
-          }
-        }
-      }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+      JSON.stringify(brandAsset),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in generate-brand-identity function:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
@@ -155,10 +168,7 @@ serve(async (req) => {
       }),
       { 
         status: 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
