@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -131,8 +132,51 @@ serve(async (req) => {
 
     console.log("User authenticated:", user.id);
     
-    const { questionnaire } = await req.json();
-    console.log("Received questionnaire:", questionnaire);
+    const { questionnaire, generateNameOnly } = await req.json();
+    console.log("Received request data:", { questionnaire, generateNameOnly });
+
+    if (generateNameOnly) {
+      // Generate only a business name using GPT-4
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are a creative business naming expert. Generate unique, memorable business names."
+            },
+            {
+              role: "user",
+              content: "Generate a unique and creative business name. The name should be memorable, easy to pronounce, and suitable for a modern business. Return only the name, nothing else."
+            }
+          ],
+          temperature: 0.9
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate business name');
+      }
+
+      const data = await response.json();
+      return new Response(
+        JSON.stringify({
+          metadata: {
+            name: data.choices[0].message.content.trim()
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!questionnaire) {
+      throw new Error('No questionnaire data provided');
+    }
 
     // Use either provided or default attributes
     const finalBusinessName = questionnaire.business_name || "AI Generated Brand";
@@ -150,7 +194,7 @@ serve(async (req) => {
     );
 
     // Generate logo using DALL-E
-    const logoPrompt = `Professional logo for a ${finalIndustry} business`;
+    const logoPrompt = `Professional logo for ${finalBusinessName}, a ${finalIndustry} business`;
     console.log("Generating logo with DALL-E");
     const logoUrl = await generateLogoWithDallE(logoPrompt);
 
