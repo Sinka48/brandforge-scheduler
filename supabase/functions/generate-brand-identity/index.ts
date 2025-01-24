@@ -14,6 +14,8 @@ interface Questionnaire {
   business_name: string;
   industry: string;
   brand_personality: string[];
+  target_audience?: Record<string, any>;
+  is_ai_generated?: boolean;
 }
 
 serve(async (req) => {
@@ -41,7 +43,7 @@ serve(async (req) => {
     const questionnaire = requestData.questionnaire as Questionnaire;
 
     // Validate required fields
-    const requiredFields = ['id', 'user_id', 'business_name', 'industry', 'brand_personality'];
+    const requiredFields = ['id', 'user_id', 'business_name', 'industry'];
     for (const field of requiredFields) {
       if (!questionnaire[field as keyof Questionnaire]) {
         console.error(`Missing required field: ${field}`);
@@ -49,13 +51,25 @@ serve(async (req) => {
       }
     }
 
-    // Validate brand_personality is an array
-    if (!Array.isArray(questionnaire.brand_personality)) {
-      console.error('brand_personality must be an array');
-      throw new Error('brand_personality must be an array');
-    }
+    // Prepare prompt based on questionnaire data
+    const prompt = `Generate a brand identity for:
+    Business Name: "${questionnaire.business_name}"
+    Industry: "${questionnaire.industry}"
+    ${questionnaire.brand_personality?.length ? `Brand Personality: ${questionnaire.brand_personality.join(', ')}` : ''}
+    ${questionnaire.target_audience?.primary ? `Target Audience: ${questionnaire.target_audience.primary}` : ''}
+    
+    Return a complete brand identity including:
+    - A color palette of exactly 5 hex colors that work well together
+    - Typography choices (headingFont and bodyFont) from Google Fonts
+    - A detailed logo description
+    - A creative brand name (if AI generated)
+    - A compelling social media bio (max 160 characters)
+    - Profile image prompt for DALL-E
+    - Cover image prompt for DALL-E`;
 
-    console.log("Generating brand identity with OpenAI...");
+    console.log("Sending prompt to OpenAI:", prompt);
+
+    // Generate brand identity with OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -77,13 +91,7 @@ serve(async (req) => {
             - profileImagePrompt: a detailed prompt for generating a profile image
             - coverImagePrompt: a detailed prompt for generating a cover image`
           },
-          {
-            role: 'user',
-            content: `Generate brand identity for:
-            Business Name: "${questionnaire.business_name}"
-            Industry: "${questionnaire.industry}"
-            Brand Personality: ${JSON.stringify(questionnaire.brand_personality)}`
-          }
+          { role: 'user', content: prompt }
         ],
         response_format: { type: "json_object" }
       }),
@@ -151,6 +159,7 @@ serve(async (req) => {
     const coverImageData = await coverImageResponse.json();
     const coverImageUrl = coverImageData.data[0].url;
 
+    // Prepare response with all brand assets
     const brandAsset = {
       user_id: questionnaire.user_id,
       questionnaire_id: questionnaire.id,
@@ -160,7 +169,7 @@ serve(async (req) => {
         colors: suggestions.colors,
         typography: suggestions.typography,
         logoDescription: suggestions.logoDescription,
-        name: suggestions.socialName,
+        name: questionnaire.is_ai_generated ? suggestions.socialName : questionnaire.business_name,
         socialBio: suggestions.socialBio,
         socialAssets: {
           profileImage: profileImageUrl,
@@ -185,7 +194,7 @@ serve(async (req) => {
       }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
