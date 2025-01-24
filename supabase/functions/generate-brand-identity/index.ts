@@ -50,15 +50,18 @@ serve(async (req) => {
       throw new Error('OpenAI API key is not configured');
     }
 
-    const { questionnaire } = await req.json();
-    console.log("Received questionnaire data:", questionnaire);
+    const requestData = await req.json();
+    console.log("Received request data:", requestData);
 
-    if (!questionnaire || typeof questionnaire !== 'object') {
+    if (!requestData.questionnaire || typeof requestData.questionnaire !== 'object') {
+      console.error("Invalid questionnaire data:", requestData);
       throw new Error('Invalid questionnaire data format');
     }
 
+    const { questionnaire } = requestData;
+
     // Validate required fields
-    const requiredFields = ['business_name', 'industry', 'brand_personality'];
+    const requiredFields = ['business_name', 'industry', 'brand_personality', 'user_id', 'id'];
     for (const field of requiredFields) {
       if (!questionnaire[field]) {
         console.error(`Missing required field: ${field}`);
@@ -96,9 +99,10 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Generate brand identity for business name: "${questionnaire.business_name}", 
-            industry: "${questionnaire.industry}", 
-            brand personality: ${JSON.stringify(questionnaire.brand_personality)}`
+            content: `Generate brand identity for:
+            Business Name: "${questionnaire.business_name}"
+            Industry: "${questionnaire.industry}"
+            Brand Personality: ${JSON.stringify(questionnaire.brand_personality)}`
           }
         ],
         response_format: { type: "json_object" }

@@ -73,16 +73,21 @@ export function BrandQuestionnaireForm() {
         throw new Error("Failed to create questionnaire")
       }
 
-      console.log("Sending questionnaire to generate-brand-identity:", { questionnaire })
+      console.log("Sending questionnaire to edge function:", questionnaire)
 
       // Generate brand identity
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
         "generate-brand-identity",
         {
           body: { 
-            questionnaire,
-            version: 1
-          },
+            questionnaire: {
+              business_name: questionnaire.business_name,
+              industry: questionnaire.industry,
+              brand_personality: questionnaire.brand_personality,
+              user_id: questionnaire.user_id,
+              id: questionnaire.id
+            }
+          }
         }
       )
 
@@ -90,6 +95,8 @@ export function BrandQuestionnaireForm() {
         console.error("Error generating brand:", brandError)
         throw brandError
       }
+
+      console.log("Received brand data:", brandData)
 
       // Navigate to brand identity page for customization
       navigate("/brand-identity")
