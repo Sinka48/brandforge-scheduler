@@ -1,12 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw } from "lucide-react";
-import { LogoCard } from "./LogoCard";
-import { BrandSocialPreview } from "./BrandSocialPreview";
 import { Brand } from "@/types/brand";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { BrandOverviewSection } from "./BrandOverviewSection";
+import { BrandLogoSection } from "./BrandLogoSection";
 import { ColorPaletteCard } from "./ColorPaletteCard";
+import { BrandSocialPreview } from "./BrandSocialPreview";
 
 interface BrandReviewSectionProps {
   brandName?: string;
@@ -33,85 +31,24 @@ export function BrandReviewSection({
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Brand Overview Section */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">{brand?.metadata?.name || brandName}</h3>
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Business & Brand Information */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Industry & Target Market</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Industry</span>
-                      <span className="font-medium">{brand?.metadata?.industry || "Not specified"}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Target Audience</span>
-                      <span className="font-medium">{brand?.metadata?.targetAudience || "Not specified"}</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium mb-2">Brand Personality</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {brand?.metadata?.brandPersonality ? (
-                      Array.isArray(brand.metadata.brandPersonality) ? (
-                        brand.metadata.brandPersonality.map((trait, index) => (
-                          <Badge key={index} variant="secondary">
-                            {trait}
-                          </Badge>
-                        ))
-                      ) : (
-                        <Badge variant="secondary">{brand.metadata.brandPersonality}</Badge>
-                      )
-                    ) : (
-                      <span className="text-sm text-muted-foreground">No personality traits specified</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Brand Story & Bio */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Brand Story</h4>
-                  <p className="text-muted-foreground">
-                    {brand?.metadata?.story || "AI will generate an engaging brand story"}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium mb-2">Social Media Bio</h4>
-                  <p className="text-muted-foreground">
-                    {brand?.metadata?.socialBio || "AI will generate a compelling social media bio"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <BrandOverviewSection
+            brandName={brand?.metadata?.name || brandName}
+            industry={brand?.metadata?.industry}
+            targetAudience={brand?.metadata?.targetAudience}
+            brandPersonality={brand?.metadata?.brandPersonality}
+            story={brand?.metadata?.story}
+            socialBio={brand?.metadata?.socialBio}
+          />
 
           <Separator />
 
           {/* Logo Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Brand Logo</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onRegenerateAsset?.('logo')}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Regenerate
-              </Button>
-            </div>
-            <LogoCard
-              logoUrl={logoUrl}
-              onCustomize={onLogoCustomize}
-              onDownload={onDownload}
-              compact
-            />
-          </div>
+          <BrandLogoSection
+            logoUrl={logoUrl}
+            onRegenerateAsset={onRegenerateAsset}
+            onLogoCustomize={onLogoCustomize}
+            onDownload={onDownload}
+          />
 
           <Separator />
 
@@ -119,18 +56,6 @@ export function BrandReviewSection({
           {brand?.metadata?.colors && (
             <>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Color Palette</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onRegenerateAsset?.('colors')}
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Regenerate
-                  </Button>
-                </div>
                 <ColorPaletteCard colors={brand.metadata.colors} />
               </div>
               <Separator />
