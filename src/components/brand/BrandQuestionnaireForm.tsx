@@ -108,16 +108,16 @@ export function BrandQuestionnaireForm() {
 
       if (assetError) throw assetError;
 
-      // Show success toast and redirect to the brand identity page
+      // Show success toast and redirect to the brands page with library tab
       toast({
         title: isAiGenerated ? "AI Brand Generated!" : "Brand Created!",
         description: isAiGenerated 
-          ? "Your AI-powered brand identity has been created. Let's review it!"
-          : "Your brand identity has been created. Let's review it!",
+          ? "Your AI-powered brand identity has been created. View it in the Brand Library."
+          : "Your brand identity has been created. View it in the Brand Library.",
       });
 
-      // Redirect to the brand identity page with the questionnaire ID
-      navigate(`/brand/${questionnaire.id}/identity`);
+      // Redirect to brands page with library tab and newly created brand ID
+      navigate(`/brands?tab=library&selectedBrand=${questionnaire.id}`);
       
     } catch (error) {
       console.error("Error generating brand:", error);

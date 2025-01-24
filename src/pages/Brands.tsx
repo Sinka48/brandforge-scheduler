@@ -17,6 +17,7 @@ export default function BrandsPage({ session }: BrandsPageProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const defaultTab = searchParams.get("tab") || "generator";
+  const selectedBrandId = searchParams.get("selectedBrand");
 
   useEffect(() => {
     // Show success toast if redirected from brand creation
@@ -26,8 +27,8 @@ export default function BrandsPage({ session }: BrandsPageProps) {
         title: "Brand Created Successfully",
         description: "Your brand has been created. You can view and manage it in the Brand Library.",
       });
-      // Remove the query parameter and switch to library tab
-      navigate("/brand?tab=library", { replace: true });
+      // Remove the query parameter
+      navigate("/brands?tab=library", { replace: true });
     }
   }, [searchParams, navigate, toast]);
 
@@ -73,7 +74,7 @@ export default function BrandsPage({ session }: BrandsPageProps) {
                   View and manage your generated brand identities
                 </p>
               </div>
-              <BrandManager />
+              <BrandManager initialSelectedBrandId={selectedBrandId} />
             </div>
           </TabsContent>
         </Tabs>
