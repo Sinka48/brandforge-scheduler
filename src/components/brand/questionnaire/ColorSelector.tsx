@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ColorSelectorProps {
   selected: string[];
@@ -25,23 +25,25 @@ export function ColorSelector({ selected, onSelect }: ColorSelectorProps) {
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="flex flex-wrap gap-2">
       {colorOptions.map(({ name, bg }) => (
-        <Button
+        <button
           key={name}
-          variant="outline"
-          className={`h-auto py-4 px-4 flex items-center justify-between ${
-            selected.includes(name) ? "ring-2 ring-primary" : ""
-          }`}
           onClick={() => toggleColor(name)}
+          className={cn(
+            "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            "border hover:bg-accent hover:text-accent-foreground",
+            selected.includes(name)
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background border-input"
+          )}
         >
+          {selected.includes(name) && (
+            <Check className="mr-2 h-4 w-4" />
+          )}
           <span>{name}</span>
-          <div className={`w-6 h-6 rounded-full ${bg} ml-2`}>
-            {selected.includes(name) && (
-              <Check className="w-4 h-4 text-white m-1" />
-            )}
-          </div>
-        </Button>
+          <div className={`w-4 h-4 rounded-full ${bg} ml-2`} />
+        </button>
       ))}
     </div>
   );

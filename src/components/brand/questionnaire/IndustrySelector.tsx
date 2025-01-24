@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface IndustrySelectorProps {
   selected: string;
@@ -21,19 +21,24 @@ export function IndustrySelector({ selected, onSelect }: IndustrySelectorProps) 
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+    <div className="flex flex-wrap gap-2">
       {industries.map((industry) => (
-        <Button
+        <button
           key={industry}
-          variant={selected === industry.toLowerCase() ? "default" : "outline"}
-          className="h-auto py-4 px-4 flex items-center justify-center text-center"
           onClick={() => onSelect(industry.toLowerCase())}
+          className={cn(
+            "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            "border hover:bg-accent hover:text-accent-foreground",
+            selected === industry.toLowerCase()
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background border-input"
+          )}
         >
           {selected === industry.toLowerCase() && (
             <Check className="mr-2 h-4 w-4" />
           )}
           {industry}
-        </Button>
+        </button>
       ))}
     </div>
   );

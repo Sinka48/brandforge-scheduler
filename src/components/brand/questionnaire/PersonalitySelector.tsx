@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface PersonalitySelectorProps {
   selected: string[];
@@ -29,17 +29,24 @@ export function PersonalitySelector({ selected, onSelect }: PersonalitySelectorP
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+    <div className="flex flex-wrap gap-2">
       {personalityTraits.map((trait) => (
-        <Button
+        <button
           key={trait}
-          variant={selected.includes(trait) ? "default" : "outline"}
-          className="h-auto py-4 px-4 flex items-center justify-center text-center"
           onClick={() => toggleTrait(trait)}
+          className={cn(
+            "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            "border hover:bg-accent hover:text-accent-foreground",
+            selected.includes(trait)
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background border-input"
+          )}
         >
-          {selected.includes(trait) && <Check className="mr-2 h-4 w-4" />}
+          {selected.includes(trait) && (
+            <Check className="mr-2 h-4 w-4" />
+          )}
           {trait}
-        </Button>
+        </button>
       ))}
     </div>
   );
