@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -73,18 +72,66 @@ serve(async (req) => {
     const finalIndustry = questionnaire.industry || "General";
     const finalPersonality = questionnaire.brand_personality || [];
     const finalTargetAudience = questionnaire.target_audience?.primary || "General";
-    const finalSocialBio = `Professional ${finalIndustry} services tailored to your needs`;
 
-    console.log("Final brand attributes:", {
-      businessName: finalBusinessName,
-      industry: finalIndustry,
-      personality: finalPersonality,
-      targetAudience: finalTargetAudience,
-      socialBio: finalSocialBio,
+    // Generate brand story and social media bio
+    const contentPrompt = `Create a brand identity for ${finalBusinessName} in the ${finalIndustry} industry.
+    Target audience: ${finalTargetAudience}
+    Brand personality: ${finalPersonality.join(', ') || 'professional, modern'}
+    
+    Please provide:
+    1. A compelling brand story (2-3 sentences)
+    2. A catchy social media bio (1 sentence)
+    
+    Format the response as JSON:
+    {
+      "brandStory": "story here",
+      "socialBio": "bio here"
+    }`;
+
+    const contentCompletion = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a brand identity expert. Provide responses in JSON format.' },
+          { role: 'user', content: contentPrompt }
+        ],
+        temperature: 0.7,
+      }),
     });
 
+    if (!contentCompletion.ok) {
+      const errorData = await contentCompletion.text();
+      console.error("OpenAI API error (content):", errorData);
+      throw new Error(`OpenAI API error: ${contentCompletion.status}`);
+    }
+
+    const contentData = await contentCompletion.json();
+    console.log("OpenAI content response:", contentData);
+
+    let brandContent;
+    try {
+      brandContent = JSON.parse(contentData.choices[0].message.content);
+    } catch (error) {
+      console.error("Error parsing content response:", error);
+      brandContent = {
+        brandStory: `${finalBusinessName} is a leading provider of ${finalIndustry} solutions, dedicated to delivering exceptional value to our customers.`,
+        socialBio: `Professional ${finalIndustry} services tailored to your needs`
+      };
+    }
+
     // Generate logo using DALL-E
-    const logoPrompt = `Create a professional, modern logo for ${finalBusinessName} in the ${finalIndustry} industry. The logo should be simple, memorable, and work well at different sizes. Use a clean design with minimal colors.`;
+    const logoPrompt = `Create a professional, modern logo for ${finalBusinessName} in the ${finalIndustry} industry. 
+    Brand personality: ${finalPersonality.join(', ') || 'professional, modern'}. 
+    The logo should be simple, memorable, and work well at different sizes. 
+    Use a clean design with minimal colors. 
+    Make it unique and distinctive.
+    The logo should be centered in the image with ample padding.
+    Use a white or transparent background.`;
     
     console.log("Sending request to DALL-E with prompt:", logoPrompt);
 
@@ -97,7 +144,9 @@ serve(async (req) => {
       body: JSON.stringify({
         prompt: logoPrompt,
         n: 1,
-        size: "512x512",
+        size: "1024x1024",
+        quality: "hd",
+        style: "natural",
       }),
     });
 
@@ -131,7 +180,8 @@ serve(async (req) => {
         industry: finalIndustry,
         brandPersonality: finalPersonality,
         targetAudience: finalTargetAudience,
-        socialBio: finalSocialBio,
+        socialBio: brandContent.socialBio,
+        story: brandContent.brandStory,
         colors: defaultColors,
         socialAssets: {
           profileImage: "",
@@ -139,7 +189,8 @@ serve(async (req) => {
         },
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
-          socialBio: finalSocialBio,
+          socialBio: brandContent.socialBio,
+          brandStory: brandContent.brandStory
         }
       }
     };
