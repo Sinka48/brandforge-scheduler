@@ -10,14 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Wand2, Loader2 } from "lucide-react"
 import { IndustrySelector } from "./questionnaire/IndustrySelector"
 import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
-import { ColorSelector } from "./questionnaire/ColorSelector"
 import { useState } from "react"
 
 const formSchema = z.object({
   businessName: z.string().optional(),
   industry: z.string().optional(),
   brandPersonality: z.array(z.string()).optional().default([]),
-  colorPreferences: z.array(z.string()).optional().default([]),
 })
 
 export function BrandQuestionnaireForm() {
@@ -31,7 +29,6 @@ export function BrandQuestionnaireForm() {
       businessName: "",
       industry: "",
       brandPersonality: [],
-      colorPreferences: [],
     },
   })
 
@@ -60,7 +57,7 @@ export function BrandQuestionnaireForm() {
           industry: values.industry || "",
           description: "", // Empty string as description is no longer used
           brand_personality: values.brandPersonality || [],
-          color_preferences: values.colorPreferences || [],
+          color_preferences: [], // Empty array since we removed color selection
           target_audience: {}, // Simplified, removed detailed targeting
         })
         .select()
@@ -124,14 +121,6 @@ export function BrandQuestionnaireForm() {
           <PersonalitySelector
             selected={form.watch("brandPersonality")}
             onSelect={(traits) => form.setValue("brandPersonality", traits)}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Color Preferences</h3>
-          <ColorSelector
-            selected={form.watch("colorPreferences")}
-            onSelect={(colors) => form.setValue("colorPreferences", colors)}
           />
         </div>
 

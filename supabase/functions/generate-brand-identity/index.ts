@@ -70,7 +70,7 @@ serve(async (req) => {
             role: 'system',
             content: `You are a brand identity expert. Generate a complete brand identity based on the questionnaire data. 
             Return a JSON object with:
-            - colors: array of exactly 5 hex color codes that work well together
+            - colors: array of exactly 5 hex color codes that work well together based on the brand personality
             - typography: object with headingFont and bodyFont (use Google Fonts names)
             - logoDescription: detailed description of a logo that matches the brand
             - socialName: a creative and memorable brand name
