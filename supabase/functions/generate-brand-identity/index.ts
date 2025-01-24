@@ -44,9 +44,9 @@ serve(async (req) => {
     if (questionnaire.is_ai_generated) {
       console.log("Generating AI brand attributes...");
       
-      const attributesPrompt = `Generate brand identity attributes in a valid JSON format with these exact fields:
+      const attributesPrompt = `Generate brand identity attributes as a pure JSON object (no markdown formatting) with these exact fields:
 {
-  "businessName": "a creative business name",
+  "businessName": "a creative and memorable business name",
   "industry": "one of [Technology, Healthcare, Education, Retail, Finance, Entertainment, Food & Beverage, Travel, Real Estate]",
   "brandPersonality": ["trait1", "trait2", "trait3"] (exactly three traits from [Professional, Friendly, Innovative, Traditional, Luxurious, Playful, Minimalist, Bold, Trustworthy, Creative]),
   "targetAudience": "one of [Young Professionals, Parents, Students, Business Owners, Seniors, Tech-Savvy, Luxury Consumers, Budget Shoppers, Health Enthusiasts, Creative Professionals]",
@@ -54,7 +54,7 @@ serve(async (req) => {
   "brandStory": "a brief brand story (max 500 characters)"
 }
 
-Return ONLY the JSON object, no markdown formatting or explanation.`;
+Return ONLY the JSON object with no additional text or formatting.`;
 
       console.log("Sending prompt to OpenAI:", attributesPrompt);
 
@@ -69,7 +69,7 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
           messages: [
             { 
               role: 'system', 
-              content: 'You are a JSON generator that only returns valid JSON objects without any markdown formatting or explanation.' 
+              content: 'You are a JSON generator that only returns valid JSON objects without any markdown or additional formatting.' 
             },
             { role: 'user', content: attributesPrompt }
           ],
@@ -88,7 +88,7 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
 
       try {
         // Clean up any potential markdown formatting
-        const cleanJson = attributesResponse.replace(/```json\n|\n```/g, '').trim();
+        const cleanJson = attributesResponse.replace(/```json\n|\n```|```/g, '').trim();
         console.log("Cleaned JSON string:", cleanJson);
         
         const parsedResponse = JSON.parse(cleanJson);
@@ -116,12 +116,20 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
     }
 
     // Use either provided or AI-generated attributes
-    const finalBusinessName = questionnaire.business_name || brandAttributes.businessName || "AI Generated Brand";
+    const finalBusinessName = questionnaire.is_ai_generated ? 
+                            brandAttributes.businessName : 
+                            (questionnaire.business_name || "AI Generated Brand");
     const finalIndustry = questionnaire.industry || brandAttributes.industry || "General";
-    const finalPersonality = questionnaire.brand_personality?.length ? questionnaire.brand_personality : brandAttributes.brandPersonality || [];
-    const finalTargetAudience = questionnaire.target_audience?.primary || brandAttributes.targetAudience || "General";
-    const finalSocialBio = questionnaire.ai_generated_parameters?.socialBio || brandAttributes.socialBio || `Professional ${finalIndustry} services tailored to your needs`;
-    const finalBrandStory = questionnaire.ai_generated_parameters?.brandStory || brandAttributes.brandStory || "";
+    const finalPersonality = questionnaire.brand_personality?.length ? 
+                            questionnaire.brand_personality : 
+                            brandAttributes.brandPersonality || [];
+    const finalTargetAudience = questionnaire.target_audience?.primary || 
+                               brandAttributes.targetAudience || "General";
+    const finalSocialBio = questionnaire.ai_generated_parameters?.socialBio || 
+                          brandAttributes.socialBio || 
+                          `Professional ${finalIndustry} services tailored to your needs`;
+    const finalBrandStory = questionnaire.ai_generated_parameters?.brandStory || 
+                           brandAttributes.brandStory || "";
 
     console.log("Final brand attributes:", {
       businessName: finalBusinessName,
