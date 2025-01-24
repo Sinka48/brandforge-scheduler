@@ -1,17 +1,20 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+interface Questionnaire {
+  business_name: string;
+  industry: string;
+  brand_personality: string[];
+  user_id: string;
+  id: string;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -29,18 +32,18 @@ serve(async (req) => {
     const requestData = await req.json();
     console.log("Received request data:", requestData);
 
-    // Validate questionnaire data
-    if (!requestData.questionnaire || typeof requestData.questionnaire !== 'object') {
-      console.error("Invalid questionnaire data:", requestData);
-      throw new Error('Invalid questionnaire data format');
+    // Validate questionnaire data structure
+    if (!requestData.questionnaire) {
+      console.error("Missing questionnaire in request data:", requestData);
+      throw new Error('Missing questionnaire data');
     }
 
-    const { questionnaire } = requestData;
+    const questionnaire = requestData.questionnaire as Questionnaire;
 
     // Validate required fields
     const requiredFields = ['business_name', 'industry', 'brand_personality', 'user_id', 'id'];
     for (const field of requiredFields) {
-      if (!questionnaire[field]) {
+      if (!questionnaire[field as keyof Questionnaire]) {
         console.error(`Missing required field: ${field}`);
         throw new Error(`Missing required field: ${field}`);
       }
@@ -98,42 +101,75 @@ serve(async (req) => {
     const suggestions = JSON.parse(data.choices[0].message.content);
     console.log('Parsed suggestions:', suggestions);
 
-    // Generate images
+    // Generate profile image
     console.log('Generating profile image...');
-    const profileImageUrl = await generateImage(suggestions.profileImagePrompt);
-    console.log('Profile image generated:', profileImageUrl);
+    const profileImageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: suggestions.profileImagePrompt,
+        n: 1,
+        size: "1024x1024",
+      }),
+    });
 
-    console.log('Generating cover image...');
-    const coverImageUrl = await generateImage(suggestions.coverImagePrompt, "1792x1024");
-    console.log('Cover image generated:', coverImageUrl);
-
-    // Save brand assets
-    const { data: brandAsset, error: brandAssetError } = await supabase
-      .from('brand_assets')
-      .insert({
-        user_id: questionnaire.user_id,
-        questionnaire_id: questionnaire.id,
-        asset_type: 'brand_identity',
-        url: profileImageUrl,
-        metadata: {
-          colors: suggestions.colors,
-          typography: suggestions.typography,
-          logoDescription: suggestions.logoDescription,
-          name: suggestions.socialName,
-          socialBio: suggestions.socialBio,
-          socialAssets: {
-            profileImage: profileImageUrl,
-            coverImage: coverImageUrl
-          }
-        }
-      })
-      .select()
-      .single();
-
-    if (brandAssetError) {
-      console.error('Error saving brand asset:', brandAssetError);
-      throw brandAssetError;
+    if (!profileImageResponse.ok) {
+      const error = await profileImageResponse.text();
+      console.error('DALL-E API error (profile):', error);
+      throw new Error(`DALL-E API error (profile): ${error}`);
     }
+
+    const profileImageData = await profileImageResponse.json();
+    const profileImageUrl = profileImageData.data[0].url;
+
+    // Generate cover image
+    console.log('Generating cover image...');
+    const coverImageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: suggestions.coverImagePrompt,
+        n: 1,
+        size: "1792x1024",
+      }),
+    });
+
+    if (!coverImageResponse.ok) {
+      const error = await coverImageResponse.text();
+      console.error('DALL-E API error (cover):', error);
+      throw new Error(`DALL-E API error (cover): ${error}`);
+    }
+
+    const coverImageData = await coverImageResponse.json();
+    const coverImageUrl = coverImageData.data[0].url;
+
+    const brandAsset = {
+      user_id: questionnaire.user_id,
+      questionnaire_id: questionnaire.id,
+      asset_type: 'brand_identity',
+      url: profileImageUrl,
+      metadata: {
+        colors: suggestions.colors,
+        typography: suggestions.typography,
+        logoDescription: suggestions.logoDescription,
+        name: suggestions.socialName,
+        socialBio: suggestions.socialBio,
+        socialAssets: {
+          profileImage: profileImageUrl,
+          coverImage: coverImageUrl
+        }
+      }
+    };
+
+    console.log('Generated brand asset:', brandAsset);
 
     return new Response(
       JSON.stringify(brandAsset),
@@ -154,30 +190,3 @@ serve(async (req) => {
     );
   }
 });
-
-async function generateImage(prompt: string, size = "1024x1024") {
-  console.log("Generating image with prompt:", prompt);
-  
-  const response = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: "dall-e-3",
-      prompt,
-      n: 1,
-      size,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    console.error('DALL-E API error:', error);
-    throw new Error(`DALL-E API error: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.data[0].url;
-}
