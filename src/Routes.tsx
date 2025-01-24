@@ -57,5 +57,13 @@ export function Routes({ session }: RoutesProps) {
       path: "/drafts",
       element: <DraftsPage session={session} />,
     },
+    {
+      path: "/brand-identity",
+      element: <BrandIdentityPage session={session} />,
+      errorElement: <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Oops! Something went wrong</h2>
+        <p className="text-muted-foreground">Please try again or contact support if the problem persists.</p>
+      </div>
+    },
   ]);
 }
