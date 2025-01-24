@@ -77,17 +77,17 @@ export function BrandQuestionnaireForm() {
 
       console.log("Sending questionnaire to edge function:", questionnaire)
 
-      // Generate brand identity
+      // Generate brand identity with properly structured data
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
         "generate-brand-identity",
         {
           body: { 
             questionnaire: {
+              id: questionnaire.id,
+              user_id: questionnaire.user_id,
               business_name: questionnaire.business_name,
               industry: questionnaire.industry,
               brand_personality: questionnaire.brand_personality,
-              user_id: questionnaire.user_id,
-              id: questionnaire.id
             }
           }
         }

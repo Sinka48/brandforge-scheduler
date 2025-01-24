@@ -9,11 +9,11 @@ const corsHeaders = {
 };
 
 interface Questionnaire {
+  id: string;
+  user_id: string;
   business_name: string;
   industry: string;
   brand_personality: string[];
-  user_id: string;
-  id: string;
 }
 
 serve(async (req) => {
@@ -41,7 +41,7 @@ serve(async (req) => {
     const questionnaire = requestData.questionnaire as Questionnaire;
 
     // Validate required fields
-    const requiredFields = ['business_name', 'industry', 'brand_personality', 'user_id', 'id'];
+    const requiredFields = ['id', 'user_id', 'business_name', 'industry', 'brand_personality'];
     for (const field of requiredFields) {
       if (!questionnaire[field as keyof Questionnaire]) {
         console.error(`Missing required field: ${field}`);
