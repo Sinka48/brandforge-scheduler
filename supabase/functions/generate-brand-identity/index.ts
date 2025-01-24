@@ -47,11 +47,20 @@ serve(async (req) => {
   }
 
   try {
+    // Validate request body exists
+    if (!req.body) {
+      throw new Error('Request body is required');
+    }
+
     const { questionnaire } = await req.json();
-    
     console.log('Received questionnaire data:', questionnaire);
 
-    if (!questionnaire || !questionnaire.business_name || !questionnaire.industry || !questionnaire.brand_personality) {
+    // Validate questionnaire data
+    if (!questionnaire) {
+      throw new Error('Questionnaire object is required');
+    }
+
+    if (!questionnaire.business_name || !questionnaire.industry || !questionnaire.brand_personality) {
       console.error('Invalid questionnaire data:', questionnaire);
       throw new Error('Questionnaire data is incomplete. Required fields: business_name, industry, and brand_personality');
     }
