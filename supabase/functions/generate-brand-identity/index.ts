@@ -125,13 +125,14 @@ serve(async (req) => {
     }
 
     // Generate logo using DALL-E
-    const logoPrompt = `Create a professional, modern logo for ${finalBusinessName} in the ${finalIndustry} industry. 
-    Brand personality: ${finalPersonality.join(', ') || 'professional, modern'}. 
-    The logo should be simple, memorable, and work well at different sizes. 
-    Use a clean design with minimal colors. 
-    Make it unique and distinctive.
-    The logo should be centered in the image with ample padding.
-    Use a white or transparent background.`;
+    const logoPrompt = `Create a minimalist and professional logo design for a ${finalIndustry} company named ${finalBusinessName}. The design should be:
+    - Simple and iconic
+    - Suitable for business use
+    - Centered in the composition
+    - On a plain white background
+    - No text or lettering
+    - Clean lines and shapes
+    - Professional color scheme`;
     
     console.log("Sending request to DALL-E with prompt:", logoPrompt);
 
@@ -145,7 +146,8 @@ serve(async (req) => {
         prompt: logoPrompt,
         n: 1,
         size: "1024x1024",
-        quality: "hd",
+        model: "dall-e-3",
+        quality: "standard",
         style: "natural",
       }),
     });
