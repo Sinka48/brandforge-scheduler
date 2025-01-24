@@ -17,28 +17,31 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
       name: 'Twitter', 
       icon: Twitter,
       profileSize: '400x400px',
-      coverSize: '1500x500px'
+      coverSize: '1500x500px',
+      supportsCover: true
     },
     { 
       id: 'facebook', 
       name: 'Facebook', 
       icon: Facebook,
       profileSize: '170x170px',
-      coverSize: '820x312px'
+      coverSize: '820x312px',
+      supportsCover: true
     },
     { 
       id: 'instagram', 
       name: 'Instagram', 
       icon: Instagram,
       profileSize: '320x320px',
-      coverSize: '1080x1080px'
+      supportsCover: false
     },
     { 
       id: 'linkedin', 
       name: 'LinkedIn', 
       icon: Linkedin,
       profileSize: '400x400px',
-      coverSize: '1584x396px'
+      coverSize: '1584x396px',
+      supportsCover: true
     },
   ];
   
@@ -108,47 +111,46 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
                 />
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold">Cover Image</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Recommended size: {platform.coverSize}
-                    </p>
+              {platform.supportsCover && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">Cover Image</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Recommended size: {platform.coverSize}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onRegenerateAsset?.(`${platform.id}_cover`)}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Regenerate
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownload(
+                          socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage || '',
+                          platform.name,
+                          'cover'
+                        )}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onRegenerateAsset?.(`${platform.id}_cover`)}
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Regenerate
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownload(
-                        socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage || '',
-                        platform.name,
-                        'cover'
-                      )}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </div>
+                  <img
+                    src={socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage}
+                    alt={`${platform.name} Cover`}
+                    className="w-full rounded-lg object-cover border shadow-sm"
+                    style={{ height: '200px' }}
+                  />
                 </div>
-                <img
-                  src={socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage}
-                  alt={`${platform.name} Cover`}
-                  className="w-full rounded-lg object-cover border shadow-sm"
-                  style={{ 
-                    height: platform.id === 'instagram' ? '320px' : '200px',
-                    objectFit: 'cover'
-                  }}
-                />
-              </div>
+              )}
             </div>
           </Card>
         </TabsContent>
