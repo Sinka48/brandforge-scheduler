@@ -48,10 +48,7 @@ serve(async (req) => {
           prompt += '\nGenerate only a new logo description and profile image prompt';
           break;
         case 'colors':
-          prompt += '\nGenerate only a new color palette with exactly 5 hex colors';
-          break;
-        case 'typography':
-          prompt += '\nGenerate only new typography choices for heading and body fonts';
+          prompt += '\nGenerate only a new color palette with exactly 5 hex colors that work well together and align with the brand personality';
           break;
         case 'twitter_profile':
         case 'facebook_profile':
@@ -68,8 +65,7 @@ serve(async (req) => {
     } else {
       prompt += `
       Return a complete brand identity including:
-      - A color palette of exactly 5 hex colors that work well together
-      - Typography choices (headingFont and bodyFont) from Google Fonts
+      - A color palette of exactly 5 hex colors that work well together and align with the brand personality
       - A detailed logo description
       - A creative brand name (if AI generated)
       - A compelling social media bio (max 160 characters)
@@ -80,7 +76,7 @@ serve(async (req) => {
     console.log("Sending prompt to OpenAI:", prompt);
 
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
@@ -91,6 +87,16 @@ serve(async (req) => {
     }
 
     console.log("OpenAI response:", response);
+
+    // Extract colors from the response
+    const colorMatch = response.match(/#[0-9A-Fa-f]{6}/g);
+    const colors = colorMatch ? colorMatch.slice(0, 5) : [
+      "#4A90E2", // Default blue
+      "#50E3C2", // Default teal
+      "#F5A623", // Default orange
+      "#9013FE", // Default purple
+      "#D0021B"  // Default red
+    ];
 
     const dalle = new OpenAIApi(configuration);
     let logoUrl = "";
@@ -141,6 +147,7 @@ serve(async (req) => {
         brandPersonality: questionnaire.brand_personality,
         targetAudience: questionnaire.target_audience?.primary,
         socialBio: "Professional " + questionnaire.industry + " services tailored to your needs",
+        colors: colors,
         socialAssets: {
           profileImage: profileImageUrl,
           coverImage: coverImageUrl,

@@ -15,6 +15,7 @@ export interface Brand {
     brandPersonality?: string[] | string;
     isAiGenerated?: boolean;
     aiGeneratedParameters?: Record<string, string | string[]>;
+    colors?: string[];
   };
   questionnaire_id: string;
   url: string;

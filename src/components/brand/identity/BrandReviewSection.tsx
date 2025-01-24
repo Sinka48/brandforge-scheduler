@@ -6,6 +6,7 @@ import { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { ColorPaletteCard } from "./ColorPaletteCard";
 
 interface BrandReviewSectionProps {
   brandName?: string;
@@ -107,6 +108,28 @@ export function BrandReviewSection({
           </div>
 
           <Separator />
+
+          {/* Color Palette Section */}
+          {brand?.metadata?.colors && (
+            <>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Color Palette</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onRegenerateAsset?.('colors')}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Regenerate
+                  </Button>
+                </div>
+                <ColorPaletteCard colors={brand.metadata.colors} />
+              </div>
+              <Separator />
+            </>
+          )}
           
           <div className="space-y-4">
             <div className="flex items-center justify-between">
