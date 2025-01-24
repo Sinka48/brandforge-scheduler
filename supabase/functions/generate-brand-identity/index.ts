@@ -33,7 +33,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: 'You are a business name generator. Return only the name, no additional text.' },
             { role: 'user', content: namePrompt }
@@ -59,21 +59,12 @@ serve(async (req) => {
       );
     }
 
-    // Use either provided or AI-generated attributes
-    const finalBusinessName = questionnaire.is_ai_generated ? 
-                            brandAttributes.businessName : 
-                            (questionnaire.business_name || "AI Generated Brand");
-    const finalIndustry = questionnaire.industry || brandAttributes.industry || "General";
-    const finalPersonality = questionnaire.brand_personality?.length ? 
-                            questionnaire.brand_personality : 
-                            brandAttributes.brandPersonality || [];
-    const finalTargetAudience = questionnaire.target_audience?.primary || 
-                               brandAttributes.targetAudience || "General";
-    const finalSocialBio = questionnaire.ai_generated_parameters?.socialBio || 
-                          brandAttributes.socialBio || 
-                          `Professional ${finalIndustry} services tailored to your needs`;
-    const finalBrandStory = questionnaire.ai_generated_parameters?.brandStory || 
-                           brandAttributes.brandStory || "";
+    // Use either provided or default attributes for full brand generation
+    const finalBusinessName = questionnaire.business_name || "AI Generated Brand";
+    const finalIndustry = questionnaire.industry || "General";
+    const finalPersonality = questionnaire.brand_personality || [];
+    const finalTargetAudience = questionnaire.target_audience?.primary || "General";
+    const finalSocialBio = `Professional ${finalIndustry} services tailored to your needs`;
 
     console.log("Final brand attributes:", {
       businessName: finalBusinessName,
@@ -81,7 +72,6 @@ serve(async (req) => {
       personality: finalPersonality,
       targetAudience: finalTargetAudience,
       socialBio: finalSocialBio,
-      brandStory: finalBrandStory
     });
 
     // Generate logo using DALL-E
@@ -124,7 +114,6 @@ serve(async (req) => {
         brandPersonality: finalPersonality,
         targetAudience: finalTargetAudience,
         socialBio: finalSocialBio,
-        brandStory: finalBrandStory,
         colors: defaultColors,
         socialAssets: {
           profileImage: "",
@@ -133,7 +122,6 @@ serve(async (req) => {
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
           socialBio: finalSocialBio,
-          brandStory: finalBrandStory,
         }
       }
     };
