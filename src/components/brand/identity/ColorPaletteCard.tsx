@@ -56,16 +56,28 @@ export function ColorPaletteCard({ colors, onCustomize, onRegenerateAsset }: Col
                     </div>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3">
-                    <input
-                      type="color"
-                      value={color}
-                      onChange={(e) => handleColorChange(index, e.target.value)}
-                      className="w-32 h-32 cursor-pointer"
-                    />
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium">Select Color</div>
+                      <input
+                        type="color"
+                        value={color}
+                        onChange={(e) => handleColorChange(index, e.target.value)}
+                        className="w-32 h-32 cursor-pointer"
+                      />
+                      <div className="text-xs text-muted-foreground">
+                        Click to change color
+                      </div>
+                    </div>
                   </PopoverContent>
                 </Popover>
                 <div className="space-y-1">
-                  <p className="text-xs text-center font-mono">{color}</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: color }}
+                    />
+                    <p className="text-xs font-mono">{color}</p>
+                  </div>
                   <div className="text-xs text-center text-muted-foreground">
                     {index === 0 ? "Primary" : index === 1 ? "Secondary" : `Accent ${index - 1}`}
                   </div>
