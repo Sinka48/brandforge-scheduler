@@ -182,12 +182,6 @@ export function useBrandIdentity() {
               colors: data.metadata.colors,
             };
             break;
-          case 'typography':
-            updated.metadata = {
-              ...updated.metadata,
-              typography: data.metadata.typography,
-            };
-            break;
           default:
             if (assetType.includes('social')) {
               updated.metadata = {
