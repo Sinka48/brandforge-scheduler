@@ -22,6 +22,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
 
 interface BrandManagerProps {
@@ -214,21 +215,23 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
                           )}
                         </div>
                         <span className="font-medium">v{brand.version}</span>
-                        <div className="flex space-x-1">
-                          {brand.metadata.colors.map((color, index) => (
-                            <Tooltip key={index}>
-                              <TooltipTrigger>
-                                <div
-                                  className="h-4 w-4 rounded-full border"
-                                  style={{ backgroundColor: color }}
-                                />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{color}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          ))}
-                        </div>
+                        <TooltipProvider>
+                          <div className="flex space-x-1">
+                            {brand.metadata.colors.map((color, index) => (
+                              <Tooltip key={index}>
+                                <TooltipTrigger>
+                                  <div
+                                    className="h-4 w-4 rounded-full border"
+                                    style={{ backgroundColor: color }}
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{color}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
+                        </TooltipProvider>
                         <Button
                           variant="ghost"
                           size="sm"
