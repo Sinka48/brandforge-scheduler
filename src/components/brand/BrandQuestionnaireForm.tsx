@@ -14,9 +14,9 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
 const formSchema = z.object({
-  businessName: z.string().min(1, "Business name is required"),
-  industry: z.string().min(1, "Industry is required"),
-  brandPersonality: z.array(z.string()).min(1, "At least one personality trait is required"),
+  businessName: z.string().min(2, "Business name must be at least 2 characters"),
+  industry: z.string().min(1, "Industry selection is required"),
+  brandPersonality: z.array(z.string()).min(1, "At least one personality trait is required").max(5, "Maximum 5 personality traits allowed"),
 })
 
 export function BrandQuestionnaireForm() {
@@ -49,6 +49,8 @@ export function BrandQuestionnaireForm() {
         return
       }
 
+      console.log("Saving questionnaire with values:", values)
+
       // Save questionnaire with required fields
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
@@ -56,7 +58,7 @@ export function BrandQuestionnaireForm() {
           user_id: user.id,
           business_name: values.businessName,
           industry: values.industry,
-          description: "", 
+          description: `Brand for ${values.businessName} in the ${values.industry} industry`, 
           brand_personality: values.brandPersonality,
           color_preferences: [],
           target_audience: {},
@@ -125,39 +127,50 @@ export function BrandQuestionnaireForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Business Information</h3>
-              <Input
-                placeholder="Enter your business name"
-                {...form.register("businessName")}
-              />
-              {form.formState.errors.businessName && (
-                <p className="text-sm text-red-500">{form.formState.errors.businessName.message}</p>
-              )}
+              <div>
+                <Input
+                  placeholder="Enter your business name"
+                  {...form.register("businessName")}
+                  className={form.formState.errors.businessName ? "border-red-500" : ""}
+                />
+                {form.formState.errors.businessName && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.businessName.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Industry</h3>
-              <IndustrySelector
-                selected={form.watch("industry")}
-                onSelect={(industry) => form.setValue("industry", industry)}
-              />
-              {form.formState.errors.industry && (
-                <p className="text-sm text-red-500">{form.formState.errors.industry.message}</p>
-              )}
+              <div>
+                <IndustrySelector
+                  selected={form.watch("industry")}
+                  onSelect={(industry) => form.setValue("industry", industry)}
+                />
+                {form.formState.errors.industry && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.industry.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Brand Personality</h3>
-              <PersonalitySelector
-                selected={form.watch("brandPersonality")}
-                onSelect={(traits) => form.setValue("brandPersonality", traits)}
-              />
-              {form.formState.errors.brandPersonality && (
-                <p className="text-sm text-red-500">{form.formState.errors.brandPersonality.message}</p>
-              )}
+              <h3 className="text-lg font-medium">Brand Personality (Select up to 5)</h3>
+              <div>
+                <PersonalitySelector
+                  selected={form.watch("brandPersonality")}
+                  onSelect={(traits) => form.setValue("brandPersonality", traits)}
+                />
+                {form.formState.errors.brandPersonality && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.brandPersonality.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={isGenerating}>
+              <Button 
+                type="submit" 
+                disabled={isGenerating || !form.formState.isValid}
+                className="w-full sm:w-auto"
+              >
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
