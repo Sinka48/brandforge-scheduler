@@ -57,17 +57,10 @@ ${questionnaire.ai_generated_parameters?.brandStory ? `Brand Story: ${questionna
         case 'colors':
           prompt += '\nGenerate only a new color palette with exactly 5 hex colors that work well together and align with the brand personality';
           break;
-        case 'twitter_profile':
-        case 'facebook_profile':
-        case 'instagram_profile':
-        case 'linkedin_profile':
-          prompt += '\nGenerate only a new profile image prompt';
-          break;
-        case 'twitter_cover':
-        case 'facebook_cover':
-        case 'linkedin_cover':
-          prompt += '\nGenerate only a new cover image prompt';
-          break;
+        default:
+          if (regenerateOnly.includes('profile') || regenerateOnly.includes('cover')) {
+            prompt += '\nGenerate only new social media image prompts';
+          }
       }
     } else {
       prompt += `
@@ -106,7 +99,7 @@ Return a complete brand identity including:
 
     console.log("OpenAI response:", response);
 
-    // Generate images using DALL-E
+    // Generate logo using DALL-E
     const logoPrompt = `Create a professional, modern logo for ${questionnaire.business_name} in the ${questionnaire.industry} industry. The logo should be simple, memorable, and work well at different sizes. Use a clean design with minimal colors.`;
     
     const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
