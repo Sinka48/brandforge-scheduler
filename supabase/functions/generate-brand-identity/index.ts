@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,9 +41,6 @@ serve(async (req) => {
       throw new Error("OpenAI API key not found");
     }
 
-    const configuration = new Configuration({ apiKey: openAiKey });
-    const openai = new OpenAIApi(configuration);
-
     let prompt = `Generate a brand identity for:
 Business Name: "${questionnaire.business_name}"
 Industry: "${questionnaire.industry}"
@@ -86,20 +82,50 @@ Return a complete brand identity including:
 
     console.log("Sending prompt to OpenAI:", prompt);
 
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
+    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant that generates brand identities.' },
+          { role: 'user', content: prompt }
+        ],
+      }),
     });
 
-    const response = completion.data.choices[0]?.message?.content;
+    const data = await completion.json();
+    const response = data.choices[0]?.message?.content;
+
     if (!response) {
       throw new Error("No response from OpenAI");
     }
 
     console.log("OpenAI response:", response);
 
-    // Extract colors from the response
+    // Generate images using DALL-E
+    const logoPrompt = `Create a professional, modern logo for ${questionnaire.business_name} in the ${questionnaire.industry} industry. The logo should be simple, memorable, and work well at different sizes. Use a clean design with minimal colors.`;
+    
+    const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: logoPrompt,
+        n: 1,
+        size: "512x512",
+      }),
+    });
+
+    const logoData = await logoResponse.json();
+    const logoUrl = logoData.data?.[0]?.url || "";
+
+    // Extract colors from the OpenAI response
     const colorMatch = response.match(/#[0-9A-Fa-f]{6}/g);
     const colors = colorMatch ? colorMatch.slice(0, 5) : [
       "#4A90E2", // Default blue
@@ -108,47 +134,6 @@ Return a complete brand identity including:
       "#9013FE", // Default purple
       "#D0021B"  // Default red
     ];
-
-    const dalle = new OpenAIApi(configuration);
-    let logoUrl = "";
-    let profileImageUrl = "";
-    let coverImageUrl = "";
-
-    if (!regenerateOnly || regenerateOnly === 'logo') {
-      const logoPrompt = `Create a professional, modern logo for ${questionnaire.business_name} in the ${questionnaire.industry} industry. The logo should be simple, memorable, and work well at different sizes. Use a clean design with minimal colors.`;
-      
-      const logoResponse = await dalle.createImage({
-        prompt: logoPrompt,
-        n: 1,
-        size: "512x512",
-      });
-
-      logoUrl = logoResponse.data.data[0]?.url || "";
-    }
-
-    if (!regenerateOnly || regenerateOnly.includes('profile')) {
-      const profilePrompt = `Create a professional profile picture for ${questionnaire.business_name}'s social media. It should be simple, iconic, and instantly recognizable.`;
-      
-      const profileResponse = await dalle.createImage({
-        prompt: profilePrompt,
-        n: 1,
-        size: "512x512",
-      });
-
-      profileImageUrl = profileResponse.data.data[0]?.url || "";
-    }
-
-    if (!regenerateOnly || regenerateOnly.includes('cover')) {
-      const coverPrompt = `Create a professional cover image for ${questionnaire.business_name}'s social media. It should be wide format, simple, and align with the brand's industry: ${questionnaire.industry}.`;
-      
-      const coverResponse = await dalle.createImage({
-        prompt: coverPrompt,
-        n: 1,
-        size: "1024x512",
-      });
-
-      coverImageUrl = coverResponse.data.data[0]?.url || "";
-    }
 
     const result = {
       logoUrl,
@@ -161,8 +146,8 @@ Return a complete brand identity including:
         brandStory: questionnaire.ai_generated_parameters?.brandStory,
         colors,
         socialAssets: {
-          profileImage: profileImageUrl,
-          coverImage: coverImageUrl,
+          profileImage: "",
+          coverImage: "",
         },
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
