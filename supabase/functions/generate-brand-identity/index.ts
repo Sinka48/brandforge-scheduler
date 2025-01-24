@@ -6,6 +6,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to add delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper function to make API calls with retry logic
+async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After') || attempt * 2;
+        console.log(`Rate limited. Waiting ${retryAfter} seconds before retry ${attempt}/${maxRetries}`);
+        await delay(parseInt(retryAfter) * 1000);
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+      console.log(`Attempt ${attempt} failed, retrying...`);
+      await delay(2000 * attempt); // Exponential backoff
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -28,30 +57,24 @@ serve(async (req) => {
       
       const namePrompt = `Generate a creative and memorable business name. Return ONLY the name, no additional text or explanation.`;
 
-      const completion = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: 'You are a business name generator. Return only the name, no additional text.' },
-            { role: 'user', content: namePrompt }
-          ],
-          temperature: 0.7,
-        }),
-      });
-
-      if (!completion.ok) {
-        const errorData = await completion.text();
-        console.error("OpenAI API error:", errorData);
-        throw new Error(`OpenAI API error: ${completion.status}`);
-      }
-
-      const nameData = await completion.json();
-      console.log("OpenAI response:", nameData);
+      const nameData = await makeOpenAIRequest(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are a business name generator. Return only the name, no additional text.' },
+              { role: 'user', content: namePrompt }
+            ],
+            temperature: 0.7,
+          }),
+        }
+      );
 
       const generatedName = nameData.choices[0]?.message?.content?.trim();
       
@@ -89,30 +112,24 @@ serve(async (req) => {
     }`;
 
     console.log("Sending content generation request to OpenAI");
-    const contentCompletion = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a brand identity expert. Provide responses in JSON format.' },
-          { role: 'user', content: contentPrompt }
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!contentCompletion.ok) {
-      const errorData = await contentCompletion.text();
-      console.error("OpenAI API error (content):", errorData);
-      throw new Error(`OpenAI API error: ${contentCompletion.status}`);
-    }
-
-    const contentData = await contentCompletion.json();
-    console.log("OpenAI content response:", contentData);
+    const contentData = await makeOpenAIRequest(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a brand identity expert. Provide responses in JSON format.' },
+            { role: 'user', content: contentPrompt }
+          ],
+          temperature: 0.7,
+        }),
+      }
+    );
 
     let brandContent;
     try {
@@ -130,29 +147,23 @@ serve(async (req) => {
     
     console.log("Sending request to DALL-E with prompt:", logoPrompt);
 
-    const logoResponse = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: logoPrompt,
-        n: 1,
-        size: "1024x1024",
-        model: "dall-e-3",
-        quality: "standard",
-      }),
-    });
-
-    if (!logoResponse.ok) {
-      const errorData = await logoResponse.text();
-      console.error("DALL-E API error:", errorData);
-      throw new Error(`DALL-E API error: ${logoResponse.status}`);
-    }
-
-    const logoData = await logoResponse.json();
-    console.log("DALL-E response received");
+    const logoData = await makeOpenAIRequest(
+      'https://api.openai.com/v1/images/generations',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: logoPrompt,
+          n: 1,
+          size: "1024x1024",
+          model: "dall-e-3",
+          quality: "standard",
+        }),
+      }
+    );
     
     const logoUrl = logoData.data?.[0]?.url;
     if (!logoUrl) {
