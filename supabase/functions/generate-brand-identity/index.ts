@@ -27,13 +27,10 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Received request body:", await req.clone().text());
     const { questionnaire } = await req.json();
+    console.log("Received questionnaire:", JSON.stringify(questionnaire, null, 2));
     
-    console.log("Parsed questionnaire data:", questionnaire);
-
     if (!questionnaire || !questionnaire.id) {
-      console.error("Missing or invalid questionnaire data");
       throw new Error("No questionnaire data provided");
     }
 
@@ -44,15 +41,19 @@ serve(async (req) => {
 
     let brandAttributes = {};
     if (questionnaire.is_ai_generated) {
-      const attributesPrompt = `Generate brand identity attributes for a new business. Include:
-1. A creative and memorable business name
-2. An industry category from this list: Technology, Healthcare, Education, Retail, Finance, Entertainment, Food & Beverage, Travel, Real Estate
-3. Three brand personality traits from this list: Professional, Friendly, Innovative, Traditional, Luxurious, Playful, Minimalist, Bold, Trustworthy, Creative
-4. A target audience from this list: Young Professionals, Parents, Students, Business Owners, Seniors, Tech-Savvy, Luxury Consumers, Budget Shoppers, Health Enthusiasts, Creative Professionals
-5. A compelling social media bio (max 160 characters)
-6. A brief brand story (max 500 characters)
+      console.log("Generating AI brand attributes...");
+      
+      const attributesPrompt = `Generate brand identity attributes for a new business in JSON format. Include these exact fields:
+- businessName: a creative and memorable business name
+- industry: one of [Technology, Healthcare, Education, Retail, Finance, Entertainment, Food & Beverage, Travel, Real Estate]
+- brandPersonality: exactly three traits from [Professional, Friendly, Innovative, Traditional, Luxurious, Playful, Minimalist, Bold, Trustworthy, Creative]
+- targetAudience: one of [Young Professionals, Parents, Students, Business Owners, Seniors, Tech-Savvy, Luxury Consumers, Budget Shoppers, Health Enthusiasts, Creative Professionals]
+- socialBio: a compelling social media bio (max 160 characters)
+- brandStory: a brief brand story (max 500 characters)
 
-Format the response as a JSON object with these exact keys: businessName, industry, brandPersonality, targetAudience, socialBio, brandStory`;
+Format the response as a valid JSON object with these exact keys. Ensure all values are strings except brandPersonality which should be an array of strings.`;
+
+      console.log("Sending prompt to OpenAI:", attributesPrompt);
 
       const completion = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -63,13 +64,15 @@ Format the response as a JSON object with these exact keys: businessName, indust
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [
-            { role: 'system', content: 'You are a brand identity expert that generates creative and market-appropriate brand attributes.' },
+            { role: 'system', content: 'You are a brand identity expert that generates creative and market-appropriate brand attributes in JSON format.' },
             { role: 'user', content: attributesPrompt }
           ],
         }),
       });
 
       const attributesData = await completion.json();
+      console.log("OpenAI response:", JSON.stringify(attributesData, null, 2));
+      
       const attributesResponse = attributesData.choices[0]?.message?.content;
       
       if (!attributesResponse) {
@@ -77,24 +80,29 @@ Format the response as a JSON object with these exact keys: businessName, indust
       }
 
       try {
-        // Attempt to parse the response, with error handling
+        console.log("Raw attributes response:", attributesResponse);
         const parsedResponse = JSON.parse(attributesResponse.trim());
-        console.log("Successfully parsed brand attributes:", parsedResponse);
+        console.log("Parsed attributes:", JSON.stringify(parsedResponse, null, 2));
+
+        // Validate required fields
+        const requiredFields = ['businessName', 'industry', 'brandPersonality', 'targetAudience'];
+        const missingFields = requiredFields.filter(field => !parsedResponse[field]);
         
-        // Validate the required fields
-        if (!parsedResponse.businessName || !parsedResponse.industry || !parsedResponse.brandPersonality || !parsedResponse.targetAudience) {
-          throw new Error("Missing required fields in brand attributes");
+        if (missingFields.length > 0) {
+          throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
         }
-        
-        // Ensure brandPersonality is an array
+
+        // Ensure brandPersonality is an array with exactly 3 traits
         if (!Array.isArray(parsedResponse.brandPersonality)) {
           parsedResponse.brandPersonality = [parsedResponse.brandPersonality];
         }
-        
+        parsedResponse.brandPersonality = parsedResponse.brandPersonality.slice(0, 3);
+
         brandAttributes = parsedResponse;
       } catch (error) {
-        console.error("Error parsing brand attributes:", error, "Raw response:", attributesResponse);
-        throw new Error("Invalid brand attributes format");
+        console.error("Error parsing brand attributes:", error);
+        console.error("Raw response that failed parsing:", attributesResponse);
+        throw new Error(`Invalid brand attributes format: ${error.message}`);
       }
     }
 
@@ -105,6 +113,15 @@ Format the response as a JSON object with these exact keys: businessName, indust
     const finalTargetAudience = questionnaire.target_audience?.primary || brandAttributes.targetAudience || "General";
     const finalSocialBio = questionnaire.ai_generated_parameters?.socialBio || brandAttributes.socialBio || `Professional ${finalIndustry} services tailored to your needs`;
     const finalBrandStory = questionnaire.ai_generated_parameters?.brandStory || brandAttributes.brandStory || "";
+
+    console.log("Final brand attributes:", {
+      businessName: finalBusinessName,
+      industry: finalIndustry,
+      personality: finalPersonality,
+      targetAudience: finalTargetAudience,
+      socialBio: finalSocialBio,
+      brandStory: finalBrandStory
+    });
 
     const prompt = `Generate a brand identity for:
 Business Name: "${finalBusinessName}"
@@ -120,7 +137,7 @@ Return a complete brand identity including:
 - Profile image prompt for DALL-E
 - Cover image prompt for DALL-E`;
 
-    console.log("Sending prompt to OpenAI:", prompt);
+    console.log("Sending brand identity prompt to OpenAI:", prompt);
 
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -144,7 +161,7 @@ Return a complete brand identity including:
       throw new Error("No response from OpenAI");
     }
 
-    console.log("OpenAI response:", response);
+    console.log("OpenAI brand identity response:", response);
 
     // Generate logo using DALL-E
     const logoPrompt = `Create a professional, modern logo for ${finalBusinessName} in the ${finalIndustry} industry. The logo should be simple, memorable, and work well at different sizes. Use a clean design with minimal colors.`;
@@ -163,7 +180,11 @@ Return a complete brand identity including:
     });
 
     const logoData = await logoResponse.json();
-    const logoUrl = logoData.data?.[0]?.url || "";
+    const logoUrl = logoData.data?.[0]?.url;
+
+    if (!logoUrl) {
+      throw new Error("Failed to generate logo");
+    }
 
     // Extract colors from the OpenAI response
     const colorMatch = response.match(/#[0-9A-Fa-f]{6}/g);
@@ -197,7 +218,7 @@ Return a complete brand identity including:
       }
     };
 
-    console.log("Returning result:", result);
+    console.log("Returning result:", JSON.stringify(result, null, 2));
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
