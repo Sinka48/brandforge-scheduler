@@ -108,23 +108,25 @@ serve(async (req) => {
     // Store the brand identity assets
     const { data: brandAsset, error: brandAssetError } = await supabase
       .from('brand_assets')
-      .insert([
-        {
-          user_id: questionnaire.user_id,
-          questionnaire_id: questionnaire.id,
-          asset_type: 'brand_identity',
-          url: profileImageUrl,
-          version: version,
-          metadata: {
-            colors: suggestions.colors,
-            typography: suggestions.typography,
-            logoDescription: suggestions.logoDescription
+      .insert({
+        user_id: questionnaire.user_id,
+        questionnaire_id: questionnaire.id,
+        asset_type: 'brand_identity',
+        url: profileImageUrl,
+        version: version || 1,
+        metadata: {
+          colors: suggestions.colors,
+          typography: suggestions.typography,
+          logoDescription: suggestions.logoDescription,
+          socialAssets: {
+            profileImage: profileImageUrl,
+            coverImage: coverImageUrl
           },
-          social_name: suggestions.socialName,
-          social_bio: suggestions.socialBio,
-          asset_category: 'brand'
-        }
-      ])
+          socialBio: suggestions.socialBio,
+          name: suggestions.socialName
+        },
+        asset_category: 'brand'
+      })
       .select()
       .single();
 
@@ -142,7 +144,7 @@ serve(async (req) => {
           questionnaire_id: questionnaire.id,
           asset_type: 'image',
           url: profileImageUrl,
-          version: version,
+          version: version || 1,
           asset_category: 'social',
           social_asset_type: 'profile'
         },
@@ -151,7 +153,7 @@ serve(async (req) => {
           questionnaire_id: questionnaire.id,
           asset_type: 'image',
           url: coverImageUrl,
-          version: version,
+          version: version || 1,
           asset_category: 'social',
           social_asset_type: 'cover'
         }
