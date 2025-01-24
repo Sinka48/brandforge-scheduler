@@ -10,7 +10,6 @@ import BrandListPage from "./pages/BrandList";
 import HowItWorksPage from "./pages/HowItWorks";
 import DraftsPage from "./pages/Drafts";
 import { Session } from "@supabase/supabase-js";
-import BrandGeneratorPage from "./pages/BrandGenerator";
 
 interface RoutesProps {
   session: Session | null;
@@ -41,10 +40,6 @@ export function Routes({ session }: RoutesProps) {
     {
       path: "/brands",
       element: <BrandsPage session={session} />,
-    },
-    {
-      path: "/brand/new",
-      element: <BrandGeneratorPage session={session} />,
     },
     {
       path: "/brand/:id",
