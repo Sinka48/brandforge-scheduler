@@ -29,6 +29,7 @@ serve(async (req) => {
     const requestData = await req.json();
     console.log("Received request data:", requestData);
 
+    // Validate questionnaire data
     if (!requestData.questionnaire || typeof requestData.questionnaire !== 'object') {
       console.error("Invalid questionnaire data:", requestData);
       throw new Error('Invalid questionnaire data format');
