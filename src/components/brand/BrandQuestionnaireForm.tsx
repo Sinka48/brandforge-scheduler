@@ -7,10 +7,12 @@ import { useToast } from "@/hooks/use-toast"
 import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Wand2 } from "lucide-react"
+import { Wand2, Building2, Palette, Users2 } from "lucide-react"
 import { IndustrySelector } from "./questionnaire/IndustrySelector"
 import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
 import { ColorSelector } from "./questionnaire/ColorSelector"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
 const formSchema = z.object({
   businessName: z.string().min(2, {
@@ -67,7 +69,7 @@ export function BrandQuestionnaireForm() {
         description: values.description,
         brand_personality: values.brandPersonality,
         color_preferences: values.colorPreferences,
-        target_audience: {}, // Simplified, removed detailed targeting
+        target_audience: {},
       })
       .select()
       .single()
@@ -79,7 +81,6 @@ export function BrandQuestionnaireForm() {
         description: "Your brand questionnaire has been saved. Generating your brand identity...",
       })
 
-      // Navigate to brand identity page after saving questionnaire
       navigate("/brand/identity")
     } catch (error) {
       console.error("Error saving questionnaire:", error)
@@ -94,73 +95,94 @@ export function BrandQuestionnaireForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Basic Information</h3>
-          <Input
-            placeholder="Enter your business name"
-            {...form.register("businessName")}
-          />
-          {form.formState.errors.businessName && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.businessName.message}
-            </p>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Business Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Input
+                placeholder="Enter your business name"
+                {...form.register("businessName")}
+              />
+              {form.formState.errors.businessName && (
+                <p className="text-sm text-red-500 mt-1">
+                  {form.formState.errors.businessName.message}
+                </p>
+              )}
+            </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Industry</h3>
-          <IndustrySelector
-            selected={form.watch("industry")}
-            onSelect={(industry) => form.setValue("industry", industry)}
-          />
-          {form.formState.errors.industry && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.industry.message}
-            </p>
-          )}
-        </div>
+            <div>
+              <IndustrySelector
+                selected={form.watch("industry")}
+                onSelect={(industry) => form.setValue("industry", industry)}
+              />
+              {form.formState.errors.industry && (
+                <p className="text-sm text-red-500 mt-1">
+                  {form.formState.errors.industry.message}
+                </p>
+              )}
+            </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Brief Description</h3>
-          <Input
-            placeholder="Briefly describe your business..."
-            {...form.register("description")}
-          />
-          {form.formState.errors.description && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.description.message}
-            </p>
-          )}
-        </div>
+            <div>
+              <Input
+                placeholder="Briefly describe your business..."
+                {...form.register("description")}
+              />
+              {form.formState.errors.description && (
+                <p className="text-sm text-red-500 mt-1">
+                  {form.formState.errors.description.message}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Brand Personality</h3>
-          <PersonalitySelector
-            selected={form.watch("brandPersonality")}
-            onSelect={(traits) => form.setValue("brandPersonality", traits)}
-          />
-          {form.formState.errors.brandPersonality && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.brandPersonality.message}
-            </p>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users2 className="h-5 w-5" />
+              Brand Personality
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PersonalitySelector
+              selected={form.watch("brandPersonality")}
+              onSelect={(traits) => form.setValue("brandPersonality", traits)}
+            />
+            {form.formState.errors.brandPersonality && (
+              <p className="text-sm text-red-500 mt-1">
+                {form.formState.errors.brandPersonality.message}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Color Preferences</h3>
-          <ColorSelector
-            selected={form.watch("colorPreferences")}
-            onSelect={(colors) => form.setValue("colorPreferences", colors)}
-          />
-          {form.formState.errors.colorPreferences && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.colorPreferences.message}
-            </p>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Color Preferences
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ColorSelector
+              selected={form.watch("colorPreferences")}
+              onSelect={(colors) => form.setValue("colorPreferences", colors)}
+            />
+            {form.formState.errors.colorPreferences && (
+              <p className="text-sm text-red-500 mt-1">
+                {form.formState.errors.colorPreferences.message}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="flex justify-end">
-          <Button type="submit">
+          <Button type="submit" className="bg-[#9b87f5] hover:bg-[#7E69AB]">
             <Wand2 className="mr-2 h-4 w-4" />
             Generate Brand
           </Button>
