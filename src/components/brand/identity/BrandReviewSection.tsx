@@ -26,10 +26,7 @@ export function BrandReviewSection({
   return (
     <div className="space-y-8">
       <Card>
-        <CardHeader>
-          <CardTitle>Brand Identity Overview</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 pt-6">
           {/* Brand Overview Section */}
           <BrandOverviewSection
             brandName={brand?.metadata?.name || brandName}
