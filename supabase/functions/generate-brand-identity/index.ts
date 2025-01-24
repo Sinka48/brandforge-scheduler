@@ -7,9 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function generateLogoWithDallE(prompt: string) {
+async function generateImageWithDallE(prompt: string, size: "1024x1024" | "1792x1024") {
   try {
-    console.log("Generating logo with DALL-E, prompt:", prompt);
+    console.log("Generating image with DALL-E, prompt:", prompt);
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!openaiKey) {
@@ -24,9 +24,9 @@ async function generateLogoWithDallE(prompt: string) {
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: `${prompt}. Create a minimalist, professional logo. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`,
+        prompt: `${prompt}. High quality, professional design. Pure white background. No text or words.`,
         n: 1,
-        size: "1024x1024",
+        size: size,
         quality: "standard",
         response_format: "b64_json"
       }),
@@ -43,10 +43,10 @@ async function generateLogoWithDallE(prompt: string) {
       throw new Error("No image data received from DALL-E");
     }
 
-    console.log("Logo generated successfully");
+    console.log("Image generated successfully");
     return `data:image/png;base64,${data.data[0].b64_json}`;
   } catch (error) {
-    console.error("Error in generateLogoWithDallE:", error);
+    console.error("Error in generateImageWithDallE:", error);
     throw error;
   }
 }
@@ -91,7 +91,6 @@ async function generateBrandContent(businessName: string, industry: string, pers
     const data = await response.json();
     const content = data.choices[0].message.content;
     
-    // Parse the content to extract story and bio
     const [story, bio] = content.split('\n\n');
     
     return {
@@ -104,8 +103,24 @@ async function generateBrandContent(businessName: string, industry: string, pers
   }
 }
 
+async function generateSocialMediaAssets(businessName: string, industry: string) {
+  console.log("Generating social media assets...");
+  
+  // Generate logo (square format)
+  const logoPrompt = `Professional logo for ${businessName}, a ${industry} business`;
+  const logoUrl = await generateImageWithDallE(logoPrompt, "1024x1024");
+  
+  // Generate cover image (wide format)
+  const coverPrompt = `Professional, modern cover image or banner for ${businessName}, a ${industry} business. Abstract, minimalist design that represents the brand's identity`;
+  const coverUrl = await generateImageWithDallE(coverPrompt, "1792x1024");
+  
+  return {
+    profileImage: logoUrl,
+    coverImage: coverUrl
+  };
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -113,19 +128,16 @@ serve(async (req) => {
   try {
     console.log("Function invoked - starting execution");
 
-    // Verify OpenAI API key is configured
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiKey) {
       throw new Error("OpenAI API key is not configured. Please add it in the Supabase dashboard.");
     }
 
-    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('No authorization header');
     }
 
-    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -138,7 +150,6 @@ serve(async (req) => {
       }
     );
 
-    // Set auth header and verify user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
@@ -150,61 +161,18 @@ serve(async (req) => {
 
     console.log("User authenticated:", user.id);
     
-    const { questionnaire, generateNameOnly } = await req.json();
-    console.log("Received request data:", { questionnaire, generateNameOnly });
-
-    if (generateNameOnly) {
-      // Generate only a business name using GPT-4
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: "You are a creative business naming expert. Generate unique, memorable business names."
-            },
-            {
-              role: "user",
-              content: "Generate a unique and creative business name. The name should be memorable, easy to pronounce, and suitable for a modern business. Return only the name, nothing else."
-            }
-          ],
-          temperature: 0.9
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("GPT API error response:", error);
-        throw new Error(`GPT API error: ${JSON.stringify(error)}`);
-      }
-
-      const data = await response.json();
-      return new Response(
-        JSON.stringify({
-          metadata: {
-            name: data.choices[0].message.content.trim()
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { questionnaire } = await req.json();
+    console.log("Received questionnaire data:", questionnaire);
 
     if (!questionnaire) {
       throw new Error('No questionnaire data provided');
     }
 
-    // Use either provided or default attributes
     const finalBusinessName = questionnaire.business_name || "AI Generated Brand";
     const finalIndustry = questionnaire.industry || "General";
     const finalPersonality = questionnaire.brand_personality || [];
     const finalTargetAudience = questionnaire.target_audience?.primary || "General";
 
-    // Generate brand content using GPT
     console.log("Generating brand content");
     const { brandStory, socialBio } = await generateBrandContent(
       finalBusinessName,
@@ -213,12 +181,9 @@ serve(async (req) => {
       finalTargetAudience
     );
 
-    // Generate logo using DALL-E
-    const logoPrompt = `Professional logo for ${finalBusinessName}, a ${finalIndustry} business`;
-    console.log("Generating logo with DALL-E");
-    const logoUrl = await generateLogoWithDallE(logoPrompt);
+    console.log("Generating social media assets");
+    const socialAssets = await generateSocialMediaAssets(finalBusinessName, finalIndustry);
 
-    // Default color palette
     const defaultColors = [
       "#4A90E2", // Blue
       "#50E3C2", // Teal
@@ -228,7 +193,7 @@ serve(async (req) => {
     ];
 
     const result = {
-      logoUrl,
+      logoUrl: socialAssets.profileImage,
       metadata: {
         name: finalBusinessName,
         industry: finalIndustry,
@@ -238,8 +203,8 @@ serve(async (req) => {
         story: brandStory,
         colors: defaultColors,
         socialAssets: {
-          profileImage: logoUrl,
-          coverImage: "",
+          profileImage: socialAssets.profileImage,
+          coverImage: socialAssets.coverImage,
         },
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
@@ -257,14 +222,13 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in generate-brand-identity:", error);
     
-    // Check for specific OpenAI errors
     if (error.message?.includes('insufficient_quota')) {
       return new Response(JSON.stringify({ 
         error: "OpenAI API quota exceeded. Please check your billing details or use a different API key.",
         details: error.toString()
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 402 // Payment Required
+        status: 402
       });
     }
     
