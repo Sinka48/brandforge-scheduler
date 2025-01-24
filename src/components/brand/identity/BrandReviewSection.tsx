@@ -46,7 +46,7 @@ export function BrandReviewSection({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold">{brandName}</h3>
+              <h3 className="text-lg font-semibold">{brand?.metadata?.name || brandName}</h3>
               <p className="text-muted-foreground">
                 {brand?.metadata?.socialBio || "Add a social media bio to describe your brand"}
               </p>

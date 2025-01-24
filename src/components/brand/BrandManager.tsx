@@ -143,7 +143,6 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
 
       if (error) throw error;
 
-      // Refresh the brands list to show the updated assets
       await fetchBrands();
 
       toast({
@@ -202,8 +201,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
               </CardHeader>
               <CardContent>
                 <BrandReviewSection
-                  colors={selectedBrand.metadata.colors}
-                  typography={selectedBrand.metadata.typography}
+                  brandName={selectedBrand.metadata.name}
                   logoUrl={selectedBrand.url}
                   brand={selectedBrand}
                   onRegenerateAsset={handleRegenerateAsset}

@@ -59,9 +59,9 @@ export default function BrandIdentityPage({ session }: BrandIdentityPageProps) {
 
         {brandIdentity && (
           <BrandReviewSection
-            colors={brandIdentity.colors}
-            typography={brandIdentity.typography}
+            brandName={brandIdentity.metadata?.name}
             logoUrl={brandIdentity.logoUrl}
+            brand={brandIdentity}
           />
         )}
       </div>
