@@ -28,9 +28,13 @@ serve(async (req) => {
   }
 
   try {
-    const { questionnaire, regenerateOnly } = await req.json();
+    console.log("Received request body:", await req.clone().text());
+    const { questionnaire } = await req.json();
     
-    if (!questionnaire) {
+    console.log("Parsed questionnaire data:", questionnaire);
+
+    if (!questionnaire || !questionnaire.id) {
+      console.error("Missing or invalid questionnaire data");
       throw new Error("No questionnaire data provided");
     }
 
@@ -47,23 +51,8 @@ Industry: "${questionnaire.industry}"
 ${questionnaire.brand_personality?.length ? `Brand Personality: ${questionnaire.brand_personality.join(', ')}` : ''}
 ${questionnaire.target_audience?.primary ? `Target Audience: ${questionnaire.target_audience.primary}` : ''}
 ${questionnaire.ai_generated_parameters?.socialBio ? `Social Bio: ${questionnaire.ai_generated_parameters.socialBio}` : ''}
-${questionnaire.ai_generated_parameters?.brandStory ? `Brand Story: ${questionnaire.ai_generated_parameters.brandStory}` : ''}`;
+${questionnaire.ai_generated_parameters?.brandStory ? `Brand Story: ${questionnaire.ai_generated_parameters.brandStory}` : ''}
 
-    if (regenerateOnly) {
-      switch (regenerateOnly) {
-        case 'logo':
-          prompt += '\nGenerate only a new logo description and profile image prompt';
-          break;
-        case 'colors':
-          prompt += '\nGenerate only a new color palette with exactly 5 hex colors that work well together and align with the brand personality';
-          break;
-        default:
-          if (regenerateOnly.includes('profile') || regenerateOnly.includes('cover')) {
-            prompt += '\nGenerate only new social media image prompts';
-          }
-      }
-    } else {
-      prompt += `
 Return a complete brand identity including:
 - A color palette of exactly 5 hex colors that work well together and align with the brand personality
 - A detailed logo description
@@ -71,7 +60,6 @@ Return a complete brand identity including:
 - A compelling social media bio (max 160 characters)
 - Profile image prompt for DALL-E
 - Cover image prompt for DALL-E`;
-    }
 
     console.log("Sending prompt to OpenAI:", prompt);
 
@@ -143,14 +131,7 @@ Return a complete brand identity including:
           coverImage: "",
         },
         isAiGenerated: questionnaire.is_ai_generated,
-        aiGeneratedParameters: {
-          businessName: questionnaire.business_name,
-          industry: questionnaire.industry,
-          brandPersonality: questionnaire.brand_personality,
-          targetAudience: questionnaire.target_audience?.primary,
-          socialBio: questionnaire.ai_generated_parameters?.socialBio,
-          brandStory: questionnaire.ai_generated_parameters?.brandStory
-        }
+        aiGeneratedParameters: questionnaire.ai_generated_parameters
       }
     };
 

@@ -100,18 +100,7 @@ export function BrandQuestionnaireForm() {
       const { data: brandData, error: brandError } = await supabase.functions.invoke(
         "generate-brand-identity",
         {
-          body: { 
-            questionnaire: {
-              id: questionnaire.id,
-              user_id: questionnaire.user_id,
-              business_name: questionnaire.business_name,
-              industry: questionnaire.industry,
-              brand_personality: questionnaire.brand_personality,
-              target_audience: questionnaire.target_audience,
-              is_ai_generated: questionnaire.is_ai_generated,
-              ai_generated_parameters: questionnaire.ai_generated_parameters
-            }
-          }
+          body: { questionnaire }
         }
       );
 
