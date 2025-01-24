@@ -35,15 +35,20 @@ export function BrandReviewSection({
           <div className="space-y-4">
             <div>
               <h3 className="text-xl font-semibold mb-2">{brand?.metadata?.name || brandName}</h3>
-              <p className="text-muted-foreground">
-                {brand?.metadata?.socialBio || "Add a social media bio to describe your brand"}
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Brand Story</h4>
-              <p className="text-muted-foreground">
-                {brand?.metadata?.story || "Share your brand's story and journey"}
-              </p>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Brand Bio</h4>
+                  <p className="text-muted-foreground">
+                    {brand?.metadata?.socialBio || "AI will generate a compelling social media bio for your brand"}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Brand Story</h4>
+                  <p className="text-muted-foreground">
+                    {brand?.metadata?.story || "AI will generate an engaging brand story"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -87,23 +92,6 @@ export function BrandReviewSection({
                   )}
                 </div>
               </Card>
-
-              {/* AI Generated Parameters */}
-              {brand?.metadata?.isAiGenerated && (
-                <Card className="p-4">
-                  <h4 className="font-medium mb-2">AI Generated Parameters</h4>
-                  <div className="space-y-2">
-                    {brand?.metadata?.aiGeneratedParameters && Object.entries(brand.metadata.aiGeneratedParameters).map(([key, value]) => (
-                      <div key={key}>
-                        <span className="text-sm text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                        <p className="font-medium">
-                          {Array.isArray(value) ? value.join(', ') : value?.toString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
             </div>
           </div>
 

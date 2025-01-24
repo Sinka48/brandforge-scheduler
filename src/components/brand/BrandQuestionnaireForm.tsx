@@ -13,12 +13,9 @@ import { BusinessInfoSection } from "./questionnaire/BusinessInfoSection"
 import { BrandAttributesSection } from "./questionnaire/BrandAttributesSection"
 
 const formSchema = z.object({
-  businessName: z.string().optional(),
   industry: z.string().optional(),
   brandPersonality: z.array(z.string()).optional(),
   targetAudience: z.string().optional(),
-  socialBio: z.string().max(160, "Social bio must be less than 160 characters").optional(),
-  brandStory: z.string().max(500, "Brand story must be less than 500 characters").optional(),
   colorPreferences: z.array(z.string()).max(5, "Maximum 5 colors allowed").optional(),
 })
 
@@ -30,12 +27,9 @@ export function BrandQuestionnaireForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      businessName: "",
       industry: "",
       brandPersonality: [],
       targetAudience: "",
-      socialBio: "",
-      brandStory: "",
       colorPreferences: [],
     },
   });
@@ -56,29 +50,20 @@ export function BrandQuestionnaireForm() {
         return;
       }
 
-      // Check if this should be AI-generated based on empty fields
-      const isAiGenerated = !values.businessName && 
-                           !values.industry && 
-                           (!values.brandPersonality || values.brandPersonality.length === 0) &&
-                           !values.targetAudience;
+      // All fields are optional now, AI will generate content
+      const isAiGenerated = true;
 
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName || "AI Generated Brand",
+          business_name: "AI Generated Brand",
           industry: values.industry || "General",
-          description: values.businessName ? `Brand for ${values.businessName}` : "AI Generated Brand",
+          description: "AI Generated Brand",
           brand_personality: values.brandPersonality || [],
           target_audience: values.targetAudience ? { primary: values.targetAudience } : {},
           color_preferences: values.colorPreferences || [],
           is_ai_generated: isAiGenerated,
-          social_bio: values.socialBio || null,
-          brand_story: values.brandStory || null,
-          ai_generated_parameters: {
-            socialBio: values.socialBio,
-            brandStory: values.brandStory,
-          }
         })
         .select()
         .single();
@@ -108,15 +93,11 @@ export function BrandQuestionnaireForm() {
 
       if (assetError) throw assetError;
 
-      // Show success toast and redirect to the brands page with library tab
       toast({
-        title: isAiGenerated ? "AI Brand Generated!" : "Brand Created!",
-        description: isAiGenerated 
-          ? "Your AI-powered brand identity has been created. View it in the Brand Library."
-          : "Your brand identity has been created. View it in the Brand Library.",
+        title: "AI Brand Generated!",
+        description: "Your AI-powered brand identity has been created. View it in the Brand Library.",
       });
 
-      // Redirect to brands page with library tab and newly created brand ID
       navigate(`/brands?tab=library&selectedBrand=${questionnaire.id}`);
       
     } catch (error) {

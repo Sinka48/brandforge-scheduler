@@ -1,6 +1,5 @@
 import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Building2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
@@ -17,35 +16,11 @@ export function BusinessInfoSection({ form }: BusinessInfoSectionProps) {
       </div>
       <FormField
         control={form.control}
-        name="businessName"
+        name="industry"
         render={({ field }) => (
           <Input
-            placeholder="Enter your business name"
+            placeholder="Enter your industry (optional)"
             {...field}
-          />
-        )}
-      />
-      <FormField
-        control={form.control}
-        name="socialBio"
-        render={({ field }) => (
-          <Textarea
-            placeholder="Enter a brief social media bio (max 160 characters)"
-            {...field}
-            className="resize-none"
-            maxLength={160}
-          />
-        )}
-      />
-      <FormField
-        control={form.control}
-        name="brandStory"
-        render={({ field }) => (
-          <Textarea
-            placeholder="Share your brand's story (max 500 characters)"
-            {...field}
-            className="resize-none"
-            maxLength={500}
           />
         )}
       />
