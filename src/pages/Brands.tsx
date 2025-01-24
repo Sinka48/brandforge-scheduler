@@ -74,7 +74,7 @@ export default function BrandsPage({ session }: BrandsPageProps) {
                   View and manage your generated brand identities
                 </p>
               </div>
-              <BrandManager initialSelectedBrandId={selectedBrandId} />
+              <BrandManager selectedBrandId={selectedBrandId} />
             </div>
           </TabsContent>
         </Tabs>
