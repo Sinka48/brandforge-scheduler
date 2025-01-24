@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,42 +10,26 @@ const corsHeaders = {
 // Helper function to add delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper function to make API calls with retry logic
-async function makeOpenAIRequest(url: string, options: RequestInit, maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`Making OpenAI request to ${url}, attempt ${attempt}`);
-      console.log('Request options:', {
-        method: options.method,
-        headers: options.headers,
-        body: options.body,
-      });
-      
-      const response = await fetch(url, options);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`OpenAI API error: ${response.status}`, errorText);
-        
-        // Handle rate limiting
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('Retry-After') || attempt * 2;
-          console.log(`Rate limited. Waiting ${retryAfter} seconds before retry`);
-          await delay(parseInt(retryAfter) * 1000);
-          continue;
-        }
-        
-        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
-      }
+async function generateLogoWithHuggingFace(prompt: string) {
+  try {
+    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
+    console.log("Generating logo with prompt:", prompt);
 
-      const data = await response.json();
-      console.log('Response data:', data);
-      return data;
-    } catch (error) {
-      console.error(`Attempt ${attempt} failed:`, error);
-      if (attempt === maxRetries) throw error;
-      await delay(2000 * attempt); // Exponential backoff
-    }
+    const image = await hf.textToImage({
+      inputs: prompt,
+      model: 'black-forest-labs/FLUX.1-schnell',
+    });
+
+    // Convert the blob to a base64 string
+    const arrayBuffer = await image.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const logoUrl = `data:image/png;base64,${base64}`;
+
+    console.log("Logo generated successfully");
+    return logoUrl;
+  } catch (error) {
+    console.error("Error generating logo:", error);
+    throw error;
   }
 }
 
@@ -59,91 +44,22 @@ serve(async (req) => {
     const { questionnaire } = await req.json();
     console.log("Received questionnaire:", questionnaire);
 
-    const openAiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiKey) {
-      throw new Error("OpenAI API key not found");
-    }
-
     // Use either provided or default attributes
     const finalBusinessName = questionnaire.business_name || "AI Generated Brand";
     const finalIndustry = questionnaire.industry || "General";
     const finalPersonality = questionnaire.brand_personality || [];
     const finalTargetAudience = questionnaire.target_audience?.primary || "General";
 
-    // Generate brand story and social media bio
-    const contentPrompt = `Create a brand identity for ${finalBusinessName} in the ${finalIndustry} industry.
-    Target audience: ${finalTargetAudience}
-    Brand personality: ${finalPersonality.join(', ') || 'professional, modern'}
+    // Generate brand story and social media bio using simple templates
+    const brandStory = `${finalBusinessName} is a leading provider in the ${finalIndustry} industry, dedicated to delivering exceptional value to our customers. We focus on ${finalPersonality.join(' and ')} while serving ${finalTargetAudience}.`;
     
-    Please provide:
-    1. A compelling brand story (2-3 sentences)
-    2. A catchy social media bio (1 sentence)
-    
-    Format the response as JSON:
-    {
-      "brandStory": "story here",
-      "socialBio": "bio here"
-    }`;
+    const socialBio = `Professional ${finalIndustry} services tailored for ${finalTargetAudience}`;
 
-    console.log("Sending content generation request to OpenAI");
-    const contentData = await makeOpenAIRequest(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: 'You are a brand identity expert. Provide responses in JSON format.' },
-            { role: 'user', content: contentPrompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 500,
-        }),
-      }
-    );
-
-    let brandContent;
-    try {
-      brandContent = JSON.parse(contentData.choices[0].message.content);
-    } catch (error) {
-      console.error("Error parsing content response:", error);
-      brandContent = {
-        brandStory: `${finalBusinessName} is a leading provider of ${finalIndustry} solutions, dedicated to delivering exceptional value to our customers.`,
-        socialBio: `Professional ${finalIndustry} services tailored to your needs`
-      };
-    }
-
-    // Generate logo using DALL-E
+    // Generate logo using Hugging Face
     const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business named ${finalBusinessName}. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
     
-    console.log("Sending logo generation request to DALL-E");
-    const logoData = await makeOpenAIRequest(
-      'https://api.openai.com/v1/images/generations',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: logoPrompt,
-          model: "dall-e-3",
-          n: 1,
-          size: "1024x1024",
-          quality: "standard",
-          response_format: "url",
-        }),
-      }
-    );
-    
-    const logoUrl = logoData.data?.[0]?.url;
-    if (!logoUrl) {
-      throw new Error("Failed to generate logo URL");
-    }
+    console.log("Generating logo with Hugging Face");
+    const logoUrl = await generateLogoWithHuggingFace(logoPrompt);
 
     // Default color palette
     const defaultColors = [
@@ -161,8 +77,8 @@ serve(async (req) => {
         industry: finalIndustry,
         brandPersonality: finalPersonality,
         targetAudience: finalTargetAudience,
-        socialBio: brandContent.socialBio,
-        story: brandContent.brandStory,
+        socialBio: socialBio,
+        story: brandStory,
         colors: defaultColors,
         socialAssets: {
           profileImage: logoUrl,
@@ -170,8 +86,8 @@ serve(async (req) => {
         },
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
-          socialBio: brandContent.socialBio,
-          brandStory: brandContent.brandStory
+          socialBio: socialBio,
+          brandStory: brandStory
         }
       }
     };
