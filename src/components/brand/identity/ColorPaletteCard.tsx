@@ -1,56 +1,58 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { RefreshCw } from "lucide-react";
+import { Palette, RefreshCw } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ColorPaletteCardProps {
   colors: string[];
+  onCustomize?: (colors: string[]) => void;
   onRegenerateAsset?: (assetType: string) => void;
 }
 
-export function ColorPaletteCard({
-  colors,
-  onRegenerateAsset,
-}: ColorPaletteCardProps) {
+export function ColorPaletteCard({ colors, onCustomize, onRegenerateAsset }: ColorPaletteCardProps) {
   const handleColorChange = (index: number, newColor: string) => {
-    // Color change handler placeholder
-    console.log(`Color ${index} changed to ${newColor}`);
+    if (onCustomize && colors) {
+      const updatedColors = [...colors];
+      updatedColors[index] = newColor;
+      onCustomize(updatedColors);
+    }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Color Palette</h3>
-        {onRegenerateAsset && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onRegenerateAsset("colors")}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Regenerate Colors
-          </Button>
-        )}
-      </div>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Color Palette
+          </CardTitle>
+          {onRegenerateAsset && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRegenerateAsset('colors')}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Regenerate
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {colors ? (
+          <div className="grid grid-cols-5 gap-2">
             {colors.map((color, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center space-y-2 p-2"
-              >
+              <div key={index} className="space-y-2">
                 <Popover>
-                  <PopoverTrigger asChild>
+                  <PopoverTrigger>
                     <div
-                      className="h-20 w-20 rounded-lg cursor-pointer transition-transform hover:scale-105"
+                      className="w-full aspect-square rounded-lg border cursor-pointer hover:ring-2 hover:ring-primary transition-all relative group"
                       style={{ backgroundColor: color }}
                     >
-                      <div className="sr-only">Choose color</div>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-lg">
+                        <span className="text-xs text-white font-medium">Edit</span>
+                      </div>
                     </div>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3">
@@ -70,11 +72,11 @@ export function ColorPaletteCard({
                 </Popover>
                 <div className="space-y-1">
                   <div className="flex items-center justify-center gap-2">
-                    <p className="text-xs font-mono">{color}</p>
                     <div 
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: color }}
                     />
+                    <p className="text-xs font-mono">{color}</p>
                   </div>
                   <div className="text-xs text-center text-muted-foreground">
                     {index === 0 ? "Primary" : index === 1 ? "Secondary" : `Accent ${index - 1}`}
@@ -83,8 +85,12 @@ export function ColorPaletteCard({
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Your brand color palette will appear here after generation.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
