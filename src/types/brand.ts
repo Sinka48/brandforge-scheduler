@@ -9,6 +9,7 @@ export interface Brand {
       coverImage?: string;
     };
     socialBio?: string;
+    story?: string;
   };
   questionnaire_id: string;
   url: string;
