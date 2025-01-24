@@ -14,6 +14,8 @@ const corsHeaders = {
 };
 
 async function generateImage(prompt: string, size = "1024x1024") {
+  console.log("Generating image with prompt:", prompt);
+  
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
@@ -39,24 +41,27 @@ async function generateImage(prompt: string, size = "1024x1024") {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { questionnaire, version } = await req.json();
+    const { questionnaire } = await req.json();
     
-    if (!questionnaire) {
-      throw new Error('Questionnaire data is required');
-    }
+    console.log('Received questionnaire data:', questionnaire);
 
-    console.log('Generating brand identity for questionnaire:', questionnaire);
+    if (!questionnaire || !questionnaire.business_name || !questionnaire.industry || !questionnaire.brand_personality) {
+      console.error('Invalid questionnaire data:', questionnaire);
+      throw new Error('Questionnaire data is incomplete. Required fields: business_name, industry, and brand_personality');
+    }
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
 
     // Generate brand identity using OpenAI
+    console.log('Generating brand identity with OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -64,7 +69,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -100,12 +105,15 @@ serve(async (req) => {
     const suggestions = JSON.parse(data.choices[0].message.content);
 
     // Generate profile image using DALL-E
+    console.log('Generating profile image...');
     const profileImageUrl = await generateImage(suggestions.profileImagePrompt);
 
     // Generate cover image using DALL-E
+    console.log('Generating cover image...');
     const coverImageUrl = await generateImage(suggestions.coverImagePrompt, "1792x1024");
 
     // Store the brand identity assets
+    console.log('Storing brand assets...');
     const { data: brandAsset, error: brandAssetError } = await supabase
       .from('brand_assets')
       .insert({
@@ -113,7 +121,7 @@ serve(async (req) => {
         questionnaire_id: questionnaire.id,
         asset_type: 'brand_identity',
         url: profileImageUrl,
-        version: version || 1,
+        version: 1,
         metadata: {
           colors: suggestions.colors,
           typography: suggestions.typography,
@@ -136,6 +144,7 @@ serve(async (req) => {
     }
 
     // Store the social media assets
+    console.log('Storing social assets...');
     const { error: socialAssetsError } = await supabase
       .from('brand_assets')
       .insert([
@@ -144,7 +153,7 @@ serve(async (req) => {
           questionnaire_id: questionnaire.id,
           asset_type: 'image',
           url: profileImageUrl,
-          version: version || 1,
+          version: 1,
           asset_category: 'social',
           social_asset_type: 'profile'
         },
@@ -153,7 +162,7 @@ serve(async (req) => {
           questionnaire_id: questionnaire.id,
           asset_type: 'image',
           url: coverImageUrl,
-          version: version || 1,
+          version: 1,
           asset_category: 'social',
           social_asset_type: 'cover'
         }
@@ -169,10 +178,14 @@ serve(async (req) => {
         colors: suggestions.colors,
         typography: suggestions.typography,
         logoUrl: profileImageUrl,
-        socialName: suggestions.socialName,
-        socialBio: suggestions.socialBio,
-        profileImageUrl,
-        coverImageUrl
+        metadata: {
+          name: suggestions.socialName,
+          socialBio: suggestions.socialBio,
+          socialAssets: {
+            profileImage: profileImageUrl,
+            coverImage: coverImageUrl
+          }
+        }
       }),
       { 
         headers: { 
