@@ -15,7 +15,7 @@ async function generateLogoWithHuggingFace(prompt: string) {
 
     const image = await hf.textToImage({
       inputs: prompt,
-      model: 'stabilityai/stable-diffusion-2',
+      model: 'black-forest-labs/FLUX.1-schnell',
       parameters: {
         negative_prompt: "text, words, letters, watermark, signature, blurry, low quality",
         num_inference_steps: 50,
@@ -128,7 +128,7 @@ serve(async (req) => {
     console.log("Returning successful response");
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      
+    });
 
   } catch (error) {
     console.error("Error in generate-brand-identity:", error);
