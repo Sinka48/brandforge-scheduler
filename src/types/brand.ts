@@ -10,6 +10,11 @@ export interface Brand {
     };
     socialBio?: string;
     story?: string;
+    industry?: string;
+    targetAudience?: string;
+    brandPersonality?: string[] | string;
+    isAiGenerated?: boolean;
+    aiGeneratedParameters?: Record<string, string | string[]>;
   };
   questionnaire_id: string;
   url: string;

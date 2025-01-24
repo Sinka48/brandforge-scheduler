@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Download } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { LogoCard } from "./LogoCard";
 import { BrandSocialPreview } from "./BrandSocialPreview";
 import { Brand } from "@/types/brand";
@@ -83,26 +83,6 @@ export function BrandReviewSection({
                     )
                   ) : (
                     <span className="text-sm text-muted-foreground">No personality traits specified</span>
-                  )}
-                </div>
-              </Card>
-
-              {/* Color Preferences */}
-              <Card className="p-4">
-                <h4 className="font-medium mb-2">Color Preferences</h4>
-                <div className="flex flex-wrap gap-2">
-                  {brand?.metadata?.colorPreferences ? (
-                    Array.isArray(brand.metadata.colorPreferences) ? (
-                      brand.metadata.colorPreferences.map((color, index) => (
-                        <Badge key={index} variant="secondary">
-                          {color}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="secondary">{brand.metadata.colorPreferences}</Badge>
-                    )
-                  ) : (
-                    <span className="text-sm text-muted-foreground">No color preferences specified</span>
                   )}
                 </div>
               </Card>
