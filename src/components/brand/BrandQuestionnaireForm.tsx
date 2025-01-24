@@ -7,10 +7,11 @@ import { useToast } from "@/hooks/use-toast"
 import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Wand2 } from "lucide-react"
+import { Wand2, Loader2 } from "lucide-react"
 import { IndustrySelector } from "./questionnaire/IndustrySelector"
 import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
 import { ColorSelector } from "./questionnaire/ColorSelector"
+import { useState } from "react"
 
 const formSchema = z.object({
   businessName: z.string().optional(),
@@ -22,6 +23,7 @@ const formSchema = z.object({
 export function BrandQuestionnaireForm() {
   const { toast } = useToast()
   const navigate = useNavigate()
+  const [isGenerating, setIsGenerating] = useState(false)
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,6 +37,7 @@ export function BrandQuestionnaireForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setIsGenerating(true)
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -48,34 +51,52 @@ export function BrandQuestionnaireForm() {
         return
       }
 
-      const { data, error } = await supabase.from("brand_questionnaires").insert({
-        user_id: user.id,
-        business_name: values.businessName || "",
-        industry: values.industry || "",
-        description: "", // Empty string as description is no longer used
-        brand_personality: values.brandPersonality || [],
-        color_preferences: values.colorPreferences || [],
-        target_audience: {}, // Simplified, removed detailed targeting
-      })
-      .select()
-      .single()
+      // Save questionnaire
+      const { data: questionnaire, error: questionnaireError } = await supabase
+        .from("brand_questionnaires")
+        .insert({
+          user_id: user.id,
+          business_name: values.businessName || "",
+          industry: values.industry || "",
+          description: "", // Empty string as description is no longer used
+          brand_personality: values.brandPersonality || [],
+          color_preferences: values.colorPreferences || [],
+          target_audience: {}, // Simplified, removed detailed targeting
+        })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (questionnaireError) throw questionnaireError
+
+      // Generate brand identity
+      const { data: brandData, error: brandError } = await supabase.functions.invoke(
+        "generate-brand-identity",
+        {
+          body: { 
+            questionnaire,
+            version: 1
+          },
+        }
+      )
+
+      if (brandError) throw brandError
 
       toast({
         title: "Success!",
-        description: "Your brand questionnaire has been saved. Generating your brand identity...",
+        description: "Your brand identity has been generated successfully.",
       })
 
-      // Navigate to brand identity page after saving questionnaire
+      // Navigate to brand identity page after generation
       navigate("/brand/identity")
     } catch (error) {
-      console.error("Error saving questionnaire:", error)
+      console.error("Error generating brand:", error)
       toast({
         title: "Error",
-        description: "Failed to save your questionnaire. Please try again.",
+        description: "Failed to generate your brand. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -115,9 +136,18 @@ export function BrandQuestionnaireForm() {
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit">
-            <Wand2 className="mr-2 h-4 w-4" />
-            Generate Brand
+          <Button type="submit" disabled={isGenerating}>
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Wand2 className="mr-2 h-4 w-4" />
+                Generate Brand
+              </>
+            )}
           </Button>
         </div>
       </form>
