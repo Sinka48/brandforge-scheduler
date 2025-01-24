@@ -3,12 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Check } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 
 interface BrandListProps {
   brands: Brand[];
@@ -51,23 +45,6 @@ export function BrandList({
                 )}
               </div>
               <span className="font-medium">v{brand.version}</span>
-              <TooltipProvider>
-                <div className="flex space-x-1">
-                  {brand.metadata.colors.map((color, index) => (
-                    <Tooltip key={index}>
-                      <TooltipTrigger>
-                        <div
-                          className="h-4 w-4 rounded-full border"
-                          style={{ backgroundColor: color }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{color}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              </TooltipProvider>
               <Button
                 variant="ghost"
                 size="sm"

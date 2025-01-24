@@ -3,6 +3,7 @@ export interface Brand {
   asset_type: string;
   created_at: string;
   metadata: {
+    name?: string;
     socialAssets?: {
       profileImage?: string;
       coverImage?: string;
