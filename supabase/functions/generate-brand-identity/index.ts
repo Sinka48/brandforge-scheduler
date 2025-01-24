@@ -88,6 +88,7 @@ serve(async (req) => {
       "socialBio": "bio here"
     }`;
 
+    console.log("Sending content generation request to OpenAI");
     const contentCompletion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -125,14 +126,7 @@ serve(async (req) => {
     }
 
     // Generate logo using DALL-E
-    const logoPrompt = `Create a minimalist and professional logo design for a ${finalIndustry} company named ${finalBusinessName}. The design should be:
-    - Simple and iconic
-    - Suitable for business use
-    - Centered in the composition
-    - On a plain white background
-    - No text or lettering
-    - Clean lines and shapes
-    - Professional color scheme`;
+    const logoPrompt = `Create a simple logo for ${finalIndustry} business. Minimal design with clean shapes on white background. No text.`;
     
     console.log("Sending request to DALL-E with prompt:", logoPrompt);
 
@@ -148,7 +142,6 @@ serve(async (req) => {
         size: "1024x1024",
         model: "dall-e-3",
         quality: "standard",
-        style: "natural",
       }),
     });
 
