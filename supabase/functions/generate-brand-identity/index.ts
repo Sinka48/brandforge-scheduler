@@ -14,13 +14,8 @@ async function generateLogoWithHuggingFace(prompt: string) {
     console.log("Generating logo with prompt:", prompt);
 
     const response = await hf.textToImage({
-      inputs: prompt,
+      inputs: `${prompt}, minimalist design, white background, high contrast, vector style, clean lines`,
       model: 'stabilityai/stable-diffusion-2',
-      parameters: {
-        negative_prompt: "text, words, letters, watermark, signature, blurry, low quality",
-        num_inference_steps: 30,
-        guidance_scale: 7.5,
-      }
     });
 
     if (!response) {
@@ -29,7 +24,6 @@ async function generateLogoWithHuggingFace(prompt: string) {
 
     console.log("Image generation successful, converting to base64");
     
-    // Convert the response to a base64 string
     const arrayBuffer = await response.arrayBuffer();
     if (!arrayBuffer) {
       throw new Error("Failed to get array buffer from response");
@@ -101,7 +95,7 @@ serve(async (req) => {
     const socialBio = `Professional ${finalIndustry} services tailored for ${finalTargetAudience}`;
 
     // Generate logo using Hugging Face
-    const logoPrompt = `Create a minimalist, professional logo for a ${finalIndustry} business. Simple, clean design with basic shapes. Pure white background. No text or words. High contrast, suitable for business use.`;
+    const logoPrompt = `Professional logo for a ${finalIndustry} business`;
     
     console.log("Generating logo with Hugging Face");
     const logoUrl = await generateLogoWithHuggingFace(logoPrompt);
