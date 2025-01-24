@@ -37,14 +37,11 @@ serve(async (req) => {
       throw new Error("No questionnaire data provided");
     }
 
-    console.log("Processing questionnaire:", questionnaire);
-
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) {
       throw new Error("OpenAI API key not found");
     }
 
-    // If the questionnaire is AI-generated, first get brand attributes
     let brandAttributes = {};
     if (questionnaire.is_ai_generated) {
       const attributesPrompt = `Generate brand identity attributes for a new business. Include:
@@ -80,10 +77,23 @@ Format the response as a JSON object with these exact keys: businessName, indust
       }
 
       try {
-        brandAttributes = JSON.parse(attributesResponse);
-        console.log("Generated brand attributes:", brandAttributes);
+        // Attempt to parse the response, with error handling
+        const parsedResponse = JSON.parse(attributesResponse.trim());
+        console.log("Successfully parsed brand attributes:", parsedResponse);
+        
+        // Validate the required fields
+        if (!parsedResponse.businessName || !parsedResponse.industry || !parsedResponse.brandPersonality || !parsedResponse.targetAudience) {
+          throw new Error("Missing required fields in brand attributes");
+        }
+        
+        // Ensure brandPersonality is an array
+        if (!Array.isArray(parsedResponse.brandPersonality)) {
+          parsedResponse.brandPersonality = [parsedResponse.brandPersonality];
+        }
+        
+        brandAttributes = parsedResponse;
       } catch (error) {
-        console.error("Error parsing brand attributes:", error);
+        console.error("Error parsing brand attributes:", error, "Raw response:", attributesResponse);
         throw new Error("Invalid brand attributes format");
       }
     }
@@ -96,7 +106,7 @@ Format the response as a JSON object with these exact keys: businessName, indust
     const finalSocialBio = questionnaire.ai_generated_parameters?.socialBio || brandAttributes.socialBio || `Professional ${finalIndustry} services tailored to your needs`;
     const finalBrandStory = questionnaire.ai_generated_parameters?.brandStory || brandAttributes.brandStory || "";
 
-    let prompt = `Generate a brand identity for:
+    const prompt = `Generate a brand identity for:
 Business Name: "${finalBusinessName}"
 Industry: "${finalIndustry}"
 ${finalPersonality.length ? `Brand Personality: ${finalPersonality.join(', ')}` : ''}
