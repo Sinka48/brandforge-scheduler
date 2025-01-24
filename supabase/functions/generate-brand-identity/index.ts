@@ -15,10 +15,13 @@ async function generateLogoWithHuggingFace(prompt: string) {
 
     const image = await hf.textToImage({
       inputs: prompt,
-      model: 'black-forest-labs/FLUX.1-schnell',
+      model: 'stabilityai/stable-diffusion-2',
+      parameters: {
+        negative_prompt: "text, words, letters, watermark, signature, blurry, low quality",
+        num_inference_steps: 50,
+      }
     });
 
-    // Convert the blob to a base64 string
     const arrayBuffer = await image.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
     const logoUrl = `data:image/png;base64,${base64}`;
@@ -58,10 +61,16 @@ serve(async (req) => {
     );
 
     // Set auth header
-    supabaseClient.auth.setSession({
+    await supabaseClient.auth.setSession({
       access_token: authHeader.replace('Bearer ', ''),
       refresh_token: '',
     });
+
+    // Get the user
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      throw new Error('Unauthorized');
+    }
 
     console.log("Function invoked - starting execution");
     
