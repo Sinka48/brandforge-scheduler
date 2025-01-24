@@ -91,6 +91,30 @@ export function BrandReviewSection({
 
           <Separator />
 
+          {/* Logo Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Brand Logo</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onRegenerateAsset?.('logo')}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Regenerate
+              </Button>
+            </div>
+            <LogoCard
+              logoUrl={logoUrl}
+              onCustomize={onLogoCustomize}
+              onDownload={onDownload}
+              compact
+            />
+          </div>
+
+          <Separator />
+
           {/* Color Palette Section */}
           {brand?.metadata?.colors && (
             <>
@@ -113,33 +137,11 @@ export function BrandReviewSection({
             </>
           )}
           
-          {/* Logo Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Brand Logo</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onRegenerateAsset?.('logo')}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Regenerate
-              </Button>
-            </div>
-            <LogoCard
-              logoUrl={logoUrl}
-              onCustomize={onLogoCustomize}
-              onDownload={onDownload}
-              compact
-            />
-          </div>
-          
-          <Separator />
-          
           {/* Social Media Assets Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Social Media Assets</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Social Media Assets</h3>
+            </div>
             {brand ? (
               <BrandSocialPreview
                 brand={brand}
