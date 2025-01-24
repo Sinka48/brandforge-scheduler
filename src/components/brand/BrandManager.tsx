@@ -57,10 +57,10 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
 
       console.log("Fetched brands data:", data);
 
-      const transformedBrands: Brand[] = (data || []).map((item: BrandAsset) => ({
+      const transformedBrands: Brand[] = (data || []).map((item: any) => ({
         id: item.id,
         url: item.url,
-        metadata: item.metadata || {},
+        metadata: item.metadata as Brand['metadata'],
         version: item.version || 1,
         created_at: item.created_at,
         asset_type: item.asset_type,
@@ -86,7 +86,6 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
     }
   };
 
-  // Fetch brands on mount and when selectedBrandId changes
   useEffect(() => {
     fetchBrands();
   }, [selectedBrandId]);
