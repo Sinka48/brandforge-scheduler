@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Wand2, Loader2 } from "lucide-react"
 import { IndustrySelector } from "./questionnaire/IndustrySelector"
 import { PersonalitySelector } from "./questionnaire/PersonalitySelector"
+import { TargetAudienceSelector } from "./questionnaire/TargetAudienceSelector"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,7 @@ const formSchema = z.object({
   businessName: z.string().optional(),
   industry: z.string().optional(),
   brandPersonality: z.array(z.string()).optional(),
+  targetAudience: z.string().optional(),
 })
 
 export function BrandQuestionnaireForm() {
@@ -31,6 +33,7 @@ export function BrandQuestionnaireForm() {
       businessName: "",
       industry: "",
       brandPersonality: [],
+      targetAudience: "",
     },
   })
 
@@ -61,8 +64,8 @@ export function BrandQuestionnaireForm() {
           industry: values.industry || null,
           description: values.businessName ? `Brand for ${values.businessName}` : "AI Generated Brand",
           brand_personality: values.brandPersonality || [],
+          target_audience: values.targetAudience ? { primary: values.targetAudience } : {},
           color_preferences: [],
-          target_audience: {},
           is_ai_generated: !values.businessName && !values.industry && (!values.brandPersonality || values.brandPersonality.length === 0),
           ai_generated_parameters: {}
         })
@@ -91,6 +94,7 @@ export function BrandQuestionnaireForm() {
               business_name: questionnaire.business_name,
               industry: questionnaire.industry,
               brand_personality: questionnaire.brand_personality,
+              target_audience: questionnaire.target_audience,
               is_ai_generated: questionnaire.is_ai_generated
             }
           }
@@ -138,6 +142,7 @@ export function BrandQuestionnaireForm() {
 
   const selectedPersonality = form.watch("brandPersonality") || []
   const selectedIndustry = form.watch("industry")
+  const selectedTargetAudience = form.watch("targetAudience")
 
   return (
     <Card>
@@ -168,6 +173,21 @@ export function BrandQuestionnaireForm() {
               {selectedIndustry && (
                 <div className="mt-2">
                   <Badge variant="secondary">{selectedIndustry}</Badge>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Target Audience (Optional)</h3>
+              <div>
+                <TargetAudienceSelector
+                  selected={selectedTargetAudience}
+                  onSelect={(audience) => form.setValue("targetAudience", audience)}
+                />
+              </div>
+              {selectedTargetAudience && (
+                <div className="mt-2">
+                  <Badge variant="secondary">{selectedTargetAudience}</Badge>
                 </div>
               )}
             </div>
