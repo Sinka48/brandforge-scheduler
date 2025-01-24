@@ -15,6 +15,10 @@ interface Questionnaire {
     primary: string;
   };
   is_ai_generated: boolean;
+  ai_generated_parameters?: {
+    socialBio?: string;
+    brandStory?: string;
+  };
 }
 
 serve(async (req) => {
@@ -29,6 +33,8 @@ serve(async (req) => {
       throw new Error("No questionnaire data provided");
     }
 
+    console.log("Processing questionnaire:", questionnaire);
+
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) {
       throw new Error("OpenAI API key not found");
@@ -41,7 +47,9 @@ serve(async (req) => {
 Business Name: "${questionnaire.business_name}"
 Industry: "${questionnaire.industry}"
 ${questionnaire.brand_personality?.length ? `Brand Personality: ${questionnaire.brand_personality.join(', ')}` : ''}
-${questionnaire.target_audience?.primary ? `Target Audience: ${questionnaire.target_audience.primary}` : ''}`;
+${questionnaire.target_audience?.primary ? `Target Audience: ${questionnaire.target_audience.primary}` : ''}
+${questionnaire.ai_generated_parameters?.socialBio ? `Social Bio: ${questionnaire.ai_generated_parameters.socialBio}` : ''}
+${questionnaire.ai_generated_parameters?.brandStory ? `Brand Story: ${questionnaire.ai_generated_parameters.brandStory}` : ''}`;
 
     if (regenerateOnly) {
       switch (regenerateOnly) {
@@ -147,7 +155,8 @@ Return a complete brand identity including:
         industry: questionnaire.industry,
         brandPersonality: questionnaire.brand_personality,
         targetAudience: questionnaire.target_audience?.primary,
-        socialBio: "Professional " + questionnaire.industry + " services tailored to your needs",
+        socialBio: questionnaire.ai_generated_parameters?.socialBio || `Professional ${questionnaire.industry} services tailored to your needs`,
+        brandStory: questionnaire.ai_generated_parameters?.brandStory,
         colors,
         socialAssets: {
           profileImage: profileImageUrl,
@@ -159,9 +168,13 @@ Return a complete brand identity including:
           industry: questionnaire.industry,
           brandPersonality: questionnaire.brand_personality,
           targetAudience: questionnaire.target_audience?.primary,
+          socialBio: questionnaire.ai_generated_parameters?.socialBio,
+          brandStory: questionnaire.ai_generated_parameters?.brandStory
         }
       }
     };
+
+    console.log("Returning result:", result);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -169,7 +182,7 @@ Return a complete brand identity including:
     });
 
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
