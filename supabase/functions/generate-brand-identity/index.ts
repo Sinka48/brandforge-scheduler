@@ -13,6 +13,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function generateImage(prompt: string, size = "1024x1024") {
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openAIApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: "dall-e-3",
+      prompt,
+      n: 1,
+      size,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('DALL-E API error:', error);
+    throw new Error(`DALL-E API error: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.data[0].url;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -75,40 +100,10 @@ serve(async (req) => {
     const suggestions = JSON.parse(data.choices[0].message.content);
 
     // Generate profile image using DALL-E
-    const profileImageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: suggestions.profileImagePrompt,
-        n: 1,
-        size: "1024x1024",
-      }),
-    });
-
-    const profileImageData = await profileImageResponse.json();
-    const profileImageUrl = profileImageData.data[0].url;
+    const profileImageUrl = await generateImage(suggestions.profileImagePrompt);
 
     // Generate cover image using DALL-E
-    const coverImageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: suggestions.coverImagePrompt,
-        n: 1,
-        size: "1792x1024",
-      }),
-    });
-
-    const coverImageData = await coverImageResponse.json();
-    const coverImageUrl = coverImageData.data[0].url;
+    const coverImageUrl = await generateImage(suggestions.coverImagePrompt, "1792x1024");
 
     // Store the brand identity assets
     const { data: brandAsset, error: brandAssetError } = await supabase
