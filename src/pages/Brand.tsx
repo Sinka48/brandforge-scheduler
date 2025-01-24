@@ -29,7 +29,31 @@ export default function BrandPage({ session }: BrandPageProps) {
           .single();
 
         if (error) throw error;
-        setBrand(data);
+
+        if (data) {
+          // Transform the data to match the Brand type
+          const brandData: Brand = {
+            id: data.id,
+            asset_type: data.asset_type,
+            created_at: data.created_at,
+            metadata: {
+              name: data.metadata?.name || undefined,
+              socialAssets: data.metadata?.socialAssets || undefined,
+              socialBio: data.metadata?.socialBio || undefined
+            },
+            questionnaire_id: data.questionnaire_id,
+            url: data.url,
+            user_id: data.user_id,
+            version: data.version,
+            asset_category: data.asset_category,
+            social_asset_type: data.social_asset_type,
+            social_name: data.social_name,
+            social_bio: data.social_bio
+          };
+          setBrand(brandData);
+        } else {
+          setBrand(null);
+        }
       } catch (error) {
         console.error("Error fetching brand:", error);
         toast({
