@@ -55,14 +55,19 @@ export function BrandQuestionnaireForm() {
 
       console.log("Saving questionnaire with values:", values)
 
+      // Generate a default business name if none provided
+      const defaultBusinessName = "AI Generated Brand"
+      const businessName = values.businessName?.trim() || defaultBusinessName
+      const description = values.businessName ? `Brand for ${values.businessName}` : defaultBusinessName
+
       // Save questionnaire with optional fields
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName || null,
-          industry: values.industry || null,
-          description: values.businessName ? `Brand for ${values.businessName}` : "AI Generated Brand",
+          business_name: businessName,
+          industry: values.industry || "General",
+          description: description,
           brand_personality: values.brandPersonality || [],
           target_audience: values.targetAudience ? { primary: values.targetAudience } : {},
           color_preferences: [],
