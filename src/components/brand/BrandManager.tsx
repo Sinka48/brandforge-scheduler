@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { BrandReviewSection } from "./identity/BrandReviewSection";
 import {
   AlertDialog,
@@ -16,6 +16,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Brand } from "@/types/brand";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface BrandManagerProps {
   onSelectBrand?: (brand: Brand) => void;
@@ -175,52 +182,73 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {brands.map((brand) => (
-              <Card
-                key={brand.id}
-                className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary ${
-                  selectedBrand?.id === brand.id ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => handleBrandSelect(brand)}
-              >
-                <CardHeader className="space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Brand v{brand.version}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <img
-                    src={brand.url}
-                    alt={`Brand v${brand.version}`}
-                    className="w-full rounded-lg border"
-                  />
-                  <div className="grid grid-cols-5 gap-1">
-                    {brand.metadata.colors.map((color, index) => (
-                      <div
-                        key={index}
-                        className="aspect-square rounded-full border"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setBrandToDelete(brand.id);
-                        setDeleteDialogOpen(true);
-                      }}
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Brands</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="w-full whitespace-nowrap rounded-md">
+                <div className="flex w-max space-x-4 p-4">
+                  {brands.map((brand) => (
+                    <div
+                      key={brand.id}
+                      className={cn(
+                        "group relative cursor-pointer rounded-full border transition-all hover:shadow-md",
+                        selectedBrand?.id === brand.id
+                          ? "border-[#9b87f5] bg-[#9b87f5]/10"
+                          : "hover:border-[#7E69AB]"
+                      )}
+                      onClick={() => handleBrandSelect(brand)}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      <div className="flex items-center space-x-2 px-4 py-2">
+                        <div className="relative h-8 w-8">
+                          <img
+                            src={brand.url}
+                            alt={`Brand v${brand.version}`}
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                          {selectedBrand?.id === brand.id && (
+                            <div className="absolute -right-1 -top-1 rounded-full bg-[#9b87f5] p-0.5">
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-medium">v{brand.version}</span>
+                        <div className="flex space-x-1">
+                          {brand.metadata.colors.map((color, index) => (
+                            <Tooltip key={index}>
+                              <TooltipTrigger>
+                                <div
+                                  className="h-4 w-4 rounded-full border"
+                                  style={{ backgroundColor: color }}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{color}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBrandToDelete(brand.id);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </CardContent>
+          </Card>
 
           {selectedBrand && (
             <Card>
