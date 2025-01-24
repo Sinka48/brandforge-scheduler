@@ -1,8 +1,9 @@
 import { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
-import { Trash2, Check } from "lucide-react";
+import { Trash2, Check, Download } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface BrandListProps {
   brands: Brand[];
@@ -21,46 +22,61 @@ export function BrandList({
     <ScrollArea className="w-full whitespace-nowrap rounded-md">
       <div className="flex w-max space-x-4 p-4">
         {brands.map((brand) => (
-          <div
+          <Card
             key={brand.id}
             className={cn(
-              "group relative cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md",
+              "group relative cursor-pointer p-6 transition-all hover:shadow-md",
               selectedBrand?.id === brand.id
                 ? "border-[#9b87f5] bg-[#9b87f5]/10"
                 : "hover:border-[#7E69AB]"
             )}
             onClick={() => onSelectBrand(brand)}
           >
-            <div className="flex flex-col items-center space-y-3">
+            <div className="flex flex-col items-center space-y-4">
               <div className="relative">
                 <img
                   src={brand.url}
                   alt={brand.metadata.name || `Brand v${brand.version}`}
-                  className="h-16 w-16 rounded-full object-cover"
+                  className="h-20 w-20 rounded-full object-cover border-2 border-white shadow-sm"
                 />
                 {selectedBrand?.id === brand.id && (
-                  <div className="absolute -right-1 -top-1 rounded-full bg-[#9b87f5] p-0.5">
-                    <Check className="h-3 w-3 text-white" />
+                  <div className="absolute -right-1 -top-1 rounded-full bg-[#9b87f5] p-1">
+                    <Check className="h-4 w-4 text-white" />
                   </div>
                 )}
               </div>
               <div className="text-center">
-                <h3 className="font-medium">{brand.metadata.name || "Untitled"}</h3>
-                <p className="text-sm text-muted-foreground">v{brand.version}</p>
+                <h3 className="text-lg font-semibold">
+                  {brand.metadata.name || "Untitled Brand"}
+                </h3>
+                <p className="text-sm text-muted-foreground">Version {brand.version}</p>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="opacity-0 group-hover:opacity-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteBrand(brand.id);
-                }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(brand.url, '_blank');
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteBrand(brand.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
       <ScrollBar orientation="horizontal" />

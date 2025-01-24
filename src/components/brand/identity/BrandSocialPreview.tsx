@@ -1,7 +1,8 @@
 import { Brand } from "@/types/brand";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { RefreshCw, Download, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 
 interface BrandSocialPreviewProps {
   brand: Brand;
@@ -11,12 +12,45 @@ interface BrandSocialPreviewProps {
 export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPreviewProps) {
   const socialAssets = brand.metadata.socialAssets || {};
   const platforms = [
-    { id: 'twitter', name: 'Twitter', icon: Twitter },
-    { id: 'facebook', name: 'Facebook', icon: Facebook },
-    { id: 'instagram', name: 'Instagram', icon: Instagram },
-    { id: 'linkedin', name: 'LinkedIn', icon: Linkedin },
+    { 
+      id: 'twitter', 
+      name: 'Twitter', 
+      icon: Twitter,
+      profileSize: '400x400px',
+      coverSize: '1500x500px'
+    },
+    { 
+      id: 'facebook', 
+      name: 'Facebook', 
+      icon: Facebook,
+      profileSize: '170x170px',
+      coverSize: '820x312px'
+    },
+    { 
+      id: 'instagram', 
+      name: 'Instagram', 
+      icon: Instagram,
+      profileSize: '320x320px',
+      coverSize: '1080x1080px'
+    },
+    { 
+      id: 'linkedin', 
+      name: 'LinkedIn', 
+      icon: Linkedin,
+      profileSize: '400x400px',
+      coverSize: '1584x396px'
+    },
   ];
   
+  const handleDownload = (url: string, platform: string, type: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${brand.metadata.name || 'brand'}-${platform}-${type}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Tabs defaultValue="twitter" className="w-full">
       <TabsList className="grid w-full grid-cols-4">
@@ -34,45 +68,89 @@ export function BrandSocialPreview({ brand, onRegenerateAsset }: BrandSocialPrev
 
       {platforms.map((platform) => (
         <TabsContent key={platform.id} value={platform.id} className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Profile Image</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onRegenerateAsset?.(`${platform.id}_profile`)}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Regenerate
-              </Button>
-            </div>
-            <img
-              src={socialAssets[`${platform.id}ProfileImage`] || socialAssets.profileImage}
-              alt={`${platform.name} Profile`}
-              className="h-32 w-32 rounded-full object-cover border"
-            />
-          </div>
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Profile Image</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Recommended size: {platform.profileSize}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onRegenerateAsset?.(`${platform.id}_profile`)}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Regenerate
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(
+                        socialAssets[`${platform.id}ProfileImage`] || socialAssets.profileImage || '',
+                        platform.name,
+                        'profile'
+                      )}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                <img
+                  src={socialAssets[`${platform.id}ProfileImage`] || socialAssets.profileImage}
+                  alt={`${platform.name} Profile`}
+                  className="h-32 w-32 rounded-full object-cover border shadow-sm"
+                />
+              </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Cover Image</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onRegenerateAsset?.(`${platform.id}_cover`)}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Regenerate
-              </Button>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Cover Image</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Recommended size: {platform.coverSize}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onRegenerateAsset?.(`${platform.id}_cover`)}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Regenerate
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(
+                        socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage || '',
+                        platform.name,
+                        'cover'
+                      )}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                <img
+                  src={socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage}
+                  alt={`${platform.name} Cover`}
+                  className="w-full rounded-lg object-cover border shadow-sm"
+                  style={{ 
+                    height: platform.id === 'instagram' ? '320px' : '200px',
+                    objectFit: 'cover'
+                  }}
+                />
+              </div>
             </div>
-            <img
-              src={socialAssets[`${platform.id}CoverImage`] || socialAssets.coverImage}
-              alt={`${platform.name} Cover`}
-              className="w-full h-48 rounded-lg object-cover border"
-            />
-          </div>
+          </Card>
         </TabsContent>
       ))}
     </Tabs>
