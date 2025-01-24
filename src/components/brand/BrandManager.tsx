@@ -64,7 +64,7 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
       const { data, error } = await supabase
         .from("brand_assets")
         .select("*")
-        .eq("asset_type", "logo")
+        .eq('asset_category', 'brand')
         .order("created_at", { ascending: false });
 
       if (error) {
