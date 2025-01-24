@@ -6,57 +6,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface Questionnaire {
-  id: string;
-  user_id: string;
-  business_name: string;
-  industry: string;
-  brand_personality?: string[];
-  target_audience?: {
-    primary: string;
-  };
-  is_ai_generated: boolean;
-  ai_generated_parameters?: {
-    socialBio?: string;
-    brandStory?: string;
-  };
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { questionnaire } = await req.json();
-    console.log("Received questionnaire:", JSON.stringify(questionnaire, null, 2));
-    
-    if (!questionnaire || !questionnaire.id) {
-      throw new Error("No questionnaire data provided");
-    }
+    const { generateNameOnly, questionnaire } = await req.json();
+    console.log("Request params:", { generateNameOnly, questionnaire });
 
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) {
       throw new Error("OpenAI API key not found");
     }
 
-    let brandAttributes = {};
-    if (questionnaire.is_ai_generated) {
-      console.log("Generating AI brand attributes...");
+    // Handle name generation only
+    if (generateNameOnly) {
+      console.log("Generating business name only...");
       
-      const attributesPrompt = `Generate brand identity attributes as a pure JSON object (no markdown formatting) with these exact fields:
-{
-  "businessName": "a creative and memorable business name",
-  "industry": "one of [Technology, Healthcare, Education, Retail, Finance, Entertainment, Food & Beverage, Travel, Real Estate]",
-  "brandPersonality": ["trait1", "trait2", "trait3"] (exactly three traits from [Professional, Friendly, Innovative, Traditional, Luxurious, Playful, Minimalist, Bold, Trustworthy, Creative]),
-  "targetAudience": "one of [Young Professionals, Parents, Students, Business Owners, Seniors, Tech-Savvy, Luxury Consumers, Budget Shoppers, Health Enthusiasts, Creative Professionals]",
-  "socialBio": "a compelling social media bio (max 160 characters)",
-  "brandStory": "a brief brand story (max 500 characters)"
-}
-
-Return ONLY the JSON object with no additional text or formatting.`;
-
-      console.log("Sending prompt to OpenAI:", attributesPrompt);
+      const namePrompt = `Generate a creative and memorable business name. Return ONLY the name, no additional text or explanation.`;
 
       const completion = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -65,54 +33,30 @@ Return ONLY the JSON object with no additional text or formatting.`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-4',
           messages: [
-            { 
-              role: 'system', 
-              content: 'You are a JSON generator that only returns valid JSON objects without any markdown or additional formatting.' 
-            },
-            { role: 'user', content: attributesPrompt }
+            { role: 'system', content: 'You are a business name generator. Return only the name, no additional text.' },
+            { role: 'user', content: namePrompt }
           ],
           temperature: 0.7,
         }),
       });
 
-      const attributesData = await completion.json();
-      console.log("OpenAI response:", JSON.stringify(attributesData, null, 2));
+      const nameData = await completion.json();
+      console.log("OpenAI response:", nameData);
+
+      const generatedName = nameData.choices[0]?.message?.content?.trim();
       
-      const attributesResponse = attributesData.choices[0]?.message?.content;
-      
-      if (!attributesResponse) {
-        throw new Error("Failed to generate brand attributes");
+      if (!generatedName) {
+        throw new Error("Failed to generate business name");
       }
 
-      try {
-        // Clean up any potential markdown formatting
-        const cleanJson = attributesResponse.replace(/```json\n|\n```|```/g, '').trim();
-        console.log("Cleaned JSON string:", cleanJson);
-        
-        const parsedResponse = JSON.parse(cleanJson);
-        console.log("Parsed attributes:", JSON.stringify(parsedResponse, null, 2));
-
-        // Validate required fields
-        const requiredFields = ['businessName', 'industry', 'brandPersonality', 'targetAudience'];
-        const missingFields = requiredFields.filter(field => !parsedResponse[field]);
-        
-        if (missingFields.length > 0) {
-          throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-        }
-
-        // Ensure brandPersonality is an array with exactly 3 traits
-        if (!Array.isArray(parsedResponse.brandPersonality) || parsedResponse.brandPersonality.length !== 3) {
-          throw new Error('brandPersonality must be an array with exactly 3 traits');
-        }
-
-        brandAttributes = parsedResponse;
-      } catch (error) {
-        console.error("Error parsing brand attributes:", error);
-        console.error("Raw response that failed parsing:", attributesResponse);
-        throw new Error(`Invalid brand attributes format: ${error.message}`);
-      }
+      return new Response(
+        JSON.stringify({
+          metadata: { name: generatedName }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Use either provided or AI-generated attributes

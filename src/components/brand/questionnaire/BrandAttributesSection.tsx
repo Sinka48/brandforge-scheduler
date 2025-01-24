@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { FormField } from "@/components/ui/form";
 import { MessageSquare, Palette, Users } from "lucide-react";
 import { IndustrySelector } from "./IndustrySelector";
@@ -34,11 +33,6 @@ export function BrandAttributesSection({ form }: BrandAttributesSectionProps) {
             />
           )}
         />
-        {selectedIndustry && (
-          <div className="mt-2">
-            <Badge variant="secondary">{selectedIndustry}</Badge>
-          </div>
-        )}
       </div>
 
       <div className="space-y-4">
@@ -56,11 +50,6 @@ export function BrandAttributesSection({ form }: BrandAttributesSectionProps) {
             />
           )}
         />
-        {selectedTargetAudience && (
-          <div className="mt-2">
-            <Badge variant="secondary">{selectedTargetAudience}</Badge>
-          </div>
-        )}
       </div>
 
       <div className="space-y-4">
@@ -78,15 +67,6 @@ export function BrandAttributesSection({ form }: BrandAttributesSectionProps) {
             />
           )}
         />
-        {selectedPersonality.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {selectedPersonality.map((trait: string, index: number) => (
-              <Badge key={index} variant="secondary">
-                {trait}
-              </Badge>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="space-y-4">
@@ -104,15 +84,6 @@ export function BrandAttributesSection({ form }: BrandAttributesSectionProps) {
             />
           )}
         />
-        {selectedColors.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {selectedColors.map((color: string, index: number) => (
-              <Badge key={index} variant="secondary">
-                {color}
-              </Badge>
-            ))}
-          </div>
-        )}
       </div>
     </>
   );
