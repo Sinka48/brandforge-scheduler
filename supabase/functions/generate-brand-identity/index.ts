@@ -53,7 +53,7 @@ async function generateLogoWithDallE(prompt: string) {
 
 async function generateBrandContent(businessName: string, industry: string, personality: string[], targetAudience: string) {
   try {
-    console.log("Generating brand content with GPT-4");
+    console.log("Generating brand content with GPT-4 mini");
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!openaiKey) {
@@ -105,7 +105,6 @@ async function generateBrandContent(businessName: string, industry: string, pers
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -113,19 +112,16 @@ serve(async (req) => {
   try {
     console.log("Function invoked - starting execution");
 
-    // Verify OpenAI API key is configured
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiKey) {
       throw new Error("OpenAI API key is not configured. Please add it in the Supabase dashboard.");
     }
 
-    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('No authorization header');
     }
 
-    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -138,7 +134,6 @@ serve(async (req) => {
       }
     );
 
-    // Set auth header and verify user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
@@ -154,7 +149,6 @@ serve(async (req) => {
     console.log("Received request data:", { questionnaire, generateNameOnly });
 
     if (generateNameOnly) {
-      // Generate only a business name using GPT-4
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -198,13 +192,11 @@ serve(async (req) => {
       throw new Error('No questionnaire data provided');
     }
 
-    // Use either provided or default attributes
     const finalBusinessName = questionnaire.business_name || "AI Generated Brand";
     const finalIndustry = questionnaire.industry || "General";
     const finalPersonality = questionnaire.brand_personality || [];
     const finalTargetAudience = questionnaire.target_audience?.primary || "General";
 
-    // Generate brand content using GPT
     console.log("Generating brand content");
     const { brandStory, socialBio } = await generateBrandContent(
       finalBusinessName,
@@ -213,10 +205,12 @@ serve(async (req) => {
       finalTargetAudience
     );
 
-    // Generate logo using DALL-E
     const logoPrompt = `Professional logo for ${finalBusinessName}, a ${finalIndustry} business`;
     console.log("Generating logo with DALL-E");
     const logoUrl = await generateLogoWithDallE(logoPrompt);
+
+    // Select a cover image based on industry and personality
+    const coverImage = "https://images.unsplash.com/photo-1485827404703-89b55fcc595e";
 
     // Default color palette
     const defaultColors = [
@@ -239,7 +233,7 @@ serve(async (req) => {
         colors: defaultColors,
         socialAssets: {
           profileImage: logoUrl,
-          coverImage: "",
+          coverImage: coverImage,
         },
         isAiGenerated: questionnaire.is_ai_generated,
         aiGeneratedParameters: {
@@ -257,7 +251,6 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in generate-brand-identity:", error);
     
-    // Check for specific OpenAI errors
     if (error.message?.includes('insufficient_quota')) {
       return new Response(JSON.stringify({ 
         error: "OpenAI API quota exceeded. Please check your billing details or use a different API key.",
