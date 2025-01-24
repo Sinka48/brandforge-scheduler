@@ -13,39 +13,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function generateImage(prompt: string, size = "1024x1024") {
-  console.log("Generating image with prompt:", prompt);
-  
-  const response = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: "dall-e-3",
-      prompt,
-      n: 1,
-      size,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    console.error('DALL-E API error:', error);
-    throw new Error(`DALL-E API error: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.data[0].url;
-}
-
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log("Function started");
+    
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
@@ -75,7 +51,7 @@ serve(async (req) => {
       throw new Error('brand_personality must be an array');
     }
 
-    console.log('Generating brand identity with OpenAI...');
+    console.log("Generating brand identity with OpenAI...");
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -177,3 +153,30 @@ serve(async (req) => {
     );
   }
 });
+
+async function generateImage(prompt: string, size = "1024x1024") {
+  console.log("Generating image with prompt:", prompt);
+  
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openAIApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: "dall-e-3",
+      prompt,
+      n: 1,
+      size,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('DALL-E API error:', error);
+    throw new Error(`DALL-E API error: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.data[0].url;
+}
