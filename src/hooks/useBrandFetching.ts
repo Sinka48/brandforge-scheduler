@@ -2,35 +2,44 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Brand } from "@/types/brand";
+import { useNavigate } from "react-router-dom";
 
 export function useBrandFetching() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchBrands = async () => {
     try {
-      console.log("Fetching brands...");
+      console.log("Checking authentication...");
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
+        console.log("No active session found");
         toast({
           title: "Authentication required",
           description: "Please sign in to view your brands.",
           variant: "destructive",
         });
+        navigate('/');
         setLoading(false);
         return;
       }
 
+      console.log("Fetching brands for authenticated user...");
       const { data, error } = await supabase
         .from("brand_assets")
         .select("*")
         .eq('asset_category', 'brand')
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching brands:", error);
+        throw error;
+      }
 
-      console.log("Fetched brands data:", data);
+      console.log("Successfully fetched brands data:", data);
 
       const transformedBrands: Brand[] = (data || []).map((item: any) => ({
         id: item.id,
@@ -50,7 +59,7 @@ export function useBrandFetching() {
       console.log("Transformed brands:", transformedBrands);
       setBrands(transformedBrands);
     } catch (error) {
-      console.error("Error fetching brands:", error);
+      console.error("Error in fetchBrands:", error);
       toast({
         title: "Error",
         description: "Failed to load brands. Please try again.",
