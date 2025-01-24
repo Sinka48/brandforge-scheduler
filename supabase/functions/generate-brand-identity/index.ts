@@ -48,6 +48,10 @@ serve(async (req) => {
             - colors: array of exactly 5 hex color codes that work well together
             - typography: object with headingFont and bodyFont (use Google Fonts names)
             - logoDescription: detailed description of a logo that matches the brand
+            - socialName: a creative and memorable brand name
+            - socialBio: a compelling social media bio (max 160 characters)
+            - profileImagePrompt: a detailed prompt for generating a profile image
+            - coverImagePrompt: a detailed prompt for generating a cover image
             Format the response as a valid JSON object with these exact keys.`
           },
           {
@@ -70,39 +74,108 @@ serve(async (req) => {
     
     const suggestions = JSON.parse(data.choices[0].message.content);
 
-    // Generate a placeholder logo URL (in production this would call a logo generation service)
-    const placeholderLogoUrl = "https://via.placeholder.com/300x300.png?text=Generated+Logo";
+    // Generate profile image using DALL-E
+    const profileImageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: suggestions.profileImagePrompt,
+        n: 1,
+        size: "1024x1024",
+      }),
+    });
 
-    // Store the generated assets
-    const { data: asset, error: assetError } = await supabase
+    const profileImageData = await profileImageResponse.json();
+    const profileImageUrl = profileImageData.data[0].url;
+
+    // Generate cover image using DALL-E
+    const coverImageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: suggestions.coverImagePrompt,
+        n: 1,
+        size: "1792x1024",
+      }),
+    });
+
+    const coverImageData = await coverImageResponse.json();
+    const coverImageUrl = coverImageData.data[0].url;
+
+    // Store the brand identity assets
+    const { data: brandAsset, error: brandAssetError } = await supabase
       .from('brand_assets')
       .insert([
         {
           user_id: questionnaire.user_id,
           questionnaire_id: questionnaire.id,
           asset_type: 'brand_identity',
-          url: placeholderLogoUrl,
+          url: profileImageUrl,
           version: version,
           metadata: {
             colors: suggestions.colors,
             typography: suggestions.typography,
             logoDescription: suggestions.logoDescription
-          }
+          },
+          social_name: suggestions.socialName,
+          social_bio: suggestions.socialBio,
+          asset_category: 'brand'
         }
       ])
       .select()
       .single();
 
-    if (assetError) {
-      console.error('Error storing brand assets:', assetError);
-      throw assetError;
+    if (brandAssetError) {
+      console.error('Error storing brand assets:', brandAssetError);
+      throw brandAssetError;
+    }
+
+    // Store the social media assets
+    const { error: socialAssetsError } = await supabase
+      .from('brand_assets')
+      .insert([
+        {
+          user_id: questionnaire.user_id,
+          questionnaire_id: questionnaire.id,
+          asset_type: 'image',
+          url: profileImageUrl,
+          version: version,
+          asset_category: 'social',
+          social_asset_type: 'profile'
+        },
+        {
+          user_id: questionnaire.user_id,
+          questionnaire_id: questionnaire.id,
+          asset_type: 'image',
+          url: coverImageUrl,
+          version: version,
+          asset_category: 'social',
+          social_asset_type: 'cover'
+        }
+      ]);
+
+    if (socialAssetsError) {
+      console.error('Error storing social assets:', socialAssetsError);
+      throw socialAssetsError;
     }
 
     return new Response(
       JSON.stringify({
         colors: suggestions.colors,
         typography: suggestions.typography,
-        logoUrl: placeholderLogoUrl
+        logoUrl: profileImageUrl,
+        socialName: suggestions.socialName,
+        socialBio: suggestions.socialBio,
+        profileImageUrl,
+        coverImageUrl
       }),
       { 
         headers: { 

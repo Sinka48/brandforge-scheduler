@@ -11,31 +11,43 @@ export type Database = {
     Tables: {
       brand_assets: {
         Row: {
+          asset_category: string | null
           asset_type: string
           created_at: string
           id: string
           metadata: Json | null
           questionnaire_id: string
+          social_asset_type: string | null
+          social_bio: string | null
+          social_name: string | null
           url: string
           user_id: string
           version: number | null
         }
         Insert: {
+          asset_category?: string | null
           asset_type: string
           created_at?: string
           id?: string
           metadata?: Json | null
           questionnaire_id: string
+          social_asset_type?: string | null
+          social_bio?: string | null
+          social_name?: string | null
           url: string
           user_id: string
           version?: number | null
         }
         Update: {
+          asset_category?: string | null
           asset_type?: string
           created_at?: string
           id?: string
           metadata?: Json | null
           questionnaire_id?: string
+          social_asset_type?: string | null
+          social_bio?: string | null
+          social_name?: string | null
           url?: string
           user_id?: string
           version?: number | null
