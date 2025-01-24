@@ -13,4 +13,15 @@ export interface Brand {
   url: string;
   user_id: string;
   version: number;
+  asset_category?: string;
+  social_asset_type?: string;
+  social_name?: string;
+  social_bio?: string;
+}
+
+export interface BrandAsset extends Brand {
+  asset_category: string;
+  social_asset_type: string | null;
+  social_name: string | null;
+  social_bio: string | null;
 }

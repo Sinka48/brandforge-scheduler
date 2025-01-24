@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trash2, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { BrandReviewSection } from "./identity/BrandReviewSection";
 import {
   AlertDialog,
@@ -15,36 +14,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Brand } from "@/types/brand";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { Brand, BrandAsset } from "@/types/brand";
+import { BrandList } from "./BrandList";
 
 interface BrandManagerProps {
   onSelectBrand?: (brand: Brand) => void;
   selectedBrandId?: string;
-}
-
-interface BrandAsset {
-  id: string;
-  url: string;
-  metadata: {
-    colors: string[];
-    typography: {
-      headingFont: string;
-      bodyFont: string;
-    };
-  };
-  version: number;
-  created_at: string;
-  asset_type: string;
-  questionnaire_id: string;
-  user_id: string;
 }
 
 export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerProps) {
@@ -91,31 +66,21 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
         .eq("asset_type", "logo")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching brands:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // Transform the data to match the Brand type with proper type checking
       const transformedBrands: Brand[] = (data || []).map((item: BrandAsset) => ({
         id: item.id,
         url: item.url,
-        metadata: {
-          colors: Array.isArray(item.metadata?.colors) ? item.metadata.colors : [],
-          typography: {
-            headingFont: typeof item.metadata?.typography?.headingFont === 'string' 
-              ? item.metadata.typography.headingFont 
-              : "",
-            bodyFont: typeof item.metadata?.typography?.bodyFont === 'string'
-              ? item.metadata.typography.bodyFont
-              : ""
-          }
-        },
+        metadata: item.metadata as Brand['metadata'],
         version: item.version || 1,
         created_at: item.created_at,
         asset_type: item.asset_type,
         questionnaire_id: item.questionnaire_id,
-        user_id: item.user_id
+        user_id: item.user_id,
+        asset_category: item.asset_category,
+        social_asset_type: item.social_asset_type,
+        social_name: item.social_name,
+        social_bio: item.social_bio
       }));
 
       setBrands(transformedBrands);
@@ -188,68 +153,15 @@ export function BrandManager({ onSelectBrand, selectedBrandId }: BrandManagerPro
               <CardTitle>Your Brands</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="w-full whitespace-nowrap rounded-md">
-                <div className="flex w-max space-x-4 p-4">
-                  {brands.map((brand) => (
-                    <div
-                      key={brand.id}
-                      className={cn(
-                        "group relative cursor-pointer rounded-full border transition-all hover:shadow-md",
-                        selectedBrand?.id === brand.id
-                          ? "border-[#9b87f5] bg-[#9b87f5]/10"
-                          : "hover:border-[#7E69AB]"
-                      )}
-                      onClick={() => handleBrandSelect(brand)}
-                    >
-                      <div className="flex items-center space-x-2 px-4 py-2">
-                        <div className="relative h-8 w-8">
-                          <img
-                            src={brand.url}
-                            alt={`Brand v${brand.version}`}
-                            className="h-full w-full rounded-full object-cover"
-                          />
-                          {selectedBrand?.id === brand.id && (
-                            <div className="absolute -right-1 -top-1 rounded-full bg-[#9b87f5] p-0.5">
-                              <Check className="h-3 w-3 text-white" />
-                            </div>
-                          )}
-                        </div>
-                        <span className="font-medium">v{brand.version}</span>
-                        <TooltipProvider>
-                          <div className="flex space-x-1">
-                            {brand.metadata.colors.map((color, index) => (
-                              <Tooltip key={index}>
-                                <TooltipTrigger>
-                                  <div
-                                    className="h-4 w-4 rounded-full border"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{color}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            ))}
-                          </div>
-                        </TooltipProvider>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setBrandToDelete(brand.id);
-                            setDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
+              <BrandList
+                brands={brands}
+                selectedBrand={selectedBrand}
+                onSelectBrand={handleBrandSelect}
+                onDeleteBrand={(brandId) => {
+                  setBrandToDelete(brandId);
+                  setDeleteDialogOpen(true);
+                }}
+              />
             </CardContent>
           </Card>
 
