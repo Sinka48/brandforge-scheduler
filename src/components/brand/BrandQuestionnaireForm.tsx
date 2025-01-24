@@ -139,8 +139,8 @@ export function BrandQuestionnaireForm() {
         throw assetError;
       }
 
-      // Navigate to brand library tab
-      navigate("/brand?tab=library&brandCreated=true");
+      // Navigate to brand list page
+      navigate("/brands");
       
       toast({
         title: "Brand Generated!",
