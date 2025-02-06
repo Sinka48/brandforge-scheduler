@@ -135,7 +135,7 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
         </Card>
       ) : (
         <>
-          <Card className="bg-muted/50">
+          <Card className="bg-transparent border-none">
             <CardContent>
               <BrandList
                 brands={brands}
