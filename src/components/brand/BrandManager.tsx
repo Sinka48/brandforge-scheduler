@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -135,9 +136,6 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
       ) : (
         <>
           <Card className="bg-muted/50">
-            <CardHeader>
-              <CardTitle>Your Brands</CardTitle>
-            </CardHeader>
             <CardContent>
               <BrandList
                 brands={brands}
