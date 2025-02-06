@@ -126,7 +126,7 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       {brands.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
@@ -179,6 +179,6 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
