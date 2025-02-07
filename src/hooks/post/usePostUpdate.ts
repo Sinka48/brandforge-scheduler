@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -34,6 +35,25 @@ export function usePostUpdate() {
         return false;
       }
 
+      // First verify the post exists and belongs to the user
+      const { data: existingPost, error: fetchError } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('id', postId)
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (fetchError || !existingPost) {
+        console.error('Error fetching post:', fetchError);
+        toast({
+          title: "Error",
+          description: "Post not found or you don't have permission to update it.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Then perform the update
       const { data, error } = await supabase
         .from('posts')
         .update({
@@ -50,10 +70,14 @@ export function usePostUpdate() {
           status: newPost.status
         })
         .eq('id', postId)
+        .eq('user_id', session.user.id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating post:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
