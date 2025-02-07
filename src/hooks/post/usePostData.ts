@@ -1,25 +1,27 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Post } from "@/components/calendar/types";
 import { PlatformId } from "@/constants/platforms";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 export function usePostData(session: Session | null) {
+  const { toast } = useToast();
+
   return useQuery({
     queryKey: ['posts', session?.user?.id],
     queryFn: async () => {
-      console.log('Starting post fetch for user:', session?.user?.id);
       if (!session?.user) {
         console.log('No authenticated user found');
         return [];
       }
 
       try {
-        console.log('Fetching posts...');
+        console.log('Fetching posts for user:', session.user.id);
         
-        // Get both scheduled and draft posts
-        const { data: allPosts, error: postsError } = await supabase
+        const { data: posts, error } = await supabase
           .from('posts')
           .select(`
             id,
@@ -40,13 +42,23 @@ export function usePostData(session: Session | null) {
           .in('status', ['scheduled', 'draft'])
           .order('scheduled_for', { ascending: true });
 
-        if (postsError) {
-          console.error('Supabase error fetching posts:', postsError);
-          throw postsError;
+        if (error) {
+          console.error('Error fetching posts:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load posts. Please try again.",
+            variant: "destructive",
+          });
+          throw error;
+        }
+
+        if (!posts) {
+          console.log('No posts found');
+          return [];
         }
 
         // Format posts for display
-        const formattedPosts = (allPosts || []).map(post => ({
+        const formattedPosts = posts.map(post => ({
           id: post.id,
           content: post.content,
           date: new Date(post.scheduled_for),
@@ -65,6 +77,11 @@ export function usePostData(session: Session | null) {
         return formattedPosts;
       } catch (error) {
         console.error('Error in posts query:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load posts. Please try again.",
+          variant: "destructive",
+        });
         throw error;
       }
     },
