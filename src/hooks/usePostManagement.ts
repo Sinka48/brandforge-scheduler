@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { format, set } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +28,6 @@ export function usePostManagement() {
         return false;
       }
 
-      // Create a proper timestamp by combining the selected date with the time
       if (!selectedDate) {
         toast({
           title: "Error",
@@ -45,6 +45,7 @@ export function usePostManagement() {
         milliseconds: 0
       });
 
+      // Create a new post without using upsert
       const { data, error } = await supabase
         .from('posts')
         .insert({
@@ -90,11 +91,13 @@ export function usePostManagement() {
     try {
       const success = await updatePost(postId, selectedDate, newPost);
       if (success) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('posts')
           .select()
           .eq('id', postId)
           .single();
+        
+        if (error) throw error;
         
         if (data) {
           setPosts(posts.map(post => 
@@ -111,6 +114,14 @@ export function usePostManagement() {
         }
       }
       return success;
+    } catch (error: any) {
+      console.error('Error updating post:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update post",
+        variant: "destructive",
+      });
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +141,6 @@ export function usePostManagement() {
   };
 
   const handleEditPost = (post: any) => {
-    // This function is used to prepare a post for editing
     return {
       ...post,
       platforms: Array.isArray(post.platforms) ? post.platforms : [post.platform],
