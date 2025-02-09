@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface PlatformConnection {
   platform: string;
   platform_username?: string | null;
   platform_user_id?: string | null;
+  access_token: string;
 }
 
 export function SocialMediaSettings() {
@@ -39,7 +41,7 @@ export function SocialMediaSettings() {
 
       const { data: connections, error } = await supabase
         .from('social_connections')
-        .select('platform, platform_username, platform_user_id');
+        .select('platform, platform_username, platform_user_id, access_token');
       
       if (error) throw error;
       
@@ -93,11 +95,14 @@ export function SocialMediaSettings() {
       // Save the connection with the correct Twitter username
       const { error: saveError } = await supabase
         .from('social_connections')
-        .insert({
+        .upsert({
           user_id: session.user.id,
           platform: platform.toLowerCase(),
-          access_token: 'connected',
-          platform_username: twitterUsername
+          access_token: 'connected', // We don't store actual tokens in the database
+          platform_username: twitterUsername,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,platform'
         });
 
       if (saveError) throw saveError;
