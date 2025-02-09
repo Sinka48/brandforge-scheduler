@@ -88,41 +88,60 @@ export function usePostManagement() {
   const handleUpdatePost = async (postId: string, selectedDate: Date | undefined, newPost: any) => {
     setIsLoading(true);
     try {
-      const { data: existingPost } = await supabase
+      // First check if the post exists
+      const { data: existingPost, error: fetchError } = await supabase
         .from('posts')
         .select()
         .eq('id', postId)
         .single();
 
-      if (!existingPost) {
+      if (fetchError || !existingPost) {
         throw new Error('Post not found');
       }
 
-      const success = await updatePost(postId, selectedDate, newPost);
-      if (success) {
-        const { data, error } = await supabase
-          .from('posts')
-          .select()
-          .eq('id', postId)
-          .single();
-        
-        if (error) throw error;
-        
-        if (data) {
-          setPosts(posts.map(post => 
-            post.id === postId ? {
-              ...post,
-              content: data.content,
-              date: new Date(data.scheduled_for),
-              platforms: [data.platform],
-              image: data.image_url,
-              status: data.status,
-              time: format(new Date(data.scheduled_for), 'HH:mm'),
-            } : post
-          ));
-        }
+      if (!selectedDate) {
+        throw new Error('Please select a date for the post');
       }
-      return success;
+
+      const [hours, minutes] = newPost.time.split(':').map(Number);
+      const scheduledDate = set(selectedDate, {
+        hours,
+        minutes,
+        seconds: 0,
+        milliseconds: 0
+      });
+
+      // Then perform the update
+      const { data, error: updateError } = await supabase
+        .from('posts')
+        .update({
+          content: newPost.content,
+          platform: newPost.platforms[0],
+          image_url: newPost.image || null,
+          scheduled_for: scheduledDate.toISOString(),
+          status: newPost.status
+        })
+        .eq('id', postId)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      if (data) {
+        setPosts(posts.map(post => 
+          post.id === postId ? {
+            id: data.id,
+            content: data.content,
+            date: new Date(data.scheduled_for),
+            platforms: [data.platform],
+            image: data.image_url,
+            status: data.status,
+            time: format(new Date(data.scheduled_for), 'HH:mm'),
+          } : post
+        ));
+        return true;
+      }
+      return false;
     } catch (error: any) {
       console.error('Error updating post:', error);
       toast({
