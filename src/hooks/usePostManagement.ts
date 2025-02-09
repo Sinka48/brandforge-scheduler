@@ -45,7 +45,6 @@ export function usePostManagement() {
         milliseconds: 0
       });
 
-      // Create a new post without using upsert
       const { data, error } = await supabase
         .from('posts')
         .insert({
