@@ -88,6 +88,16 @@ export function usePostManagement() {
   const handleUpdatePost = async (postId: string, selectedDate: Date | undefined, newPost: any) => {
     setIsLoading(true);
     try {
+      const { data: existingPost } = await supabase
+        .from('posts')
+        .select()
+        .eq('id', postId)
+        .single();
+
+      if (!existingPost) {
+        throw new Error('Post not found');
+      }
+
       const success = await updatePost(postId, selectedDate, newPost);
       if (success) {
         const { data, error } = await supabase
