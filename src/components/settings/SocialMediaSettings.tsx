@@ -87,17 +87,13 @@ export function SocialMediaSettings() {
       const keys = JSON.parse(storedKeys);
 
       // Test Twitter connection and get account details
-      const { data: testResult, error: testError } = await fetch('/api/functions/publish-tweet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
+      const { data: testResult, error: testError } = await supabase.functions.invoke('publish-tweet', {
+        body: { 
           content: "Testing Twitter connection...",
           test: true,
           keys
-        })
-      }).then(res => res.json());
+        }
+      });
 
       if (testError) {
         console.error('Twitter test error:', testError);

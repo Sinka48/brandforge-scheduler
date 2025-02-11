@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TwitterKeys {
   consumerKey: string;
@@ -27,27 +28,24 @@ export function TwitterAPIForm() {
     // Store in session storage (will be cleared when browser is closed)
     sessionStorage.setItem('twitter_keys', JSON.stringify(keys));
     
-    // Test the connection
+    // Test the connection using Supabase Edge Function
     try {
-      const { data, error } = await fetch('/api/functions/publish-tweet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
+      const { data, error } = await supabase.functions.invoke('publish-tweet', {
+        body: { 
           content: "Testing Twitter connection...",
           test: true,
-          keys // Pass the keys to the function
-        })
-      }).then(res => res.json());
+          keys
+        }
+      });
 
-      if (error) throw new Error(error);
+      if (error) throw error;
 
       toast({
         title: "Success",
         description: `Connected to Twitter as @${data.username}`,
       });
     } catch (error: any) {
+      console.error('Twitter connection error:', error);
       toast({
         title: "Connection Failed",
         description: error.message || "Failed to verify Twitter credentials",
