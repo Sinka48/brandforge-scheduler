@@ -73,7 +73,7 @@ export function DraftManager({
         if (tweetError) throw tweetError;
       }
 
-      // Update the post status in the database
+      // Update the post status in the database using upsert
       const { error: updateError } = await supabase
         .from('posts')
         .update({ 
