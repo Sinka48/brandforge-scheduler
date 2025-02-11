@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
 import { DialogActions } from "./post-dialog/DialogActions";
@@ -61,9 +62,21 @@ export function PostDialog({
     if (newPost.platforms.includes('twitter')) {
       setIsPublishing(true);
       try {
+        const storedKeys = sessionStorage.getItem('twitter_keys');
+        if (!storedKeys) {
+          toast({
+            title: "Twitter Configuration Required",
+            description: "Please configure your Twitter API keys in the Settings page first.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const keys = JSON.parse(storedKeys);
         const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
           body: { 
             content: newPost.content,
+            keys,
             imageUrl: newPost.image 
           }
         });

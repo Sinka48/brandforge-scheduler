@@ -470,6 +470,7 @@ export type Database = {
       social_connections: {
         Row: {
           access_token: string
+          api_keys: Json | null
           created_at: string
           id: string
           platform: string
@@ -482,6 +483,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          api_keys?: Json | null
           created_at?: string
           id?: string
           platform: string
@@ -494,6 +496,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          api_keys?: Json | null
           created_at?: string
           id?: string
           platform?: string

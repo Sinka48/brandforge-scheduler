@@ -1,6 +1,6 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
-import { encode as encodeBase64 } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { createHmac } from "node:crypto";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,70 +14,50 @@ interface TwitterKeys {
   accessTokenSecret: string;
 }
 
-function validateKeys(keys: TwitterKeys) {
-  if (!keys.consumerKey) throw new Error("Missing API Key");
-  if (!keys.consumerSecret) throw new Error("Missing API Secret");
-  if (!keys.accessToken) throw new Error("Missing Access Token");
-  if (!keys.accessTokenSecret) throw new Error("Missing Access Token Secret");
-}
+const BASE_URL = "https://api.twitter.com/2";
 
 function generateOAuthSignature(
   method: string,
   url: string,
-  oauthParams: Record<string, string>,
+  params: Record<string, string>,
   consumerSecret: string,
   tokenSecret: string
-): Promise<string> {
-  const signatureBaseString = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(
-    Object.entries(oauthParams)
+): string {
+  const signatureBaseString = `${method}&${encodeURIComponent(
+    url
+  )}&${encodeURIComponent(
+    Object.entries(params)
       .sort()
-      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+      .map(([k, v]) => `${k}=${v}`)
       .join("&")
   )}`;
+  const signingKey = `${encodeURIComponent(
+    consumerSecret
+  )}&${encodeURIComponent(tokenSecret)}`;
+  const hmacSha1 = createHmac("sha1", signingKey);
+  const signature = hmacSha1.update(signatureBaseString).digest("base64");
 
-  const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
-  
-  const encoder = new TextEncoder();
-  const key = encoder.encode(signingKey);
-  const message = encoder.encode(signatureBaseString);
-  
-  console.log("Generating OAuth signature with base string:", signatureBaseString);
-  
-  return crypto.subtle.importKey(
-    "raw",
-    key,
-    { name: "HMAC", hash: "SHA-1" },
-    false,
-    ["sign"]
-  ).then(key => {
-    return crypto.subtle.sign("HMAC", key, message);
-  }).then(signature => {
-    return encodeBase64(new Uint8Array(signature));
-  });
+  console.log("Generated OAuth signature:", signature);
+  return signature;
 }
 
-async function generateOAuthHeader(method: string, url: string, keys: TwitterKeys): Promise<string> {
-  const timestamp = Math.floor(Date.now() / 1000).toString();
-  const nonce = Math.random().toString(36).substring(2);
-
+function generateOAuthHeader(method: string, url: string, keys: TwitterKeys): string {
   const oauthParams = {
     oauth_consumer_key: keys.consumerKey,
-    oauth_nonce: nonce,
+    oauth_nonce: Math.random().toString(36).substring(2),
     oauth_signature_method: "HMAC-SHA1",
-    oauth_timestamp: timestamp,
+    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
     oauth_token: keys.accessToken,
-    oauth_version: "1.0"
+    oauth_version: "1.0",
   };
 
-  const signature = await generateOAuthSignature(
+  const signature = generateOAuthSignature(
     method,
     url,
     oauthParams,
     keys.consumerSecret,
     keys.accessTokenSecret
   );
-
-  console.log("Generated OAuth signature:", signature);
 
   return 'OAuth ' + Object.entries({
     ...oauthParams,
@@ -88,47 +68,12 @@ async function generateOAuthHeader(method: string, url: string, keys: TwitterKey
     .join(', ');
 }
 
-async function getTwitterUsername(keys: TwitterKeys): Promise<string> {
-  const url = "https://api.twitter.com/2/users/me";
-  const method = "GET";
-
-  const oauthHeader = await generateOAuthHeader(method, url, keys);
-  console.log("Getting Twitter username with OAuth Header:", oauthHeader);
-
-  const response = await fetch(url, {
-    method: method,
-    headers: {
-      'Authorization': oauthHeader,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Twitter API Error:", {
-      status: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
-      body: errorText
-    });
-    throw new Error(`Failed to get Twitter username: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-  console.log("Twitter user data:", data);
-  
-  if (!data.data?.username) {
-    throw new Error("Could not retrieve username from Twitter response");
-  }
-
-  return data.data.username;
-}
-
 async function publishTweet(content: string, keys: TwitterKeys): Promise<any> {
-  const url = "https://api.twitter.com/2/tweets";
+  const url = `${BASE_URL}/tweets`;
   const method = "POST";
   const params = { text: content };
 
-  const oauthHeader = await generateOAuthHeader(method, url, keys);
+  const oauthHeader = generateOAuthHeader(method, url, keys);
   console.log("Publishing tweet with OAuth Header:", oauthHeader);
 
   const response = await fetch(url, {
@@ -140,14 +85,16 @@ async function publishTweet(content: string, keys: TwitterKeys): Promise<any> {
     body: JSON.stringify(params),
   });
 
-  const responseText = await response.text();
-  console.log("Response Body:", responseText);
-
   if (!response.ok) {
-    throw new Error(`Failed to publish tweet: ${response.status} - ${responseText}`);
+    const errorText = await response.text();
+    console.error("Twitter API Error:", {
+      status: response.status,
+      body: errorText
+    });
+    throw new Error(`Failed to publish tweet: ${response.status} - ${errorText}`);
   }
 
-  return JSON.parse(responseText);
+  return response.json();
 }
 
 serve(async (req) => {
@@ -157,27 +104,40 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Starting request processing");
-
-    const { content, test = false, keys } = await req.json();
+    const { content, keys, test = false } = await req.json();
     
     if (!keys) {
       throw new Error("Twitter API keys are required");
     }
 
-    validateKeys(keys);
-    
-    if (test) {
-      console.log("Test mode - verifying credentials and getting username");
-      const username = await getTwitterUsername(keys);
-      return new Response(
-        JSON.stringify({ username, status: "ok" }), 
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!test && !content) {
+      throw new Error("Tweet content is required");
     }
 
-    if (!content) {
-      throw new Error("Tweet content is required");
+    if (test) {
+      // Just verify the credentials by trying to get the user info
+      const url = `${BASE_URL}/users/me`;
+      const method = "GET";
+      const oauthHeader = generateOAuthHeader(method, url, keys);
+      
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Authorization': oauthHeader,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to verify credentials: ${response.status} - ${errorText}`);
+      }
+
+      const userData = await response.json();
+      return new Response(
+        JSON.stringify({ username: userData.data?.username, status: "ok" }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log("Publishing tweet:", { content });
