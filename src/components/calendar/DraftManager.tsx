@@ -1,9 +1,11 @@
+
 import { PostList } from "./PostList";
 import { PlatformId, PLATFORMS } from "@/constants/platforms";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LucideIcon } from "lucide-react";
 import { Post } from "./types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Platform {
   id: PlatformId;
@@ -27,6 +29,7 @@ export function DraftManager({
   isLoading
 }: DraftManagerProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Filter to show only draft posts (both campaign and non-campaign)
   const draftPosts = posts.filter(post => post.status === 'draft');
@@ -48,9 +51,21 @@ export function DraftManager({
 
       // If it's a Twitter post, publish it immediately using the edge function
       if (post.platforms.includes('twitter')) {
+        const storedKeys = sessionStorage.getItem('twitter_keys');
+        if (!storedKeys) {
+          toast({
+            title: "Twitter Configuration Required",
+            description: "Please configure your Twitter API keys in the Settings page first.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const keys = JSON.parse(storedKeys);
         const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
           body: { 
             content: post.content,
+            keys,
             imageUrl: post.image 
           }
         });
@@ -64,12 +79,15 @@ export function DraftManager({
         .update({ 
           status: 'scheduled',
           published_at: publishDate.toISOString(),
-          platform: post.platforms[0], // Use the first selected platform
+          platform: post.platforms[0],
           scheduled_for: publishDate.toISOString()
         })
         .eq('id', postId);
 
       if (updateError) throw updateError;
+      
+      // Invalidate the posts query to refresh the list
+      await queryClient.invalidateQueries({ queryKey: ['posts'] });
       
       toast({
         title: "Success",
