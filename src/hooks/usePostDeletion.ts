@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { ToastActionElement } from "@/components/ui/toast";
 
@@ -19,7 +20,7 @@ export function usePostDeletion(toast: ToastFunction) {
           .from('posts')
           .select('scheduled_for, parent_post_id')
           .eq('id', postId)
-          .single();
+          .maybeSingle();
 
         if (post) {
           const parentId = post.parent_post_id || postId;

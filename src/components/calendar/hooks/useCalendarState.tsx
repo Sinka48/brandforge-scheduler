@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -27,15 +28,26 @@ export function useCalendarState() {
     try {
       console.log('Attempting to delete post:', postId);
       
+      // First check if the post exists
+      const { data: existingPost, error: fetchError } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('id', postId)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+      
+      if (!existingPost) {
+        console.log('Post not found:', postId);
+        return true; // Post already deleted
+      }
+
       const { error } = await supabase
         .from('posts')
         .delete()
         .eq('id', postId);
 
-      if (error) {
-        console.error('Error deleting post:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ['posts'] });
       setPosts(posts.filter(post => post.id !== postId));
