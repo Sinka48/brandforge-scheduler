@@ -83,19 +83,21 @@ export function PostDialog({
 
         if (tweetError) throw tweetError;
 
-        // Update post status in database
-        const { error: updateError } = await supabase
-          .from('posts')
-          .update({
-            status: 'scheduled',
-            published_at: publishDate.toISOString(),
-            platform: newPost.platforms[0],
-            scheduled_for: publishDate.toISOString(),
-            campaign_id: null // Ensure no campaign association
-          })
-          .match({ id: newPost.id });
+        // Only update if we have a valid post ID
+        if (newPost.id) {
+          const { error: updateError } = await supabase
+            .from('posts')
+            .update({
+              status: 'scheduled',
+              published_at: publishDate.toISOString(),
+              platform: newPost.platforms[0],
+              scheduled_for: publishDate.toISOString(),
+              campaign_id: null // Ensure no campaign association
+            })
+            .eq('id', newPost.id);
 
-        if (updateError) throw updateError;
+          if (updateError) throw updateError;
+        }
 
         toast({
           title: "Success",
