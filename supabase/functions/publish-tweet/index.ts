@@ -1,25 +1,24 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 import { encode as encodeBase64 } from "https://deno.land/std@0.168.0/encoding/base64.ts";
-
-const API_KEY = Deno.env.get("TWITTER_CONSUMER_KEY")?.trim();
-const API_SECRET = Deno.env.get("TWITTER_CONSUMER_SECRET")?.trim();
-const ACCESS_TOKEN = Deno.env.get("TWITTER_ACCESS_TOKEN")?.trim();
-const ACCESS_TOKEN_SECRET = Deno.env.get("TWITTER_ACCESS_TOKEN_SECRET")?.trim();
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function validateEnvironmentVariables() {
-  if (!API_KEY) throw new Error("Missing TWITTER_CONSUMER_KEY");
-  if (!API_SECRET) throw new Error("Missing TWITTER_CONSUMER_SECRET");
-  if (!ACCESS_TOKEN) throw new Error("Missing TWITTER_ACCESS_TOKEN");
-  if (!ACCESS_TOKEN_SECRET) throw new Error("Missing TWITTER_ACCESS_TOKEN_SECRET");
+interface TwitterKeys {
+  consumerKey: string;
+  consumerSecret: string;
+  accessToken: string;
+  accessTokenSecret: string;
+}
 
-  console.log("Environment variables validated successfully");
+function validateKeys(keys: TwitterKeys) {
+  if (!keys.consumerKey) throw new Error("Missing API Key");
+  if (!keys.consumerSecret) throw new Error("Missing API Secret");
+  if (!keys.accessToken) throw new Error("Missing Access Token");
+  if (!keys.accessTokenSecret) throw new Error("Missing Access Token Secret");
 }
 
 function generateOAuthSignature(
@@ -57,16 +56,16 @@ function generateOAuthSignature(
   });
 }
 
-async function generateOAuthHeader(method: string, url: string): Promise<string> {
+async function generateOAuthHeader(method: string, url: string, keys: TwitterKeys): Promise<string> {
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const nonce = Math.random().toString(36).substring(2);
 
   const oauthParams = {
-    oauth_consumer_key: API_KEY!,
+    oauth_consumer_key: keys.consumerKey,
     oauth_nonce: nonce,
     oauth_signature_method: "HMAC-SHA1",
     oauth_timestamp: timestamp,
-    oauth_token: ACCESS_TOKEN!,
+    oauth_token: keys.accessToken,
     oauth_version: "1.0"
   };
 
@@ -74,8 +73,8 @@ async function generateOAuthHeader(method: string, url: string): Promise<string>
     method,
     url,
     oauthParams,
-    API_SECRET!,
-    ACCESS_TOKEN_SECRET!
+    keys.consumerSecret,
+    keys.accessTokenSecret
   );
 
   console.log("Generated OAuth signature:", signature);
@@ -89,11 +88,11 @@ async function generateOAuthHeader(method: string, url: string): Promise<string>
     .join(', ');
 }
 
-async function getTwitterUsername(): Promise<string> {
+async function getTwitterUsername(keys: TwitterKeys): Promise<string> {
   const url = "https://api.twitter.com/2/users/me";
   const method = "GET";
 
-  const oauthHeader = await generateOAuthHeader(method, url);
+  const oauthHeader = await generateOAuthHeader(method, url, keys);
   console.log("Getting Twitter username with OAuth Header:", oauthHeader);
 
   const response = await fetch(url, {
@@ -124,12 +123,12 @@ async function getTwitterUsername(): Promise<string> {
   return data.data.username;
 }
 
-async function publishTweet(content: string): Promise<any> {
+async function publishTweet(content: string, keys: TwitterKeys): Promise<any> {
   const url = "https://api.twitter.com/2/tweets";
   const method = "POST";
   const params = { text: content };
 
-  const oauthHeader = await generateOAuthHeader(method, url);
+  const oauthHeader = await generateOAuthHeader(method, url, keys);
   console.log("Publishing tweet with OAuth Header:", oauthHeader);
 
   const response = await fetch(url, {
@@ -158,14 +157,19 @@ serve(async (req) => {
   }
 
   try {
-    validateEnvironmentVariables();
     console.log("Starting request processing");
 
-    const { content, test = false } = await req.json();
+    const { content, test = false, keys } = await req.json();
+    
+    if (!keys) {
+      throw new Error("Twitter API keys are required");
+    }
+
+    validateKeys(keys);
     
     if (test) {
       console.log("Test mode - verifying credentials and getting username");
-      const username = await getTwitterUsername();
+      const username = await getTwitterUsername(keys);
       return new Response(
         JSON.stringify({ username, status: "ok" }), 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -177,7 +181,7 @@ serve(async (req) => {
     }
 
     console.log("Publishing tweet:", { content });
-    const result = await publishTweet(content);
+    const result = await publishTweet(content, keys);
     
     return new Response(
       JSON.stringify(result), 

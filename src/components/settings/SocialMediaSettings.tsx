@@ -14,6 +14,7 @@ import {
   Unlink,
 } from "lucide-react";
 import { PLATFORMS } from "@/constants/platforms";
+import { TwitterAPIForm } from "./TwitterAPIForm";
 
 interface PlatformConnection {
   platform: string;
@@ -73,13 +74,30 @@ export function SocialMediaSettings() {
         return;
       }
 
+      const storedKeys = sessionStorage.getItem('twitter_keys');
+      if (!storedKeys) {
+        toast({
+          title: "API Keys Required",
+          description: "Please enter your Twitter API keys first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const keys = JSON.parse(storedKeys);
+
       // Test Twitter connection and get account details
-      const { data: testResult, error: testError } = await supabase.functions.invoke('publish-tweet', {
-        body: { 
+      const { data: testResult, error: testError } = await fetch('/api/functions/publish-tweet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
           content: "Testing Twitter connection...",
-          test: true
-        }
-      });
+          test: true,
+          keys
+        })
+      }).then(res => res.json());
 
       if (testError) {
         console.error('Twitter test error:', testError);
@@ -173,72 +191,76 @@ export function SocialMediaSettings() {
   };
 
   return (
-    <Card className="p-6">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-semibold">Social Media Connections</h2>
-          <p className="text-sm text-muted-foreground">
-            Connect your social media accounts to enable posting
-          </p>
-        </div>
+    <div className="space-y-6">
+      <TwitterAPIForm />
+      
+      <Card className="p-6">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold">Social Media Connections</h2>
+            <p className="text-sm text-muted-foreground">
+              Connect your social media accounts to enable posting
+            </p>
+          </div>
 
-        <div className="grid gap-4">
-          {PLATFORMS.map((platform) => {
-            const connected = isConnected(platform.name);
-            const accountDetails = getConnectedAccount(platform.name);
-            
-            return (
-              <div
-                key={platform.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  {getPlatformIcon(platform.name)}
-                  <div>
-                    <h3 className="font-medium">{platform.name}</h3>
-                    {connected ? (
-                      <div className="space-y-1">
-                        <span className="flex items-center gap-1 text-green-600">
-                          <CheckCircle2 className="h-4 w-4" />
-                          Connected
-                        </span>
-                        {accountDetails?.platform_username && (
-                          <span className="text-sm text-muted-foreground">
-                            @{accountDetails.platform_username}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="flex items-center gap-1 text-yellow-600">
-                        <AlertCircle className="h-4 w-4" />
-                        Not connected
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <Button
-                  variant={connected ? "destructive" : "default"}
-                  onClick={() =>
-                    connected
-                      ? handleDisconnect(platform.name)
-                      : handleConnect(platform.name)
-                  }
-                  disabled={isConnecting}
+          <div className="grid gap-4">
+            {PLATFORMS.map((platform) => {
+              const connected = isConnected(platform.name);
+              const accountDetails = getConnectedAccount(platform.name);
+              
+              return (
+                <div
+                  key={platform.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
                 >
-                  {connected ? (
-                    <>
-                      <Unlink className="h-4 w-4 mr-2" />
-                      Disconnect
-                    </>
-                  ) : (
-                    "Connect"
-                  )}
-                </Button>
-              </div>
-            );
-          })}
+                  <div className="flex items-center gap-3">
+                    {getPlatformIcon(platform.name)}
+                    <div>
+                      <h3 className="font-medium">{platform.name}</h3>
+                      {connected ? (
+                        <div className="space-y-1">
+                          <span className="flex items-center gap-1 text-green-600">
+                            <CheckCircle2 className="h-4 w-4" />
+                            Connected
+                          </span>
+                          {accountDetails?.platform_username && (
+                            <span className="text-sm text-muted-foreground">
+                              @{accountDetails.platform_username}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="flex items-center gap-1 text-yellow-600">
+                          <AlertCircle className="h-4 w-4" />
+                          Not connected
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant={connected ? "destructive" : "default"}
+                    onClick={() =>
+                      connected
+                        ? handleDisconnect(platform.name)
+                        : handleConnect(platform.name)
+                    }
+                    disabled={isConnecting}
+                  >
+                    {connected ? (
+                      <>
+                        <Unlink className="h-4 w-4 mr-2" />
+                        Disconnect
+                      </>
+                    ) : (
+                      "Connect"
+                    )}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
