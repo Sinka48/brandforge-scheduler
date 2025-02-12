@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/layout/Layout";
 import { Session } from "@supabase/supabase-js";
 import { DraftManager } from "@/components/calendar/DraftManager";
@@ -37,8 +38,9 @@ export default function DraftsPage({ session }: DraftsPageProps) {
     return null;
   }
 
-  const scheduledPosts = posts.filter(post => post.status === 'scheduled');
   const draftPosts = posts.filter(post => post.status === 'draft');
+  const publishedPosts = posts.filter(post => post.status === 'scheduled' && post.published_at);
+  const scheduledPosts = posts.filter(post => post.status === 'scheduled' && !post.published_at);
 
   const handlePlatformToggle = (platformId: string) => {
     setNewPost(prev => ({
@@ -68,7 +70,7 @@ export default function DraftsPage({ session }: DraftsPageProps) {
           <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight">Posts</h1>
             <p className="text-muted-foreground">
-              Manage your posts and drafts.
+              Manage your posts, drafts, and view post history.
             </p>
           </div>
           <Button 
@@ -82,8 +84,9 @@ export default function DraftsPage({ session }: DraftsPageProps) {
 
         <Tabs defaultValue="posts" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="posts">Scheduled</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="space-y-4">
@@ -106,6 +109,24 @@ export default function DraftsPage({ session }: DraftsPageProps) {
               handleEditPost={handleEditPost}
               isLoading={isLoading}
             />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <div className="rounded-lg border">
+              <div className="p-4">
+                <h2 className="text-xl font-semibold">Published Posts</h2>
+                <p className="text-sm text-muted-foreground">View your previously published posts</p>
+              </div>
+              <PostList
+                selectedDate={undefined}
+                posts={publishedPosts}
+                platforms={PLATFORMS}
+                handleDeletePost={handleDeletePost}
+                handleEditPost={handleEditPost}
+                handlePublishPost={() => {}}
+                isLoading={isLoading}
+              />
+            </div>
           </TabsContent>
         </Tabs>
 
