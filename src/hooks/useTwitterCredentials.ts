@@ -27,18 +27,25 @@ export function useTwitterCredentials() {
 
   const fetchStoredCredentials = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No active session found');
+        return;
+      }
+
       const { data: credentials, error } = await supabase
         .from('api_credentials')
         .select('credentials')
         .eq('platform', 'twitter')
+        .eq('user_id', session.user.id)
         .maybeSingle();
 
       if (error) {
-        if (error.code !== 'PGRST116') { // No rows returned
-          console.error('Error fetching credentials:', error);
-        }
-      } else if (credentials?.credentials) {
-        // Safely cast the credentials to TwitterKeys
+        console.error('Error fetching credentials:', error);
+        return;
+      }
+
+      if (credentials?.credentials) {
         const parsedCredentials = credentials.credentials as Record<string, string>;
         if (
           'consumerKey' in parsedCredentials &&
@@ -59,6 +66,11 @@ export function useTwitterCredentials() {
   const saveCredentials = async (credentials: TwitterKeys) => {
     setIsLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("User not authenticated");
+      }
+
       // Test the connection using Supabase Edge Function
       const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
         body: { 
@@ -70,26 +82,19 @@ export function useTwitterCredentials() {
 
       if (tweetError) throw tweetError;
 
-      // Get current user's ID
-      const user = supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
       // Store the credentials in the database
       const { error: dbError } = await supabase
         .from('api_credentials')
         .upsert({
           platform: 'twitter',
           credentials: credentials as Json,
-          user_id: (await user).data.user?.id,
+          user_id: session.user.id,
         }, {
           onConflict: 'user_id,platform'
         });
 
       if (dbError) throw dbError;
 
-      // Store in session storage as backup
-      sessionStorage.setItem('twitter_keys', JSON.stringify(credentials));
-      
       toast({
         title: "Success",
         description: `Connected to Twitter as @${tweetResult.username}`,
