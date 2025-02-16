@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,17 +20,42 @@ export function TwitterAPIForm() {
     accessToken: '',
     accessTokenSecret: ''
   });
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchStoredCredentials();
+  }, []);
+
+  const fetchStoredCredentials = async () => {
+    try {
+      const { data: credentials, error } = await supabase
+        .from('api_credentials')
+        .select('credentials')
+        .eq('platform', 'twitter')
+        .single();
+
+      if (error) {
+        if (error.code !== 'PGRST116') { // No rows returned
+          console.error('Error fetching credentials:', error);
+        }
+      } else if (credentials) {
+        setKeys(credentials.credentials as TwitterKeys);
+      }
+    } catch (error) {
+      console.error('Error fetching credentials:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Store in session storage (will be cleared when browser is closed)
-    sessionStorage.setItem('twitter_keys', JSON.stringify(keys));
-    
-    // Test the connection using Supabase Edge Function
     try {
-      const { data, error } = await supabase.functions.invoke('publish-tweet', {
+      // Test the connection using Supabase Edge Function
+      const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
         body: { 
           content: "Testing Twitter connection...",
           test: true,
@@ -38,11 +63,26 @@ export function TwitterAPIForm() {
         }
       });
 
-      if (error) throw error;
+      if (tweetError) throw tweetError;
 
+      // Store the credentials in the database
+      const { error: dbError } = await supabase
+        .from('api_credentials')
+        .upsert({
+          platform: 'twitter',
+          credentials: keys
+        }, {
+          onConflict: 'user_id,platform'
+        });
+
+      if (dbError) throw dbError;
+
+      // Store in session storage as backup
+      sessionStorage.setItem('twitter_keys', JSON.stringify(keys));
+      
       toast({
         title: "Success",
-        description: `Connected to Twitter as @${data.username}`,
+        description: `Connected to Twitter as @${tweetResult.username}`,
       });
     } catch (error: any) {
       console.error('Twitter connection error:', error);
@@ -51,8 +91,24 @@ export function TwitterAPIForm() {
         description: error.message || "Failed to verify Twitter credentials",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2"></div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
@@ -60,7 +116,7 @@ export function TwitterAPIForm() {
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold">Twitter API Configuration</h2>
           <p className="text-sm text-muted-foreground">
-            Enter your Twitter API credentials. These will be stored temporarily in your browser session.
+            Enter your Twitter API credentials. These will be securely stored for future use.
           </p>
         </div>
 
@@ -122,7 +178,7 @@ export function TwitterAPIForm() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isLoading}>
           Save and Test Connection
         </Button>
       </form>
