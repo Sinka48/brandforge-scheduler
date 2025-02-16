@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface TwitterKeys {
   consumerKey: string;
@@ -30,15 +31,23 @@ export function useTwitterCredentials() {
         .from('api_credentials')
         .select('credentials')
         .eq('platform', 'twitter')
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code !== 'PGRST116') { // No rows returned
           console.error('Error fetching credentials:', error);
         }
       } else if (credentials?.credentials) {
-        const typedCredentials = credentials.credentials as TwitterKeys;
-        setKeys(typedCredentials);
+        // Safely cast the credentials to TwitterKeys
+        const parsedCredentials = credentials.credentials as Record<string, string>;
+        if (
+          'consumerKey' in parsedCredentials &&
+          'consumerSecret' in parsedCredentials &&
+          'accessToken' in parsedCredentials &&
+          'accessTokenSecret' in parsedCredentials
+        ) {
+          setKeys(parsedCredentials as TwitterKeys);
+        }
       }
     } catch (error) {
       console.error('Error fetching credentials:', error);
@@ -61,12 +70,17 @@ export function useTwitterCredentials() {
 
       if (tweetError) throw tweetError;
 
+      // Get current user's ID
+      const user = supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
       // Store the credentials in the database
       const { error: dbError } = await supabase
         .from('api_credentials')
         .upsert({
           platform: 'twitter',
-          credentials: credentials as unknown as Json,
+          credentials: credentials as Json,
+          user_id: (await user).data.user?.id,
         }, {
           onConflict: 'user_id,platform'
         });
