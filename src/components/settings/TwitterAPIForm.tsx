@@ -1,113 +1,20 @@
 
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-
-interface TwitterKeys {
-  consumerKey: string;
-  consumerSecret: string;
-  accessToken: string;
-  accessTokenSecret: string;
-}
+import { TwitterFormSkeleton } from "./TwitterFormSkeleton";
+import { useTwitterCredentials } from "@/hooks/useTwitterCredentials";
 
 export function TwitterAPIForm() {
-  const [keys, setKeys] = useState<TwitterKeys>({
-    consumerKey: '',
-    consumerSecret: '',
-    accessToken: '',
-    accessTokenSecret: ''
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchStoredCredentials();
-  }, []);
-
-  const fetchStoredCredentials = async () => {
-    try {
-      const { data: credentials, error } = await supabase
-        .from('api_credentials')
-        .select('credentials')
-        .eq('platform', 'twitter')
-        .single();
-
-      if (error) {
-        if (error.code !== 'PGRST116') { // No rows returned
-          console.error('Error fetching credentials:', error);
-        }
-      } else if (credentials) {
-        setKeys(credentials.credentials as TwitterKeys);
-      }
-    } catch (error) {
-      console.error('Error fetching credentials:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { keys, setKeys, isLoading, saveCredentials } = useTwitterCredentials();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // Test the connection using Supabase Edge Function
-      const { data: tweetResult, error: tweetError } = await supabase.functions.invoke('publish-tweet', {
-        body: { 
-          content: "Testing Twitter connection...",
-          test: true,
-          keys
-        }
-      });
-
-      if (tweetError) throw tweetError;
-
-      // Store the credentials in the database
-      const { error: dbError } = await supabase
-        .from('api_credentials')
-        .upsert({
-          platform: 'twitter',
-          credentials: keys
-        }, {
-          onConflict: 'user_id,platform'
-        });
-
-      if (dbError) throw dbError;
-
-      // Store in session storage as backup
-      sessionStorage.setItem('twitter_keys', JSON.stringify(keys));
-      
-      toast({
-        title: "Success",
-        description: `Connected to Twitter as @${tweetResult.username}`,
-      });
-    } catch (error: any) {
-      console.error('Twitter connection error:', error);
-      toast({
-        title: "Connection Failed",
-        description: error.message || "Failed to verify Twitter credentials",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await saveCredentials(keys);
   };
 
   if (isLoading) {
-    return (
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
-          <div className="space-y-2">
-            <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2"></div>
-          </div>
-        </div>
-      </Card>
-    );
+    return <TwitterFormSkeleton />;
   }
 
   return (
