@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/layout/Layout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { Session } from "@supabase/supabase-js";
