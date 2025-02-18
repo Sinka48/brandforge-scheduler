@@ -28,7 +28,7 @@ export function useBrandFetching() {
         return;
       }
 
-      console.log("Fetching brands for authenticated user...");
+      console.log("Fetching user-generated brands...");
       const { data, error } = await supabase
         .from("brand_assets")
         .select(`
@@ -47,8 +47,9 @@ export function useBrandFetching() {
         `)
         .eq('user_id', session.user.id)
         .eq('asset_category', 'brand')
+        .is('regeneration_type', null) // Only fetch user-generated brands
         .order('created_at', { ascending: false })
-        .limit(10); // Reduced limit for faster initial load
+        .limit(10);
 
       if (error) {
         console.error("Error fetching brands:", error);
