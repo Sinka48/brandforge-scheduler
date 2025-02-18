@@ -31,11 +31,24 @@ export function useBrandFetching() {
       console.log("Fetching brands for authenticated user...");
       const { data, error } = await supabase
         .from("brand_assets")
-        .select("id, url, metadata, version, created_at, asset_type, questionnaire_id, user_id, asset_category, social_asset_type, social_name, social_bio")
-        .eq('asset_category', 'brand')
+        .select(`
+          id,
+          url,
+          metadata,
+          version,
+          created_at,
+          asset_type,
+          questionnaire_id,
+          user_id,
+          asset_category,
+          social_asset_type,
+          social_name,
+          social_bio
+        `)
         .eq('user_id', session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(50); // Add limit to prevent timeouts
+        .eq('asset_category', 'brand')
+        .order('created_at', { ascending: false })
+        .limit(10); // Reduced limit for faster initial load
 
       if (error) {
         console.error("Error fetching brands:", error);
@@ -47,7 +60,7 @@ export function useBrandFetching() {
       const transformedBrands: Brand[] = (data || []).map((item: any) => ({
         id: item.id,
         url: item.url,
-        metadata: item.metadata,
+        metadata: item.metadata || {},
         version: item.version || 1,
         created_at: item.created_at,
         asset_type: item.asset_type,
