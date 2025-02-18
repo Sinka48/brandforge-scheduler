@@ -41,9 +41,6 @@ export function CampaignForm({
   postsCount,
   setPostsCount,
 }: CampaignFormProps) {
-  // Filter brands to only show user-generated ones
-  const userGeneratedBrands = brands.filter(brand => brand.metadata?.isAiGenerated !== true);
-
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -53,7 +50,7 @@ export function CampaignForm({
             <SelectValue placeholder="Choose a brand" />
           </SelectTrigger>
           <SelectContent>
-            {userGeneratedBrands.map((brand) => (
+            {brands.map((brand) => (
               <SelectItem key={brand.id} value={brand.id}>
                 {brand.metadata?.name || "Unnamed Brand"}
               </SelectItem>
