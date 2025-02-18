@@ -35,19 +35,12 @@ export function useBrandFetching() {
           id,
           url,
           metadata,
-          version,
-          created_at,
           asset_type,
-          questionnaire_id,
-          user_id,
-          asset_category,
-          social_asset_type,
-          social_name,
-          social_bio
+          questionnaire_id
         `)
         .eq('user_id', session.user.id)
         .eq('asset_category', 'brand')
-        .is('regeneration_type', null) // Only fetch user-generated brands
+        .is('regeneration_type', null)
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -62,15 +55,15 @@ export function useBrandFetching() {
         id: item.id,
         url: item.url,
         metadata: item.metadata || {},
-        version: item.version || 1,
-        created_at: item.created_at,
+        version: 1, // Default value since we're not fetching it
+        created_at: new Date().toISOString(), // Default value since we're not fetching it
         asset_type: item.asset_type,
         questionnaire_id: item.questionnaire_id,
-        user_id: item.user_id,
-        asset_category: item.asset_category,
-        social_asset_type: item.social_asset_type,
-        social_name: item.social_name,
-        social_bio: item.social_bio
+        user_id: session.user.id,
+        asset_category: 'brand',
+        social_asset_type: null,
+        social_name: null,
+        social_bio: null
       }));
 
       console.log("Transformed brands:", transformedBrands);
