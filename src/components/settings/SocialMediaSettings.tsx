@@ -40,13 +40,33 @@ export function SocialMediaSettings() {
         return;
       }
 
-      const { data: connections, error } = await supabase
-        .from('social_connections')
-        .select('platform, platform_username, platform_user_id, access_token');
+      // Fetch both social connections and API credentials
+      const [{ data: connections, error: connectionsError }, { data: apiCreds, error: apiCredsError }] = await Promise.all([
+        supabase
+          .from('social_connections')
+          .select('platform, platform_username, platform_user_id, access_token'),
+        supabase
+          .from('api_credentials')
+          .select('platform, credentials')
+      ]);
       
-      if (error) throw error;
+      if (connectionsError) throw connectionsError;
+      if (apiCredsError) throw apiCredsError;
       
-      setConnectedPlatforms(connections || []);
+      // Combine social connections with API credentials
+      const allConnections = [...(connections || [])];
+      
+      // Add Twitter if API credentials exist
+      const twitterCreds = apiCreds?.find(cred => cred.platform === 'twitter');
+      if (twitterCreds && !allConnections.some(conn => conn.platform === 'twitter')) {
+        allConnections.push({
+          platform: 'twitter',
+          platform_username: twitterCreds.credentials?.username || null,
+          access_token: 'connected'
+        });
+      }
+      
+      setConnectedPlatforms(allConnections);
     } catch (error) {
       console.error('Error fetching social connections:', error);
     }
@@ -74,8 +94,14 @@ export function SocialMediaSettings() {
         return;
       }
 
-      const storedKeys = sessionStorage.getItem('twitter_keys');
-      if (!storedKeys) {
+      // Get Twitter credentials from api_credentials table
+      const { data: apiCreds, error: credsError } = await supabase
+        .from('api_credentials')
+        .select('credentials')
+        .eq('platform', 'twitter')
+        .single();
+
+      if (credsError || !apiCreds?.credentials) {
         toast({
           title: "API Keys Required",
           description: "Please enter your Twitter API keys first.",
@@ -84,14 +110,12 @@ export function SocialMediaSettings() {
         return;
       }
 
-      const keys = JSON.parse(storedKeys);
-
       // Test Twitter connection and get account details
       const { data: testResult, error: testError } = await supabase.functions.invoke('publish-tweet', {
         body: { 
           content: "Testing Twitter connection...",
           test: true,
-          keys
+          keys: apiCreds.credentials
         }
       });
 
@@ -112,7 +136,7 @@ export function SocialMediaSettings() {
         .upsert({
           user_id: session.user.id,
           platform: platform.toLowerCase(),
-          access_token: 'connected', // We don't store actual tokens in the database
+          access_token: 'connected',
           platform_username: twitterUsername,
           updated_at: new Date().toISOString()
         }, {
