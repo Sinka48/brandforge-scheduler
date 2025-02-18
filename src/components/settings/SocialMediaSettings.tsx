@@ -61,7 +61,8 @@ export function SocialMediaSettings() {
       if (twitterCreds && !allConnections.some(conn => conn.platform === 'twitter')) {
         allConnections.push({
           platform: 'twitter',
-          platform_username: twitterCreds.credentials?.username || null,
+          platform_username: null,
+          platform_user_id: null,
           access_token: 'connected'
         });
       }
@@ -99,9 +100,9 @@ export function SocialMediaSettings() {
         .from('api_credentials')
         .select('credentials')
         .eq('platform', 'twitter')
-        .single();
+        .maybeSingle();
 
-      if (credsError || !apiCreds?.credentials) {
+      if (!apiCreds || credsError) {
         toast({
           title: "API Keys Required",
           description: "Please enter your Twitter API keys first.",
