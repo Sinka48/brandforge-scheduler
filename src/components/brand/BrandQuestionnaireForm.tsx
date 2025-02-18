@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -19,6 +20,26 @@ const formSchema = z.object({
   targetAudience: z.string().optional(),
   colorPreferences: z.array(z.string()).max(5, "Maximum 5 colors allowed").optional(),
 })
+
+const industries = [
+  "technology", "healthcare", "education", "retail", "finance", 
+  "entertainment", "food & beverage", "travel", "real estate"
+];
+
+const personalities = [
+  "professional", "friendly", "innovative", "traditional", "luxurious", 
+  "playful", "minimalist", "bold", "trustworthy", "creative"
+];
+
+const audiences = [
+  "young professionals", "parents", "students", "business owners", 
+  "tech-savvy", "luxury consumers", "budget shoppers", "health enthusiasts"
+];
+
+function getRandomItems<T>(array: T[], count: number = 1): T[] {
+  const shuffled = [...array].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
 
 export function BrandQuestionnaireForm() {
   const { toast } = useToast();
@@ -52,20 +73,32 @@ export function BrandQuestionnaireForm() {
         return;
       }
 
-      // All fields are optional now, AI will generate content
-      const isAiGenerated = true;
+      // Fill in random values for empty fields
+      const finalValues = {
+        businessName: values.businessName || "AI Generated Brand",
+        industry: values.industry || getRandomItems(industries)[0],
+        brandPersonality: values.brandPersonality?.length 
+          ? values.brandPersonality 
+          : getRandomItems(personalities, 3),
+        targetAudience: values.targetAudience || getRandomItems(audiences)[0],
+        colorPreferences: values.colorPreferences?.length 
+          ? values.colorPreferences 
+          : [],
+      };
+
+      console.log("Submitting with values:", finalValues);
 
       const { data: questionnaire, error: questionnaireError } = await supabase
         .from("brand_questionnaires")
         .insert({
           user_id: user.id,
-          business_name: values.businessName || "AI Generated Brand",
-          industry: values.industry || "General",
+          business_name: finalValues.businessName,
+          industry: finalValues.industry,
           description: "AI Generated Brand",
-          brand_personality: values.brandPersonality || [],
-          target_audience: values.targetAudience ? { primary: values.targetAudience } : {},
-          color_preferences: values.colorPreferences || [],
-          is_ai_generated: isAiGenerated,
+          brand_personality: finalValues.brandPersonality,
+          target_audience: { primary: finalValues.targetAudience },
+          color_preferences: finalValues.colorPreferences,
+          is_ai_generated: true,
         })
         .select()
         .single();
@@ -103,7 +136,7 @@ export function BrandQuestionnaireForm() {
       });
 
       // Navigate to the brand preview with the newly created brand selected
-      navigate(`/brands?tab=library&selectedBrand=${brandAsset.id}`, { replace: true });
+      navigate(`/brands?tab=library&selectedBrand=${brandAsset.id}&brandCreated=true`, { replace: true });
       
     } catch (error) {
       console.error("Error generating brand:", error);
