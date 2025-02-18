@@ -1,79 +1,32 @@
 
-import { FormField } from "@/components/ui/form";
+import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Building2, Wand2 } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { IndustrySelector } from "./IndustrySelector";
 
-interface BusinessInfoSectionProps {
-  form: UseFormReturn<any>;
-}
-
-export function BusinessInfoSection({ form }: BusinessInfoSectionProps) {
-  const { toast } = useToast();
-
-  const generateBusinessName = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent form submission
-    e.stopPropagation(); // Prevent event bubbling
-    
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        "generate-brand-identity",
-        {
-          body: { generateNameOnly: true }
-        }
-      );
-
-      if (error) throw error;
-
-      if (data?.metadata?.name) {
-        form.setValue("businessName", data.metadata.name);
-        toast({
-          title: "Business Name Generated",
-          description: "A new business name has been generated for you.",
-        });
-      }
-    } catch (error) {
-      console.error("Error generating business name:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate business name. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
+export function BusinessInfoSection({ form }: { form: any }) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Building2 className="h-5 w-5" />
-        <h3 className="text-lg font-medium">Business Name</h3>
-      </div>
-      <div className="flex gap-2">
-        <FormField
-          control={form.control}
-          name="businessName"
-          render={({ field }) => (
-            <div className="flex-1">
-              <Input
-                placeholder="Enter your business name (optional)"
-                {...field}
-              />
-            </div>
-          )}
+    <div className="space-y-6">
+      <FormItem>
+        <FormLabel>Business Name (Optional)</FormLabel>
+        <FormControl>
+          <Input
+            placeholder="Enter business name or leave empty for AI generation"
+            {...form.register("businessName")}
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+
+      <FormItem>
+        <FormLabel>Industry (Optional)</FormLabel>
+        <IndustrySelector
+          selected={form.watch("industry")}
+          onSelect={(industry) => {
+            form.setValue("industry", industry);
+          }}
         />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={generateBusinessName}
-          title="Generate business name"
-        >
-          <Wand2 className="h-4 w-4" />
-        </Button>
-      </div>
+        <FormMessage />
+      </FormItem>
     </div>
   );
 }
