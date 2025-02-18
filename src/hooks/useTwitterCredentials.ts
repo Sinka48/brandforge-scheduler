@@ -46,14 +46,21 @@ export function useTwitterCredentials() {
       }
 
       if (credentials?.credentials) {
-        const parsedCredentials = credentials.credentials as Record<string, string>;
+        const storedCreds = credentials.credentials as Record<string, string>;
+        // Validate that all required keys are present
         if (
-          'consumerKey' in parsedCredentials &&
-          'consumerSecret' in parsedCredentials &&
-          'accessToken' in parsedCredentials &&
-          'accessTokenSecret' in parsedCredentials
+          'consumerKey' in storedCreds &&
+          'consumerSecret' in storedCreds &&
+          'accessToken' in storedCreds &&
+          'accessTokenSecret' in storedCreds
         ) {
-          setKeys(parsedCredentials as TwitterKeys);
+          const parsedKeys: TwitterKeys = {
+            consumerKey: storedCreds.consumerKey,
+            consumerSecret: storedCreds.consumerSecret,
+            accessToken: storedCreds.accessToken,
+            accessTokenSecret: storedCreds.accessTokenSecret
+          };
+          setKeys(parsedKeys);
         }
       }
     } catch (error) {
@@ -82,12 +89,20 @@ export function useTwitterCredentials() {
 
       if (tweetError) throw tweetError;
 
+      // Convert TwitterKeys to a Record type that matches Json
+      const credentialsJson: Record<string, string> = {
+        consumerKey: credentials.consumerKey,
+        consumerSecret: credentials.consumerSecret,
+        accessToken: credentials.accessToken,
+        accessTokenSecret: credentials.accessTokenSecret
+      };
+
       // Store the credentials in the database
       const { error: dbError } = await supabase
         .from('api_credentials')
         .upsert({
           platform: 'twitter',
-          credentials: credentials as Json,
+          credentials: credentialsJson as Json,
           user_id: session.user.id,
         }, {
           onConflict: 'user_id,platform'
