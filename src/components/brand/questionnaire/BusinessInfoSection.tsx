@@ -44,7 +44,7 @@ export function BusinessInfoSection({ form }: BusinessInfoSectionProps) {
         <IndustrySelector
           selected={form.watch("industry")}
           onSelect={(industry) => {
-            form.setValue("industry", industry);
+            form.setValue("industry", industry, { shouldDirty: true });
           }}
         />
         <FormMessage />
