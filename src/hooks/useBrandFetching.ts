@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Brand } from "@/types/brand";
@@ -85,6 +85,10 @@ export function useBrandFetching() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBrands();
+  }, []); // Run on mount
 
   return { brands, loading, fetchBrands };
 }
