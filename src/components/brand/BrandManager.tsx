@@ -21,7 +21,7 @@ import { useBrandFetching } from "@/hooks/useBrandFetching";
 import { useNavigate } from "react-router-dom";
 
 interface BrandManagerProps {
-  selectedBrandId?: string;
+  selectedBrandId?: string | null;
 }
 
 export function BrandManager({ selectedBrandId }: BrandManagerProps) {
@@ -32,21 +32,22 @@ export function BrandManager({ selectedBrandId }: BrandManagerProps) {
   const navigate = useNavigate();
   const { brands, loading, fetchBrands } = useBrandFetching();
 
+  // Check authentication only once when component mounts
   useEffect(() => {
-    // Check authentication
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/');
         return;
       }
+      // Only fetch brands after confirming authentication
+      fetchBrands();
     };
     checkAuth();
-  }, [navigate]);
+  }, []); // Empty dependency array as we only want this to run once
 
+  // Handle selectedBrandId changes separately
   useEffect(() => {
-    fetchBrands();
-    // If selectedBrandId is provided, find and select that brand
     if (selectedBrandId && brands.length > 0) {
       const brand = brands.find(b => b.id === selectedBrandId);
       if (brand) {

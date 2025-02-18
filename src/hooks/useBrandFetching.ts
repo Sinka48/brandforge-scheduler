@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -44,7 +45,7 @@ export function useBrandFetching() {
       const transformedBrands: Brand[] = (data || []).map((item: any) => ({
         id: item.id,
         url: item.url,
-        metadata: item.metadata as Brand['metadata'],
+        metadata: item.metadata,
         version: item.version || 1,
         created_at: item.created_at,
         asset_type: item.asset_type,
