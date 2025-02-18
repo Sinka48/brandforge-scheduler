@@ -31,21 +31,24 @@ export function useBrandFetching() {
       console.log("Fetching user-generated brands...");
       const { data, error } = await supabase
         .from("brand_assets")
-        .select(`
-          id,
-          url,
-          metadata,
-          asset_type,
-          questionnaire_id
-        `)
-        .eq('user_id', session.user.id)
-        .eq('asset_category', 'brand')
-        .is('regeneration_type', null)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .select("id, url, metadata, asset_type, questionnaire_id")
+        .eq("user_id", session.user.id)
+        .eq("asset_category", "brand")
+        .filter("regeneration_type", "is", null)
+        .limit(10)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching brands:", error);
+        let errorMessage = "Failed to load brands. Please try again.";
+        if (error.code === "57014") {
+          errorMessage = "Request timed out. Please try again.";
+        }
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
         throw error;
       }
 
@@ -55,12 +58,12 @@ export function useBrandFetching() {
         id: item.id,
         url: item.url,
         metadata: item.metadata || {},
-        version: 1, // Default value since we're not fetching it
-        created_at: new Date().toISOString(), // Default value since we're not fetching it
+        version: 1,
+        created_at: new Date().toISOString(),
         asset_type: item.asset_type,
         questionnaire_id: item.questionnaire_id,
         user_id: session.user.id,
-        asset_category: 'brand',
+        asset_category: "brand",
         social_asset_type: null,
         social_name: null,
         social_bio: null
