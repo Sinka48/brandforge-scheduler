@@ -1,9 +1,8 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlatformId } from "@/constants/platforms";
-import { Edit, Trash2, MoreVertical, Calendar, Send, FileText, Sparkles, Building2 } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Calendar, Send, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,11 +31,6 @@ interface Post {
     id: string;
     name: string;
     description: string;
-  };
-  brand?: {
-    id: string;
-    name: string;
-    isAiGenerated?: boolean;
   };
 }
 
@@ -99,16 +93,6 @@ export function PostItem({
                 </Badge>
               );
             })}
-            
-            {post.brand && (
-              <Badge variant="outline" className="flex items-center gap-1.5">
-                <Building2 className="h-3 w-3" />
-                {post.brand.name}
-                {post.brand.isAiGenerated && (
-                  <Sparkles className="h-3 w-3 ml-1 text-blue-500" />
-                )}
-              </Badge>
-            )}
             
             {post.campaign && (
               <Badge variant="outline" className="flex items-center gap-1.5">
