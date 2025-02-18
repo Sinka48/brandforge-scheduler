@@ -3,7 +3,11 @@ import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/f
 import { Input } from "@/components/ui/input";
 import { IndustrySelector } from "./IndustrySelector";
 
-export function BusinessInfoSection({ form }: { form: any }) {
+interface BusinessInfoSectionProps {
+  form: any;
+}
+
+export function BusinessInfoSection({ form }: BusinessInfoSectionProps) {
   return (
     <div className="space-y-6">
       <FormItem>
