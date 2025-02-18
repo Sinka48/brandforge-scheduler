@@ -132,7 +132,7 @@ export function AICampaignDialog({
               <Button
                 onClick={handleGenerate}
                 className="w-full"
-                disabled={isLoading || !name.trim() || !goal || platforms.length === 0 || !selectedBrandId}
+                disabled={isLoading || !goal || platforms.length === 0 || !selectedBrandId}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
