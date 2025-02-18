@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogHeader } from "./post-dialog/DialogHeader";
 import { DialogActions } from "./post-dialog/DialogActions";
@@ -15,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
 import { PlatformSelector } from "./post-dialog/PlatformSelector";
+import { useBrandFetching } from "@/hooks/useBrandFetching";
+import { Brand } from "@/types/brand";
 
 interface AICampaignDialogProps {
   isOpen: boolean;
@@ -34,11 +37,13 @@ export function AICampaignDialog({
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [duration, setDuration] = useState("7");
   const [tone, setTone] = useState("professional");
-  const [postsCount, setPostsCount] = useState(7); // Default to match duration
+  const [postsCount, setPostsCount] = useState(7);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedPosts, setGeneratedPosts] = useState<any[]>([]);
   const [campaignId, setCampaignId] = useState<string | null>(null);
+  const [selectedBrandId, setSelectedBrandId] = useState<string>("");
+  const { brands, loading: brandsLoading, fetchBrands } = useBrandFetching();
   const { toast } = useToast();
 
   const handlePlatformToggle = (platformId: string) => {
@@ -114,6 +119,15 @@ export function AICampaignDialog({
       return;
     }
 
+    if (!selectedBrandId) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a brand",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setProgress(0);
     
@@ -123,6 +137,8 @@ export function AICampaignDialog({
         throw new Error('Not authenticated');
       }
 
+      const selectedBrand = brands.find(b => b.id === selectedBrandId);
+      
       const startDate = new Date();
       const endDate = addDays(startDate, parseInt(duration));
 
@@ -138,7 +154,8 @@ export function AICampaignDialog({
           settings: {
             duration,
             tone,
-            postsCount
+            postsCount,
+            brandId: selectedBrandId
           },
           user_id: session.user.id
         })
@@ -154,7 +171,14 @@ export function AICampaignDialog({
           platforms: platforms.map(p => p.toLowerCase()),
           duration: parseInt(duration),
           tone,
-          postsCount // Pass the posts count to the edge function
+          postsCount,
+          brand: {
+            name: selectedBrand?.metadata?.name,
+            story: selectedBrand?.metadata?.story,
+            industry: selectedBrand?.metadata?.industry,
+            targetAudience: selectedBrand?.metadata?.targetAudience,
+            brandPersonality: selectedBrand?.metadata?.brandPersonality,
+          }
         },
       });
 
@@ -256,6 +280,22 @@ export function AICampaignDialog({
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="brand">Select Brand</Label>
+                <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.id} value={brand.id}>
+                        {brand.metadata?.name || "Unnamed Brand"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="platforms">Social Media Platforms</Label>
                 <PlatformSelector
                   selectedPlatforms={platforms}
@@ -329,7 +369,7 @@ export function AICampaignDialog({
               <Button
                 onClick={handleGenerate}
                 className="w-full"
-                disabled={isLoading || !name.trim() || !goal || platforms.length === 0}
+                disabled={isLoading || !name.trim() || !goal || platforms.length === 0 || !selectedBrandId}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
