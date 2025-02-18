@@ -9,23 +9,13 @@ interface BrandAttributesSectionProps {
 }
 
 export function BrandAttributesSection({ form }: BrandAttributesSectionProps) {
-  const handlePersonalityChange = (personality: string) => {
-    const current = form.watch("brandPersonality") || [];
-    const updated = current.includes(personality)
-      ? current.filter((p: string) => p !== personality)
-      : [...current, personality];
-    form.setValue("brandPersonality", updated);
+  const handlePersonalityChange = (traits: string[]) => {
+    form.setValue("brandPersonality", traits);
   };
 
-  const handleColorChange = (color: string) => {
-    const current = form.watch("colorPreferences") || [];
-    if (current.includes(color)) {
-      form.setValue(
-        "colorPreferences",
-        current.filter((c: string) => c !== color)
-      );
-    } else if (current.length < 5) {
-      form.setValue("colorPreferences", [...current, color]);
+  const handleColorChange = (colors: string[]) => {
+    if (colors.length <= 5) {
+      form.setValue("colorPreferences", colors);
     }
   };
 
