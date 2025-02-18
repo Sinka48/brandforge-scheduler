@@ -34,9 +34,8 @@ export function useBrandFetching() {
         .select("id, url, metadata, asset_type, questionnaire_id")
         .eq("user_id", session.user.id)
         .eq("asset_category", "brand")
-        .filter("regeneration_type", "is", null)
-        .limit(10)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(10);
 
       if (error) {
         console.error("Error fetching brands:", error);
