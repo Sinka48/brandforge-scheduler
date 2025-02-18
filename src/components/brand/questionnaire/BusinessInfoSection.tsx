@@ -1,3 +1,4 @@
+
 import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Building2, Wand2 } from "lucide-react";
@@ -13,7 +14,10 @@ interface BusinessInfoSectionProps {
 export function BusinessInfoSection({ form }: BusinessInfoSectionProps) {
   const { toast } = useToast();
 
-  const generateBusinessName = async () => {
+  const generateBusinessName = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
+    e.stopPropagation(); // Prevent event bubbling
+    
     try {
       const { data, error } = await supabase.functions.invoke(
         "generate-brand-identity",

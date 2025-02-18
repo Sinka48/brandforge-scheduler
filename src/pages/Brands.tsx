@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/layout/Layout";
 import { Session } from "@supabase/supabase-js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +14,7 @@ interface BrandsPageProps {
 }
 
 export default function BrandsPage({ session }: BrandsPageProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const defaultTab = searchParams.get("tab") || "generator";
@@ -27,10 +28,21 @@ export default function BrandsPage({ session }: BrandsPageProps) {
         title: "Brand Created Successfully",
         description: "Your brand has been created. You can view and manage it in the Brand Library.",
       });
-      // Remove the query parameter
-      navigate("/brands?tab=library", { replace: true });
+      // Remove the query parameter without triggering a re-render
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("brandCreated");
+      setSearchParams(newParams, { replace: true });
     }
-  }, [searchParams, navigate, toast]);
+  }, [searchParams, setSearchParams, toast]);
+
+  const handleTabChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("tab", value);
+    if (value === "generator") {
+      newParams.delete("selectedBrand");
+    }
+    setSearchParams(newParams);
+  };
 
   return (
     <Layout session={session}>
@@ -42,7 +54,7 @@ export default function BrandsPage({ session }: BrandsPageProps) {
           </p>
         </div>
 
-        <Tabs defaultValue={defaultTab} className="space-y-6">
+        <Tabs value={defaultTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList>
             <TabsTrigger value="generator" className="flex items-center gap-2">
               <Wand2 className="h-4 w-4" />
