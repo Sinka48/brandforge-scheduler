@@ -41,8 +41,8 @@ export function CampaignForm({
   postsCount,
   setPostsCount,
 }: CampaignFormProps) {
-  // Filter brands to only show user-generated ones (where regeneration_type is null)
-  const userGeneratedBrands = brands.filter(brand => !brand.metadata.regeneration_type);
+  // Filter brands to only show user-generated ones
+  const userGeneratedBrands = brands.filter(brand => brand.metadata?.isAiGenerated !== true);
 
   return (
     <div className="space-y-4">
