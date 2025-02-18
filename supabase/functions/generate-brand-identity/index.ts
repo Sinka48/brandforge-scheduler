@@ -7,6 +7,58 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function generateBusinessName() {
+  try {
+    console.log("Generating business name with OpenAI");
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    
+    if (!openaiKey) {
+      throw new Error("OpenAI API key is not configured");
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a creative business name generator. Generate a unique, memorable business name. Return only the name, nothing else."
+          },
+          {
+            role: "user",
+            content: "Generate a unique business name."
+          }
+        ],
+        temperature: 0.9,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("OpenAI API error response:", error);
+      throw new Error(`OpenAI API error: ${JSON.stringify(error)}`);
+    }
+
+    const data = await response.json();
+    const businessName = data.choices[0].message.content.trim();
+    console.log("Generated business name:", businessName);
+
+    return {
+      metadata: {
+        name: businessName
+      }
+    };
+  } catch (error) {
+    console.error("Error in generateBusinessName:", error);
+    throw error;
+  }
+}
+
 async function generateImageWithDallE(prompt: string, size: "1024x1024" | "1792x1024") {
   try {
     console.log("Generating image with DALL-E, prompt:", prompt);
@@ -161,9 +213,18 @@ serve(async (req) => {
 
     console.log("User authenticated:", user.id);
     
-    const { questionnaire } = await req.json();
-    console.log("Received questionnaire data:", questionnaire);
+    const requestData = await req.json();
+    console.log("Received request data:", requestData);
 
+    if (requestData.generateNameOnly) {
+      console.log("Generating business name only");
+      const result = await generateBusinessName();
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { questionnaire } = requestData;
     if (!questionnaire) {
       throw new Error('No questionnaire data provided');
     }
